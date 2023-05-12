@@ -2,9 +2,7 @@ package de.lazybytez.gamingbytezenhancements.feature.temporarycart;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
-import de.lazybytez.gamingbytezenhancements.feature.temporarycart.event.MinecartLeaveListener;
-import de.lazybytez.gamingbytezenhancements.feature.temporarycart.event.RailRightClickListener;
-import de.lazybytez.gamingbytezenhancements.feature.temporarycart.event.RemoveCoolDownListener;
+import de.lazybytez.gamingbytezenhancements.feature.temporarycart.event.*;
 
 /**
  * Feature that handles spawning a temporary cart when a player right-clicks a rail.
@@ -27,6 +25,8 @@ public class TemporaryCartFeature extends AbstractFeature {
         this.registerEvent(new RailRightClickListener(this.getTemporaryCartManager()));
         this.registerEvent(new MinecartLeaveListener(this.getTemporaryCartManager()));
         this.registerEvent(new RemoveCoolDownListener(this.getTemporaryCartManager()));
+        this.registerEvent(new RemoveMinecartOnLeaveListener(this.getTemporaryCartManager()));
+        this.registerEvent(new MinecartDestroyListener(this.getTemporaryCartManager()));
     }
 
     @Override

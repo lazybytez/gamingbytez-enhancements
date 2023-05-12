@@ -33,7 +33,8 @@ public class MinecartLeaveListener implements Listener {
 
         this.temporaryCartManager.removeTemporaryCart(
                 (Player) exitedEntity,
-                (Minecart) vehicle
+                (Minecart) vehicle,
+                false
         );
     }
 }

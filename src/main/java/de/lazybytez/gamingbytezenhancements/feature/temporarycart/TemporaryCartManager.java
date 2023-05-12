@@ -45,7 +45,12 @@ public class TemporaryCartManager {
         minecart.customName(Component.text(this.temporaryCartIdentifier));
         minecart.setCustomNameVisible(false);
 
-        minecart.addPassenger(p);
+        Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+            if (minecart.isValid() && p.isValid()) {
+                minecart.addPassenger(p);
+            }
+
+        }, 2L);
 
         this.plugin.getLogger().info("Spawned temporary cart at " + location + " for " + p.getName());
     }
@@ -100,7 +105,7 @@ public class TemporaryCartManager {
      * @param minecart The minecart to check.
      * @return Whether the given minecart is a temporary cart.
      */
-    private boolean isTemporaryCart(Minecart minecart) {
+    public boolean isTemporaryCart(Minecart minecart) {
         return minecart.getName().equals(this.temporaryCartIdentifier);
     }
 
@@ -112,24 +117,31 @@ public class TemporaryCartManager {
      *
      * @param p The player to remove the temporary cart from.
      */
-    public void removeTemporaryCart(Player p, Minecart minecart) {
+    public void removeTemporaryCart(Player p, Minecart minecart, boolean synchronous) {
         if (!isTemporaryCart(minecart)) {
             return;
         }
 
-        if (!minecart.getPassengers().contains(p)) {
+        if (null != p && minecart.getPassengers().contains(p)) {
+            p.leaveVehicle();
+
+            this.plugin.getLogger().info("Removed temporary cart for "
+                    + p.getName()
+                    + " at "
+                    + minecart.getLocation());
+        }
+
+        if (synchronous) {
+            minecart.remove();
             return;
         }
 
-        p.leaveVehicle();
         Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
-            if (minecart.isDead()) {
+            if (minecart.isDead() || !minecart.isValid()) {
                 return;
             }
 
             minecart.remove();
         }, 2L);
-
-        this.plugin.getLogger().info("Removed temporary cart for " + p.getName());
     }
 }
