@@ -1,4 +1,4 @@
 name: gamingbytez-enhancements
 version: '${project.version}'
-main: de.lazybytez.gamingbytezenhancements.Gamingbytez_tools
+main: de.lazybytez.gamingbytezenhancements.EnhancementsPlugin
 api-version: 1.19
