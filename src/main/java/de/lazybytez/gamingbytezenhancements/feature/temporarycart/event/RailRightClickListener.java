@@ -45,7 +45,7 @@ public class RailRightClickListener implements Listener {
 
         Player p = event.getPlayer();
         ItemStack item = event.getItem();
-        if (item == null || this.minecartTypes.contains(item.getType())) {
+        if (item != null && this.minecartTypes.contains(item.getType())) {
             return;
         }
 
