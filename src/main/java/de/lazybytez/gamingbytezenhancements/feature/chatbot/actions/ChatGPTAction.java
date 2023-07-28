@@ -9,8 +9,8 @@ import org.bukkit.entity.Player;
 
 import java.util.Set;
 
-public class BuntstifteAction implements ChatBotAction {
-    private static final String RESPONSE_MESSAGE = "Ich habe weder die Zeit noch die Buntstifte, um dir das jetzt zu erklären.";
+public class ChatGPTAction implements ChatBotAction {
+    private static final String RESPONSE_MESSAGE = "Dei Mudda Lol";
     private static final String[] BUZZWORDS = {
             "wer",
             "wer!",
@@ -110,11 +110,11 @@ public class BuntstifteAction implements ChatBotAction {
 
     @Override
     public boolean chance() {
-        return ChanceUtil.isLucky(1, 7);
+        return ChanceUtil.isLucky(1, 10);
     }
 
     @Override
     public int weight() {
-        return 1;
+        return 3;
     }
 }

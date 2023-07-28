@@ -9,9 +9,6 @@ import org.bukkit.entity.Player;
 
 import java.util.Set;
 
-/**
- * Action that has a 1 in 25 chance of responding with " Dei Mudda Lol".
- */
 public class KlaerenAction implements ChatBotAction {
     private static final String RESPONSE_MESSAGE = "Abwasser ist ein Thema das unbedingt geklärt werden muss";
     private static final String[] BUZZWORDS = {
@@ -53,7 +50,7 @@ public class KlaerenAction implements ChatBotAction {
 
     @Override
     public boolean chance() {
-        return ChanceUtil.isLucky(1, 5);
+        return ChanceUtil.isLucky(1, 1);
     }
 
     @Override
