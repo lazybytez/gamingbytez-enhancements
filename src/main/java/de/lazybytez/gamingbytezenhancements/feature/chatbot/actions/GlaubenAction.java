@@ -12,13 +12,28 @@ import java.util.Set;
 /**
  * Action that has a 1 in 25 chance of responding with " Dei Mudda Lol".
  */
-public class LolAction implements ChatBotAction {
-    private static final String RESPONSE_MESSAGE = "Dei Mudda Lol";
+public class GlaubenAction implements ChatBotAction {
+    private static final String RESPONSE_MESSAGE = "Glauben kannst du in der Kirche!";
     private static final String[] BUZZWORDS = {
-            "lol",
-            "lol!",
-            "lol?",
-            "lol.",
+            "glauben",
+            "glauben!",
+            "glauben?",
+            "glauben.",
+
+            "glaube",
+            "glaube!",
+            "glaube?",
+            "glaube.",
+
+            "glaub",
+            "glaub!",
+            "glaub?",
+            "glaub.",
+
+            "glaubst",
+            "glaubst!",
+            "glaubst?",
+            "glaubst.",
     };
 
     @Override

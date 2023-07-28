@@ -7,7 +7,7 @@ public class MessageAnalyzer {
     /**
      * Check if a message contains all supplied buzzwords.
      */
-    public static boolean containsBuzzWord(String msg, String ...buzzWords) {
+    public static boolean containsBuzzWords(String msg, String ...buzzWords) {
         for (String buzzWord : buzzWords) {
             if (!msg.matches(".*\\b" + buzzWord + "\\b.*")) {
                 return false;
@@ -15,5 +15,15 @@ public class MessageAnalyzer {
         }
 
         return true;
+    }
+
+    public static boolean containsOneOfBuzzWords(String msg, String ...buzzWords) {
+        for (String buzzWord : buzzWords) {
+            if (containsBuzzWords(msg, buzzWord)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

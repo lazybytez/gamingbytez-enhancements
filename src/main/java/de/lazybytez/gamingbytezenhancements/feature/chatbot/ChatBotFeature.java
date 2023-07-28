@@ -2,8 +2,7 @@ package de.lazybytez.gamingbytezenhancements.feature.chatbot;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
-import de.lazybytez.gamingbytezenhancements.feature.chatbot.actions.ChatBotAction;
-import de.lazybytez.gamingbytezenhancements.feature.chatbot.actions.LolAction;
+import de.lazybytez.gamingbytezenhancements.feature.chatbot.actions.*;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.event.ChatBotChatListener;
 
 import java.util.List;
@@ -23,7 +22,14 @@ public class ChatBotFeature extends AbstractFeature {
     }
 
     private void registerChatBotActions() {
+        this.chatBotActions.add(new BuntstifteAction());
+        this.chatBotActions.add(new EgalAction());
+        this.chatBotActions.add(new GlaubenAction());
+        this.chatBotActions.add(new HalloAction());
+        this.chatBotActions.add(new KannstAction());
+        this.chatBotActions.add(new KlaerenAction());
         this.chatBotActions.add(new LolAction());
+        this.chatBotActions.add(new MeinungAction());
     }
 
     private void registerEvents() {
