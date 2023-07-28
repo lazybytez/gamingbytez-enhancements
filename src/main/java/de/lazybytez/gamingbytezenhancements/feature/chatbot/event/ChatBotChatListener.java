@@ -8,6 +8,7 @@ import de.lazybytez.gamingbytezenhancements.feature.chatbot.util.RandomNameUtili
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -51,7 +52,12 @@ public class ChatBotChatListener implements Listener {
     private void runChatBotAsync(AsyncChatEvent event) {
         Player sender = event.getPlayer();
         Set<Audience> receivers = event.viewers();
-        String message = event.message().toString();
+
+        if (!(event.message() instanceof TextComponent messageComponent)) {
+            return;
+        }
+
+        String message = messageComponent.content();
 
         ChatBotAction action = this.chooseRandomAction(findSupportedActions(message, sender, receivers));
 
@@ -60,6 +66,9 @@ public class ChatBotChatListener implements Listener {
         }
 
         ChatBotResponse response = action.getChatBotMessage(message, sender, receivers);
+        if (response == null) {
+            return;
+        }
 
         Component component = this.buildMessage(response);
 

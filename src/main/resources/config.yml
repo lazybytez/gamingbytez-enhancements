@@ -1,0 +1,5 @@
+openai:
+  apiUrl: "https://api.openai.com/v1/chat/completions"
+  apiKey: ""
+  organizationId: ""
+  model: "gpt-3.5-turbo"

@@ -23,6 +23,7 @@ public class ChatBotFeature extends AbstractFeature {
 
     private void registerChatBotActions() {
         this.chatBotActions.add(new BuntstifteAction());
+        this.chatBotActions.add(new ChatGPTAction(this.getPlugin()));
         this.chatBotActions.add(new EgalAction());
         this.chatBotActions.add(new GlaubenAction());
         this.chatBotActions.add(new HalloAction());

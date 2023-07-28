@@ -1,0 +1,131 @@
+package de.lazybytez.gamingbytezenhancements.lib.openai;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Simple client to use the OpenAI API.
+ */
+public class OpenAiClient {
+    public static final String HTTP_METHOD = "POST";
+    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    public static final String HEADER_CONTENT_LENGTH = "Content-Length";
+    public static final String HEADER_CONTENT_TYPE_JSON = "application/json";
+    public static final String HEADER_AUTHORIZATION = "Authorization";
+    public static final String AUTHORIZATION_BEARER_TEMPLATE = "Bearer %s";
+    public static final String HEADER_ORGANIZATION = "OpenAI-Organization";
+
+    public static final String BODY_MODEL = "model";
+    public static final String BODY_MESSAGES = "messages";
+
+    public static final String BODY_TEMPERATURE = "temperature";
+    public static final float DEFAULT_TEMPERATURE = 1.0F;
+
+    public static final String MESSAGE_ROLE = "role";
+    public static final String MESSAGE_ROLE_USER = "user";
+
+    public static final String MESSAGE_CONTENT = "content";
+
+    private final String apiUrl;
+    private final String apiKey;
+    private final String organization;
+
+    private final String model;
+
+    public OpenAiClient(String apiUrl, String apiKey, String organization, String model) {
+        this.apiUrl = apiUrl;
+        this.apiKey = apiKey;
+        this.organization = organization;
+        this.model = model;
+    }
+
+    public String completion(String inputMessage) throws IOException {
+        String body = this.getRequestJsonWithSingleMessage(inputMessage);
+        byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
+
+        HttpURLConnection httpURLConnection = getHttpURLConnection(bodyBytes);
+        httpURLConnection.getOutputStream().write(bodyBytes);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        try (
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                        httpURLConnection.getInputStream(),
+                        StandardCharsets.UTF_8
+                ))
+        ) {
+            for (int c; (c = bufferedReader.read()) >= 0; ) {
+                stringBuilder.append((char) c);
+            }
+
+        } catch (IOException e) {
+            // Fallback to error stream and if that fails, fallback to outer catch block
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                    httpURLConnection.getErrorStream(),
+                    StandardCharsets.UTF_8
+            ));
+
+            for (int c; (c = bufferedReader.read()) >= 0; ) {
+                stringBuilder.append((char) c);
+            }
+        }
+
+        String responseBody = stringBuilder.toString();
+
+        int statusCode = httpURLConnection.getResponseCode();
+
+        return ;
+    }
+
+    @NotNull
+    private HttpURLConnection getHttpURLConnection(byte[] bodyBytes) throws IOException {
+        URL url = new URL(this.apiUrl);
+        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+        httpURLConnection.setRequestMethod(HTTP_METHOD);
+
+        httpURLConnection.addRequestProperty(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_JSON);
+        httpURLConnection.addRequestProperty(
+                HEADER_AUTHORIZATION,
+                String.format(AUTHORIZATION_BEARER_TEMPLATE, this.apiKey)
+        );
+        httpURLConnection.addRequestProperty(HEADER_ORGANIZATION, this.organization);
+        httpURLConnection.addRequestProperty(
+                HEADER_CONTENT_LENGTH,
+                String.valueOf(bodyBytes.length)
+        );
+
+        httpURLConnection.setDoOutput(true);
+        return httpURLConnection;
+    }
+
+    private String getRequestJsonWithSingleMessage(String message) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty(BODY_MODEL, this.model);
+        jsonObject.add(BODY_MESSAGES, getMessageElement(message));
+        jsonObject.addProperty(BODY_TEMPERATURE, DEFAULT_TEMPERATURE);
+
+
+        return jsonObject.toString();
+    }
+
+    private JsonArray getMessageElement(String message) {
+        JsonArray jsonArray = new JsonArray();
+
+        JsonObject messageObject = new JsonObject();
+        messageObject.addProperty(MESSAGE_ROLE, MESSAGE_ROLE_USER);
+        messageObject.addProperty(MESSAGE_CONTENT, message);
+
+        jsonArray.add(messageObject);
+
+        return jsonArray;
+    }
+}
