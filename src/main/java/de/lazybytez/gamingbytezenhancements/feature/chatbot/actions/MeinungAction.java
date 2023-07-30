@@ -13,19 +13,8 @@ public class MeinungAction implements ChatBotAction {
     private static final String RESPONSE_MESSAGE = "Das ist aber ganz schön viel Meinung für so wenig Ahnung";
     private static final String[] BUZZWORDS = {
             "meinung",
-            "meinung!",
-            "meinung?",
-            "meinung.",
-
             "finde",
-            "finde!",
-            "finde?",
-            "finde.",
-
             "find",
-            "find!",
-            "find?",
-            "find.",
     };
 
     @Override

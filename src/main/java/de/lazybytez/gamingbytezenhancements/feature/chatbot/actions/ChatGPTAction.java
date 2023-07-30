@@ -16,99 +16,26 @@ import java.util.Set;
 public class ChatGPTAction implements ChatBotAction {
     private static final String[] BUZZWORDS = {
             "wer",
-            "wer!",
-            "wer?",
-            "wer.",
-
             "was",
-            "was!",
-            "was?",
-            "was.",
-
             "wann",
-            "wann!",
-            "wann?",
-            "wann.",
-
             "wo",
-            "wo!",
-            "wo?",
-            "wo.",
-
             "warum",
-            "warum!",
-            "warum?",
-            "warum.",
-
             "wie",
-            "wie!",
-            "wie?",
-            "wie.",
-
             "welche",
-            "welche!",
-            "welche?",
-            "welche.",
-
             "welcher",
-            "welcher!",
-            "welcher?",
-            "welcher.",
-
             "welches",
-            "welches!",
-            "welches?",
-            "welches.",
-
             "wollen",
-            "wollen!",
-            "wollen?",
-            "wollen.",
-
             "wolltest",
-            "wolltest!",
-            "wolltest?",
-            "wolltest.",
-
             "wann",
-            "wann!",
-            "wann?",
-            "wann.",
-
             "wie\\sviele",
-            "wie\\sviele!",
-            "wie\\sviele?",
-            "wie\\sviele.",
-
             "kannst\\sdu",
-            "kannst\\sdu!",
-            "kannst\\sdu?",
-            "kannst\\sdu.",
-
             "weißt\\sdu",
-            "weißt\\sdu!",
-            "weißt\\sdu?",
-            "weißt\\sdu.",
-
             "denkst\\sdu",
-            "denkst\\sdu!",
-            "denkst\\sdu?",
-            "denkst\\sdu.",
-
             "glaubst\\sdu",
-            "glaubst\\sdu!",
-            "glaubst\\sdu?",
-            "glaubst\\sdu.",
-
             "ist\\ses\\smöglich",
-            "ist\\ses\\smöglich!",
-            "ist\\ses\\smöglich?",
-            "ist\\ses\\smöglich.",
-
             "was\\sdenkst\\sdu\\süber",
-            "was\\sdenkst\\sdu\\süber!",
-            "was\\sdenkst\\sdu\\süber?",
-            "Was\\sdenkst\\sdu\\süber.",
+            "willst\\sdu",
+            "hast\\sdu"
     };
 
     public static final long OPEN_AI_RATE_LIMIT = 60;
@@ -204,7 +131,7 @@ public class ChatGPTAction implements ChatBotAction {
 
     @Override
     public boolean chance() {
-        return ChanceUtil.isLucky(1, 5);
+        return ChanceUtil.isLucky(1, 4);
     }
 
     @Override

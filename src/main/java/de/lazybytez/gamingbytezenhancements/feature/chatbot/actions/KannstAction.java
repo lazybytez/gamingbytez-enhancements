@@ -13,29 +13,10 @@ public class KannstAction implements ChatBotAction {
     private static final String RESPONSE_MESSAGE = "Brot kann schimmeln, was kannst du?";
     private static final String[] BUZZWORDS = {
             "kann",
-            "kann!",
-            "kann?",
-            "kann.",
-
             "kannst",
-            "kannst!",
-            "kannst?",
-            "kannst.",
-
             "können",
-            "können!",
-            "können?",
-            "können.",
-
             "könnte",
-            "könnte!",
-            "könnte?",
-            "könnte.",
-
             "könntest",
-            "könntest!",
-            "könntest?",
-            "könntest.",
     };
 
     @Override

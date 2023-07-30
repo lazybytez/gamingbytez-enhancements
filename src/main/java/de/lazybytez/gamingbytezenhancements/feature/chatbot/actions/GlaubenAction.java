@@ -13,24 +13,9 @@ public class GlaubenAction implements ChatBotAction {
     private static final String RESPONSE_MESSAGE = "Glauben kannst du in der Kirche!";
     private static final String[] BUZZWORDS = {
             "glauben",
-            "glauben!",
-            "glauben?",
-            "glauben.",
-
             "glaube",
-            "glaube!",
-            "glaube?",
-            "glaube.",
-
             "glaub",
-            "glaub!",
-            "glaub?",
-            "glaub.",
-
             "glaubst",
-            "glaubst!",
-            "glaubst?",
-            "glaubst.",
     };
 
     @Override

@@ -13,29 +13,10 @@ public class KlaerenAction implements ChatBotAction {
     private static final String RESPONSE_MESSAGE = "Abwasser ist ein Thema das unbedingt geklärt werden muss";
     private static final String[] BUZZWORDS = {
             "klären",
-            "klären!",
-            "klären?",
-            "klären.",
-
             "klärung",
-            "klärung!",
-            "klärung?",
-            "klärung.",
-
             "geklärt",
-            "geklärt!",
-            "geklärt?",
-            "geklärt.",
-
             "abklären",
-            "abklären!",
-            "abklären?",
-            "abklären.",
-
             "erklären",
-            "erklären!",
-            "erklären?",
-            "erklären.",
     };
 
     @Override

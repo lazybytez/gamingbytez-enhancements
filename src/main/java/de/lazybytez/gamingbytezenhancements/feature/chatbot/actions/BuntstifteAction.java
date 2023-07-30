@@ -13,89 +13,24 @@ public class BuntstifteAction implements ChatBotAction {
     private static final String RESPONSE_MESSAGE = "Ich habe weder die Zeit noch die Buntstifte, um dir das jetzt zu erklären.";
     private static final String[] BUZZWORDS = {
             "wer",
-            "wer!",
-            "wer?",
-            "wer.",
-
             "was",
-            "was!",
-            "was?",
-            "was.",
-
             "wann",
-            "wann!",
-            "wann?",
-            "wann.",
-
             "wo",
-            "wo!",
-            "wo?",
-            "wo.",
-
             "warum",
-            "warum!",
-            "warum?",
-            "warum.",
-
             "wie",
-            "wie!",
-            "wie?",
-            "wie.",
-
             "welche",
-            "welche!",
-            "welche?",
-            "welche.",
-
             "welcher",
-            "welcher!",
-            "welcher?",
-            "welcher.",
-
             "welches",
-            "welches!",
-            "welches?",
-            "welches.",
-
+            "wollen",
+            "wolltest",
             "wann",
-            "wann!",
-            "wann?",
-            "wann.",
-
             "wie\\sviele",
-            "wie\\sviele!",
-            "wie\\sviele?",
-            "wie\\sviele.",
-
             "kannst\\sdu",
-            "kannst\\sdu!",
-            "kannst\\sdu?",
-            "kannst\\sdu.",
-
             "weißt\\sdu",
-            "weißt\\sdu!",
-            "weißt\\sdu?",
-            "weißt\\sdu.",
-
             "denkst\\sdu",
-            "denkst\\sdu!",
-            "denkst\\sdu?",
-            "denkst\\sdu.",
-
             "glaubst\\sdu",
-            "glaubst\\sdu!",
-            "glaubst\\sdu?",
-            "glaubst\\sdu.",
-
             "ist\\ses\\smöglich",
-            "ist\\ses\\smöglich!",
-            "ist\\ses\\smöglich?",
-            "ist\\ses\\smöglich.",
-
             "was\\sdenkst\\sdu\\süber",
-            "was\\sdenkst\\sdu\\süber!",
-            "was\\sdenkst\\sdu\\süber?",
-            "Was\\sdenkst\\sdu\\süber.",
     };
 
     @Override

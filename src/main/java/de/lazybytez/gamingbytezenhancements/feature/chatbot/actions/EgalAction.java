@@ -14,9 +14,6 @@ public class EgalAction implements ChatBotAction {
             "ob es rechts oder links das Bein herunterläuft";
     private static final String[] BUZZWORDS = {
             "egal",
-            "egal!",
-            "egal?",
-            "egal.",
     };
 
     @Override

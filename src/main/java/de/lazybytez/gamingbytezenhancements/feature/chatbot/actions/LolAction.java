@@ -13,9 +13,6 @@ public class LolAction implements ChatBotAction {
     private static final String RESPONSE_MESSAGE = "Dei Mudda Lol";
     private static final String[] BUZZWORDS = {
             "lol",
-            "lol!",
-            "lol?",
-            "lol.",
     };
 
     @Override
