@@ -2,6 +2,7 @@ package de.lazybytez.gamingbytezenhancements;
 
 import de.lazybytez.gamingbytezenhancements.feature.Feature;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotFeature;
+import de.lazybytez.gamingbytezenhancements.feature.farmlandprotection.FarmlandProtectionFeature;
 import de.lazybytez.gamingbytezenhancements.feature.temporarycart.TemporaryCartFeature;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiApiConfig;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiClient;
@@ -14,6 +15,7 @@ public final class EnhancementsPlugin extends JavaPlugin {
     private final Feature[] features = new Feature[]{
             new TemporaryCartFeature(this),
             new ChatBotFeature(this),
+            new FarmlandProtectionFeature(this)
     };
 
     @Override
