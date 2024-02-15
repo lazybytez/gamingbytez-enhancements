@@ -3,6 +3,7 @@ package de.lazybytez.gamingbytezenhancements;
 import de.lazybytez.gamingbytezenhancements.feature.Feature;
 import de.lazybytez.gamingbytezenhancements.feature.antimobgriefing.AntiMobGriefingFeature;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotFeature;
+import de.lazybytez.gamingbytezenhancements.feature.customcreeperdamage.CustomCreeperDamageFeature;
 import de.lazybytez.gamingbytezenhancements.feature.farmlandprotection.FarmlandProtectionFeature;
 import de.lazybytez.gamingbytezenhancements.feature.temporarycart.TemporaryCartFeature;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiApiConfig;
@@ -17,7 +18,8 @@ public final class EnhancementsPlugin extends JavaPlugin {
             new TemporaryCartFeature(this),
             new ChatBotFeature(this),
             new FarmlandProtectionFeature(this),
-            new AntiMobGriefingFeature(this)
+            new AntiMobGriefingFeature(this),
+            new CustomCreeperDamageFeature(this)
     };
 
     @Override
