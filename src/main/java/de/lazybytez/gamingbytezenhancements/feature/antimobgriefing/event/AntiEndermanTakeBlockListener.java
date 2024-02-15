@@ -7,7 +7,7 @@ import org.bukkit.event.entity.EntityChangeBlockEvent;
 
 public class AntiEndermanTakeBlockListener implements Listener {
     @EventHandler
-    public void onEntityExplosion(EntityChangeBlockEvent e) {
+    public void onEndermanChangeBlock(EntityChangeBlockEvent e) {
         if (!e.getEntityType().equals(EntityType.ENDERMAN)) {
             return;
         }
