@@ -1,5 +1,6 @@
 package de.lazybytez.gamingbytezenhancements.feature.antimobgriefing.event;
 
+import de.lazybytez.gamingbytezenhancements.feature.antimobgriefing.GriefProtectionRegistry;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,26 +13,7 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import java.util.Set;
 
 public class AntiFireballExplosionListener implements Listener {
-    private final Set<EntityType> protectedEntities = Set.of(
-            EntityType.ARMOR_STAND,
-            EntityType.MINECART,
-            EntityType.MINECART_CHEST,
-            EntityType.MINECART_COMMAND,
-            EntityType.MINECART_FURNACE,
-            EntityType.MINECART_HOPPER,
-            EntityType.MINECART_MOB_SPAWNER,
-            EntityType.MINECART_TNT,
-            EntityType.BOAT,
-            EntityType.CHEST_BOAT
-    );
-
-    private final Set<EntityType> protectedHangingEntities = Set.of(
-            EntityType.ITEM_FRAME,
-            EntityType.GLOW_ITEM_FRAME,
-            EntityType.PAINTING
-    );
-
-    private final Set<EntityType> destructionDisabledEntities = Set.of(
+   private final Set<EntityType> destructionDisabledEntities = Set.of(
             EntityType.GHAST,
             EntityType.BLAZE,
             EntityType.WITHER,
@@ -58,7 +40,7 @@ public class AntiFireballExplosionListener implements Listener {
             return;
         }
 
-        if (!this.protectedHangingEntities.contains(e.getEntity().getType())) {
+        if (!GriefProtectionRegistry.PROTECTED_HANGING_ENTITIES.contains(e.getEntity().getType())) {
             return;
         }
 
@@ -76,7 +58,7 @@ public class AntiFireballExplosionListener implements Listener {
             return;
         }
 
-        if (!this.protectedEntities.contains(e.getEntity().getType())) {
+        if (!GriefProtectionRegistry.PROTECTED_ENTITIES.contains(e.getEntity().getType())) {
             return;
         }
 
