@@ -6,37 +6,20 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 
 import java.util.Set;
 
-public class AntiFireballExplosionListener implements Listener {
-   private final Set<EntityType> destructionDisabledEntities = Set.of(
-            EntityType.GHAST,
-            EntityType.BLAZE,
-            EntityType.WITHER,
-            EntityType.FIREBALL
-    );
-
-    @EventHandler
-    public void onEntityExplosion(EntityExplodeEvent e) {
-        if (!e.getEntityType().equals(EntityType.FIREBALL)) {
-            return;
-        }
-
-        e.blockList().clear();
-    }
-
+public class AntiShulkerProjectileListener implements Listener {
     @EventHandler
     public void onHangingEntityBreak(HangingBreakByEntityEvent e) {
-        if (!e.getCause().equals(HangingBreakEvent.RemoveCause.EXPLOSION)
-                && !e.getCause().equals(HangingBreakEvent.RemoveCause.ENTITY)) {
+        if (!e.getCause().equals(HangingBreakEvent.RemoveCause.ENTITY)) {
             return;
         }
 
-        if (!this.destructionDisabledEntities.contains(e.getRemover().getType())) {
+        if (!e.getRemover().getType().equals(EntityType.SHULKER)
+                && !e.getRemover().getType().equals(EntityType.SHULKER_BULLET)) {
             return;
         }
 
@@ -48,13 +31,13 @@ public class AntiFireballExplosionListener implements Listener {
     }
 
     @EventHandler
-    public void onEntityDamageByFireball(EntityDamageByEntityEvent e) {
-        if (!e.getCause().equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
-                        && !e.getCause().equals(EntityDamageEvent.DamageCause.PROJECTILE)) {
+    public void onEntityDamageByShulker(EntityDamageByEntityEvent e) {
+        if (!e.getCause().equals(EntityDamageEvent.DamageCause.PROJECTILE)) {
             return;
         }
 
-        if (!this.destructionDisabledEntities.contains(e.getDamager().getType())) {
+        if (!e.getDamager().getType().equals(EntityType.SHULKER)
+                && !e.getDamager().getType().equals(EntityType.SHULKER_BULLET)) {
             return;
         }
 
