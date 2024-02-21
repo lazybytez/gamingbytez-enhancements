@@ -27,6 +27,7 @@ public class AntiFireballExplosionListener implements Listener {
 
     private final Set<EntityType> protectedHangingEntities = Set.of(
             EntityType.ITEM_FRAME,
+            EntityType.GLOW_ITEM_FRAME,
             EntityType.PAINTING
     );
 
