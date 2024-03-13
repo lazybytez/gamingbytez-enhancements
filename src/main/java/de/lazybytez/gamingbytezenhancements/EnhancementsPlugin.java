@@ -5,6 +5,7 @@ import de.lazybytez.gamingbytezenhancements.feature.antimobgriefing.AntiMobGrief
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotFeature;
 import de.lazybytez.gamingbytezenhancements.feature.customcreeperdamage.CustomCreeperDamageFeature;
 import de.lazybytez.gamingbytezenhancements.feature.farmlandprotection.FarmlandProtectionFeature;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.temporarycart.TemporaryCartFeature;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiApiConfig;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiClient;
@@ -19,7 +20,8 @@ public final class EnhancementsPlugin extends JavaPlugin {
             new ChatBotFeature(this),
             new FarmlandProtectionFeature(this),
             new AntiMobGriefingFeature(this),
-            new CustomCreeperDamageFeature(this)
+            new CustomCreeperDamageFeature(this),
+            new MythicAltarFeature(this)
     };
 
     @Override
