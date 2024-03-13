@@ -1,6 +1,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.validator;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.structure.AltarStructureInterface;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -81,13 +82,22 @@ public class SimpleAltarSchemaValidator implements AltarSchemaValidatorInterface
         for (Vector schemaVector : schema.keySet()) {
             Location relativeLocation = location.clone().add(schemaVector);
 
+            int relX = relativeLocation.getBlockX();
+            int relY = relativeLocation.getBlockY();
+            int relZ = relativeLocation.getBlockZ();
+
             // ItemFrame are entities, so we need to check for entities at the location
             // Not as efficient as checking for blocks, but it's the only way to check for item frames.
             Collection<Entity> entities = world.getNearbyEntities(relativeLocation, 1, 1, 1);
 
             boolean found = false;
             for (Entity entity : entities) {
-                if (entity.getType().equals(schema.get(schemaVector))) {
+                Location entityLocation = entity.getLocation();
+
+                if (entity.getType().equals(schema.get(schemaVector))
+                        && entityLocation.getBlockX() == relX
+                        && entityLocation.getBlockY() == relY
+                        && entityLocation.getBlockZ() == relZ) {
                     found = true;
 
                     break;

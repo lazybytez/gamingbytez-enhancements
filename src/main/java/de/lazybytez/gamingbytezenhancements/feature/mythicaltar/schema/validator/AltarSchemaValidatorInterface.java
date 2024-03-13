@@ -18,13 +18,17 @@ import org.bukkit.World;
  */
 public interface AltarSchemaValidatorInterface {
     /**
-     * Validates the given altar (blocks and pedestals).
+     * Validates the given altar comprehensively, including both blocks and pedestals.
+     * This method serves as a universal validator by internally invoking both
+     * {@link #validateStructure(AltarStructureInterface, Location, World)} and
+     * {@link #validatePedestal(AltarStructureInterface, Location, World)} to ensure
+     * the entire altar structure meets the required criteria.
      *
      * @param altarStructure The altar structure to validate.
      * @param location       The location of the altar. This is the location of the center block.
      * @param world          The world in which the altar is located.
      *
-     * @return True if the structure is valid, false otherwise.
+     * @return True if the entire structure (both blocks and pedestals) is valid, false otherwise.
      */
     boolean validate(AltarStructureInterface altarStructure, Location location, World world);
 
