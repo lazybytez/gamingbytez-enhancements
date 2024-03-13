@@ -3,6 +3,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.GlowItemFrame;
+import org.jetbrains.annotations.NotNull;
 
 public class MythicAltar implements AltarInterface {
     private final GlowItemFrame center;
@@ -12,11 +13,11 @@ public class MythicAltar implements AltarInterface {
     private final GlowItemFrame west;
 
     public MythicAltar(
-            GlowItemFrame center,
-            GlowItemFrame north,
-            GlowItemFrame south,
-            GlowItemFrame east,
-            GlowItemFrame west
+            @NotNull GlowItemFrame center,
+            @NotNull GlowItemFrame north,
+            @NotNull GlowItemFrame south,
+            @NotNull GlowItemFrame east,
+            @NotNull GlowItemFrame west
     ) {
         this.center = center;
         this.north = north;
