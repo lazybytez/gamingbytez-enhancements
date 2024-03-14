@@ -30,7 +30,7 @@ public abstract class AbstractAltar implements AltarInterface {
     /**
      * The entity type of the pedestal inputs.
      */
-    protected final EntityType pedestalEntityType = EntityType.GLOW_ITEM_FRAME;
+    protected final EntityType pedestalEntityType;
 
     /**
      * Cache of the pedestals of the altar.
@@ -45,9 +45,11 @@ public abstract class AbstractAltar implements AltarInterface {
      *                 below the item frame of the center pedestal.
      */
     public AbstractAltar(
-            @NotNull Location location
+            @NotNull Location location,
+            @NotNull EntityType pedestalEntityType
     ) {
         this.location = location;
+        this.pedestalEntityType = pedestalEntityType;
     }
 
     /**

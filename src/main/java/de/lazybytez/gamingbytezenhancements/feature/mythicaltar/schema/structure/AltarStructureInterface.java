@@ -28,6 +28,8 @@ public interface AltarStructureInterface {
      * The Vector (key of the map) is relative to the location of the altars center pedestal.
      * <p>
      * The entity type should be either an item frame or a glow item frame.
+     * <p>
+     * Note: Implementations should ensure that the EntityType provided is either ITEM_FRAME or GLOW_ITEM_FRAME.
      *
      * @return Structure of the pedestals.
      */

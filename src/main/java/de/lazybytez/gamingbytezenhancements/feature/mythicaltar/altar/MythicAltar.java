@@ -1,6 +1,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
 
 import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.GlowItemFrame;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.util.Vector;
@@ -18,7 +19,7 @@ public class MythicAltar extends AbstractAltar {
     public MythicAltar(
             @NotNull Location location
     ) {
-        super(location);
+        super(location, EntityType.GLOW_ITEM_FRAME);
     }
 
     @Override
