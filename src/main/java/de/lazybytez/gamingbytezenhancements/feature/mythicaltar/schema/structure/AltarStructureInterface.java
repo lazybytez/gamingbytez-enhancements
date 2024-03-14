@@ -1,5 +1,6 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.structure;
 
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Vector;
@@ -31,4 +32,11 @@ public interface AltarStructureInterface {
      * @return Structure of the pedestals.
      */
     Map<Vector, EntityType> getPedestalStructure();
+
+    /**
+     * Returns the class of the altar.
+     *
+     * @return Class of the altar.
+     */
+    Class<? extends AltarInterface> getAltarClass();
 }

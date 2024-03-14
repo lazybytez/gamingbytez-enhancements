@@ -1,5 +1,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.structure;
 
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Vector;
@@ -126,13 +128,13 @@ public class MythicAltarStructure implements AltarStructureInterface {
         Map<Vector, EntityType> pedestalStructure = new HashMap<>();
 
         // Center
-        pedestalStructure.put(new Vector(0, 0, 0), EntityType.GLOW_ITEM_FRAME);
+        pedestalStructure.put(new Vector(0, 1, 0), EntityType.GLOW_ITEM_FRAME);
 
         // Corners
-        pedestalStructure.put(new Vector(2, 0, 2), EntityType.GLOW_ITEM_FRAME);
-        pedestalStructure.put(new Vector(2, 0, -2), EntityType.GLOW_ITEM_FRAME);
-        pedestalStructure.put(new Vector(-2, 0, 2), EntityType.GLOW_ITEM_FRAME);
-        pedestalStructure.put(new Vector(-2, 0, -2), EntityType.GLOW_ITEM_FRAME);
+        pedestalStructure.put(new Vector(2, 1, 2), EntityType.GLOW_ITEM_FRAME);
+        pedestalStructure.put(new Vector(2, 1, -2), EntityType.GLOW_ITEM_FRAME);
+        pedestalStructure.put(new Vector(-2, 1, 2), EntityType.GLOW_ITEM_FRAME);
+        pedestalStructure.put(new Vector(-2, 1, -2), EntityType.GLOW_ITEM_FRAME);
 
         return pedestalStructure;
     }
@@ -145,5 +147,10 @@ public class MythicAltarStructure implements AltarStructureInterface {
     @Override
     public Map<Vector, EntityType> getPedestalStructure() {
         return pedestalStructure;
+    }
+
+    @Override
+    public Class<? extends AltarInterface> getAltarClass() {
+        return MythicAltar.class;
     }
 }

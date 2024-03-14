@@ -76,9 +76,6 @@ public class SimpleAltarSchemaValidator implements AltarSchemaValidatorInterface
      * @return True if the structure is valid, false otherwise.
      */
     private boolean validatePedestalSchematic(Map<Vector, EntityType> schema, Location location, World world) {
-        // Item frame is above the pedestal block
-        location = location.clone().add(0, 1, 0);
-
         for (Vector schemaVector : schema.keySet()) {
             Location relativeLocation = location.clone().add(schemaVector);
 
@@ -105,7 +102,7 @@ public class SimpleAltarSchemaValidator implements AltarSchemaValidatorInterface
             }
 
             if (!found) {
-
+                Bukkit.broadcastMessage("Pedestal not found at " + relativeLocation.toString() + " for " + schema.get(schemaVector) + " at " + schemaVector.toString());
                 return false;
             }
         }

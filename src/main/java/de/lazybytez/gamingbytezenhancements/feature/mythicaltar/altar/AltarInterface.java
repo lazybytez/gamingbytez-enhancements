@@ -1,8 +1,9 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.entity.GlowItemFrame;
+import org.bukkit.entity.ItemFrame;
+
+import java.util.Map;
 
 /**
  * This interface represents an Altar.
@@ -20,40 +21,17 @@ public interface AltarInterface {
     Location getLocation();
 
     /**
-     * Returns the item frame in the center pedestal of the altar.
-     * <p>
-     * This item frame is the most important one, as it represents the center of the altar.
-     * A player must place last item in this item frame to complete a recipe.
+     * Returns the ItemFrame located at the given pedestal.
      *
-     * @return ItemFrame in the center.
+     * @param location The location of the pedestal.
+     * @return The ItemFrame at the given pedestal.
      */
-    GlowItemFrame getCenter();
+    ItemFrame getPedestal(PedestalLocation location);
 
     /**
-     * Returns the item frame in the north pedestal of the altar.
+     * Returns a map of all pedestals of the altar.
      *
-     * @return ItemFrame in the north.
+     * @return Map of all pedestals.
      */
-    GlowItemFrame getNorth();
-
-    /**
-     * Returns the item frame in the south pedestal of the altar.
-     *
-     * @return ItemFrame in the south.
-     */
-    GlowItemFrame getSouth();
-
-    /**
-     * Returns the item frame in the east pedestal of the altar.
-     *
-     * @return ItemFrame in the east.
-     */
-    GlowItemFrame getEast();
-
-    /**
-     * Returns the item frame in the west pedestal of the altar.
-     *
-     * @return ItemFrame in the west.
-     */
-    GlowItemFrame getWest();
+    Map<PedestalLocation, ItemFrame> getPedestals();
 }
