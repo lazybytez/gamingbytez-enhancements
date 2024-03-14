@@ -1,5 +1,8 @@
-package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
+package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe;
 
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AltarRecipeInterface;
+import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import org.bukkit.entity.Player;
 
 /**
@@ -19,8 +22,14 @@ public interface AltarActionInterface {
      * This method is called when an AltarRecipe is completed.
      *
      * @param altar The altar where the recipe was completed.
-     * @param recipe The recipe that was completed.
-     * @param completer The player who completed the recipe.
+     * @param event The event that triggered the recipe completion.
      */
-    void onRecipeComplete(AltarInterface altar, AltarRecipeInterface recipe, Player completer);
+    void onRecipeComplete(AltarInterface altar, PlayerItemFrameChangeEvent event);
+
+    /**
+     * Returns the AltarType of the AltarRecipe.
+     *
+     * @return the AltarType of the AltarRecipe.
+     */
+    Class<? extends AltarInterface> getAltarType();
 }
