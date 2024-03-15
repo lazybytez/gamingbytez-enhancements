@@ -7,11 +7,16 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.AltarCraft
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeRegistry;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeRegistryInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.validator.SimpleAltarSchemaValidator;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 /**
  * Feature that provides a new crafting altar to do some special stuff.
  */
 public class MythicAltarFeature extends AbstractFeature {
+    public static final Component CHAT_MESSAFE_PREFIX = Component.text("[", NamedTextColor.DARK_GRAY)
+            .append(Component.text("MythicAltar", NamedTextColor.GOLD))
+            .append(Component.text("] ", NamedTextColor.DARK_GRAY));
     private CompletableRecipeRegistryInterface recipeRegistry;
 
     public MythicAltarFeature(EnhancementsPlugin plugin) {
@@ -31,7 +36,11 @@ public class MythicAltarFeature extends AbstractFeature {
     }
 
     private void registerEvents() {
-        this.registerEvent(new AltarCraftingListener(new SimpleAltarSchemaValidator(), this.recipeRegistry));
+        this.registerEvent(new AltarCraftingListener(
+                this.plugin.getLogger(),
+                new SimpleAltarSchemaValidator(),
+                this.recipeRegistry
+        ));
     }
 
     @Override

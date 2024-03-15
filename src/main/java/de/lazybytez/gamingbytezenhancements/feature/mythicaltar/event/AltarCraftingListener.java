@@ -1,5 +1,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event;
 
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeInterface;
@@ -7,12 +9,15 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.Completab
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.structure.MythicAltarStructure;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.validator.AltarSchemaValidatorInterface;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+
+import java.util.logging.Logger;
 
 /**
  * Listener for the crafting of items on the altar.
@@ -26,16 +31,28 @@ import org.bukkit.event.Listener;
  * to use factories to create the altars and registries for the structures.
  */
 public class AltarCraftingListener implements Listener {
+    private final Logger logger;
     private final AltarSchemaValidatorInterface validator;
     private final CompletableRecipeRegistryInterface recipeRegistry;
 
+    // Right now we only support this one
     private final MythicAltarStructure altarStructure = new MythicAltarStructure();
 
-    public AltarCraftingListener(AltarSchemaValidatorInterface validator, CompletableRecipeRegistryInterface recipeRegistry) {
+    public AltarCraftingListener(
+            Logger logger,
+            AltarSchemaValidatorInterface validator,
+            CompletableRecipeRegistryInterface recipeRegistry
+    ) {
+        this.logger = logger;
         this.validator = validator;
         this.recipeRegistry = recipeRegistry;
     }
 
+    /**
+     * Listens for item frame changes and checks if the altar structure is valid and triggers recipe handling.
+     *
+     * @param event The event that was triggered.
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onItemFrameInteract(PlayerItemFrameChangeEvent event) {
         if (!event.getAction().equals(PlayerItemFrameChangeEvent.ItemFrameChangeAction.PLACE)) {
@@ -51,7 +68,7 @@ public class AltarCraftingListener implements Listener {
             return;
         }
 
-        MythicAltar altar = new MythicAltar(centerBlockLocation);
+        AltarInterface altar = new MythicAltar(centerBlockLocation);
 
         // Center completes a recipe and triggers recipe validation and crafting.
         ItemFrame centerPedestal = altar.getPedestal(PedestalLocation.CENTER);
@@ -59,19 +76,59 @@ public class AltarCraftingListener implements Listener {
             return;
         }
 
+        this.logger.info("Player " + event.getPlayer().getName() + " triggered a recipe on the altar at " + centerBlockLocation + ".");
+
         // Force item to be in frame before recipe validation
         // Cancel event as we fulfilled it here manually.
         // TODO: Can we find a better solution to not have AIR in the center frame?
         event.setCancelled(true);
         centerPedestal.setItem(event.getItemStack());
 
+        handleTriggeredAltar(event, altar);
+    }
+
+    /**
+     * Handles the triggered altar and starts the crafting process.
+     *
+     * @param event The event that triggered the altar.
+     * @param altar The altar that was triggered.
+     */
+    private void handleTriggeredAltar(PlayerItemFrameChangeEvent event, AltarInterface altar) {
+        Location centerBlockLocation = altar.getLocation();
+
         CompletableRecipeInterface recipe = this.recipeRegistry.findMatchingRecipe(altar);
         if (recipe == null) {
-            event.getPlayer().sendMessage("No matching recipe found for the altar.");
+            event.getPlayer().sendMessage(Component.textOfChildren(
+                    MythicAltarFeature.CHAT_MESSAFE_PREFIX,
+                    Component.text("No recipe found for the items on the altar.", NamedTextColor.RED)
+            ));
+            this.logger.info("No recipe found for the items on the altar at " + centerBlockLocation + ".");
 
             return;
         }
 
+        this.logger.info("Recipe found for the items on the altar at " + centerBlockLocation + ", executing recipe.");
         recipe.onRecipeComplete(altar, event);
+        this.logger.info("Recipe executed for the items on the altar at " + centerBlockLocation + ".");
+
+        cleanupAltar(recipe, altar);
+    }
+
+    /**
+     * Cleans up the altar after a recipe has been completed.
+     *
+     * @param recipe              The recipe that was completed.
+     * @param altar               The altar that was used.
+     */
+    private void cleanupAltar(CompletableRecipeInterface recipe, AltarInterface altar) {
+        Location centerBlockLocation = altar.getLocation();
+
+        if (recipe.autoCleanupAltar()) {
+            this.logger.info("Cleaning up altar at " + centerBlockLocation + "...");
+            altar.getPedestals().forEach((location, pedestal) -> {
+                pedestal.setItem(null);
+            });
+            this.logger.info("Altar at " + centerBlockLocation + " cleaned up.");
+        }
     }
 }
