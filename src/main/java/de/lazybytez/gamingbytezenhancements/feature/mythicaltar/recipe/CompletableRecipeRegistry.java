@@ -2,6 +2,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,10 @@ public final class CompletableRecipeRegistry implements CompletableRecipeRegistr
     @Override
     public boolean registerRecipe(CompletableRecipeInterface recipe) {
         if (!this.recipes.containsKey(recipe.getAltarType())) {
-            this.recipes.put(recipe.getAltarType(), List.of(recipe));
+            List<CompletableRecipeInterface> recipes = new ArrayList<>();
+            recipes.add(recipe);
+
+            this.recipes.put(recipe.getAltarType(), recipes);
             return true;
         }
 
@@ -93,7 +97,7 @@ public final class CompletableRecipeRegistry implements CompletableRecipeRegistr
     public boolean registerRecipes(List<CompletableRecipeInterface> recipes) {
         boolean success = true;
         for (CompletableRecipeInterface recipe : recipes) {
-            success &= this.registerRecipe(recipe);
+            success = this.registerRecipe(recipe);
         }
 
         return success;

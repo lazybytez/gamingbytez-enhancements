@@ -90,7 +90,7 @@ public class AltarCraftingListener implements Listener {
             if (System.currentTimeMillis() - lastTrigger < ALTAR_LOCK_TIMEOUT) {
                 this.logger.info("Player " + event.getPlayer().getName() + " tried to trigger the altar at " + centerBlockLocation + " too soon.");
                 event.getPlayer().sendMessage(Component.textOfChildren(
-                        MythicAltarFeature.CHAT_MESSAFE_PREFIX,
+                        MythicAltarFeature.CHAT_MESSAGE_PREFIX,
                         Component.text("This altar is currently in use.", NamedTextColor.RED)
                 ));
                 event.setCancelled(true);
@@ -128,7 +128,7 @@ public class AltarCraftingListener implements Listener {
         CompletableRecipeInterface recipe = this.recipeRegistry.findMatchingRecipe(altar);
         if (recipe == null) {
             event.getPlayer().sendMessage(Component.textOfChildren(
-                    MythicAltarFeature.CHAT_MESSAFE_PREFIX,
+                    MythicAltarFeature.CHAT_MESSAGE_PREFIX,
                     Component.text("No recipe found for the items on the altar.", NamedTextColor.RED)
             ));
             this.logger.info("No recipe found for the items on the altar at " + centerBlockLocation + ".");

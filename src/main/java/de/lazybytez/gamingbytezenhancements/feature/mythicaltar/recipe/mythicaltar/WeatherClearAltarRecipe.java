@@ -12,6 +12,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -48,15 +49,16 @@ public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
             Runnable removeLock
     ) {
         Player player = event.getPlayer();
+        World world = player.getWorld();
 
-        if (player.getWorld().isClearWeather()) {
+        if (world.isClearWeather()) {
             player.sendMessage(Component.textOfChildren(
-                    MythicAltarFeature.CHAT_MESSAFE_PREFIX,
+                    MythicAltarFeature.CHAT_MESSAGE_PREFIX,
                     Component.text("The weather is already clear!", NamedTextColor.RED)
             ));
 
             for (ItemFrame pedestal : altar.getPedestals().values()) {
-                player.getWorld().dropItem(pedestal.getLocation(), pedestal.getItem());
+                world.dropItem(pedestal.getLocation(), pedestal.getItem());
             }
 
             removeLock.run();
@@ -84,7 +86,7 @@ public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
                     }
 
                     Bukkit.broadcast(Component.textOfChildren(
-                            MythicAltarFeature.CHAT_MESSAFE_PREFIX,
+                            MythicAltarFeature.CHAT_MESSAGE_PREFIX,
                             Component.text("The weather has been cleared by " + event.getPlayer().getName() + " using the sun ritual!", NamedTextColor.GOLD)
                     ));
                     removeLock.run();

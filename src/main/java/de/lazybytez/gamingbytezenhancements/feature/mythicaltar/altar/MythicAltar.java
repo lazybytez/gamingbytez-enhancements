@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
-public class MythicAltar extends AbstractAltar {
+public final class MythicAltar extends AbstractAltar {
     /**
      * Create a new Mythic Altar.
      *

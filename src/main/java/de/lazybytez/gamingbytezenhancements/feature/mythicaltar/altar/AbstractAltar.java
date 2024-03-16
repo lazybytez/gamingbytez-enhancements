@@ -3,6 +3,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.GlowItemFrame;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -64,7 +65,12 @@ public abstract class AbstractAltar implements AltarInterface {
 
     public ItemFrame getPedestal(PedestalLocation pedestalLocation) {
         if (pedestalCache.containsKey(pedestalLocation)) {
-            return (ItemFrame) this.location.getWorld().getEntity(pedestalCache.get(pedestalLocation));
+            Entity entity = this.location.getWorld().getEntity(pedestalCache.get(pedestalLocation));
+            if (entity instanceof ItemFrame) {
+                return (ItemFrame) entity;
+            }
+
+            // If not an ItemFrame, we try again to find it below.
         }
 
         Vector relativePedestalLocation = this.getPedestalLocations().get(pedestalLocation);
@@ -96,9 +102,13 @@ public abstract class AbstractAltar implements AltarInterface {
     protected ItemFrame getPedestalAtLocation(Location location) {
         ItemFrame result = null;
         Collection<Entity> nearbyEntities = location.getWorld().getNearbyEntities(location, 1, 1, 1);
+        if (nearbyEntities.isEmpty()) {
+            return null;
+        }
 
         for (Entity entity : nearbyEntities) {
             if (entity.getType().equals(this.pedestalEntityType)
+                    && entity instanceof ItemFrame
                     && entity.getLocation().getBlockX() == location.getBlockX()
                     && entity.getLocation().getBlockY() == location.getBlockY()
                     && entity.getLocation().getBlockZ() == location.getBlockZ()) {

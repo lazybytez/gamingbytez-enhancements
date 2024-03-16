@@ -102,7 +102,6 @@ public class SimpleAltarSchemaValidator implements AltarSchemaValidatorInterface
             }
 
             if (!found) {
-                Bukkit.broadcastMessage("Pedestal not found at " + relativeLocation + " for " + schema.get(schemaVector) + " at " + schemaVector);
                 return false;
             }
         }

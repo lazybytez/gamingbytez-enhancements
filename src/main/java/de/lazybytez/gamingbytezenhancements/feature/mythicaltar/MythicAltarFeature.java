@@ -14,7 +14,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
  * Feature that provides a new crafting altar to do some special stuff.
  */
 public class MythicAltarFeature extends AbstractFeature {
-    public static final Component CHAT_MESSAFE_PREFIX = Component.text("[", NamedTextColor.DARK_GRAY)
+    public static final Component CHAT_MESSAGE_PREFIX = Component.text("[", NamedTextColor.DARK_GRAY)
             .append(Component.text("MythicAltar", NamedTextColor.GOLD))
             .append(Component.text("] ", NamedTextColor.DARK_GRAY));
     private final CompletableRecipeRegistryInterface recipeRegistry;
