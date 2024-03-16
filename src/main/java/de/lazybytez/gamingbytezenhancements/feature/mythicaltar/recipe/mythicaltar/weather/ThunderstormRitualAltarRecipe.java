@@ -1,4 +1,4 @@
-package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar;
+package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.weather;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
@@ -21,15 +21,15 @@ import org.bukkit.plugin.Plugin;
 import java.util.Map;
 
 /**
- * This class represents a WeatherClearAltarRecipe.
- * A WeatherClearAltarRecipe is responsible for handling the recipe that allows players to clear the weather
- * using the {@link MythicAltar}.
+ * This class represents a weather thunderstorm recipe.
+ * The weather thunderstorm recipe allows players to change the weather
+ * to thunderstorm using the {@link MythicAltar}.
  */
-public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
+public class ThunderstormRitualAltarRecipe extends AbstractAltarRecipe {
     /**
-     * Constructs a new WeatherClearAltarRecipe.
+     * Constructs a new thunderstorm ritual recipe.
      */
-    public WeatherClearAltarRecipe() {
+    public ThunderstormRitualAltarRecipe() {
         super(MythicAltar.class, true);
     }
 
@@ -51,10 +51,10 @@ public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
         Player player = event.getPlayer();
         World world = player.getWorld();
 
-        if (world.isClearWeather()) {
+        if (world.isThundering() && world.hasStorm()) {
             player.sendMessage(Component.textOfChildren(
                     MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                    Component.text("The weather is already clear!", NamedTextColor.RED)
+                    Component.text("The weather is already thunderstorm!", NamedTextColor.RED)
             ));
 
             for (ItemFrame pedestal : altar.getPedestals().values()) {
@@ -66,12 +66,13 @@ public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
             return;
         }
 
-        new LinesToCenterAltarParticleEffect(plugin, Color.YELLOW).executeParticleEffect(
+        new LinesToCenterAltarParticleEffect(plugin, Color.AQUA).executeParticleEffect(
                 altar,
                 event,
                 (effectPlugin, effectAltar, effectEvent) -> {
-                    effectAltar.getLocation().getWorld().setStorm(false);
-                    effectAltar.getLocation().getWorld().setThundering(false);
+                    World effectWorld = effectAltar.getLocation().getWorld();
+                    effectWorld.setStorm(true);
+                    effectWorld.setThundering(true);
 
                     for (PedestalLocation pedestalLocation : effectAltar.getPedestals().keySet()) {
                         if (pedestalLocation == PedestalLocation.CENTER) {
@@ -79,33 +80,33 @@ public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
                         }
 
                         ItemFrame pedestal = effectAltar.getPedestal(pedestalLocation);
-                        pedestal.getLocation().getWorld().dropItem(
+                        effectWorld.dropItem(
                                 pedestal.getLocation(),
-                                new ItemStack(Material.WET_SPONGE)
+                                new ItemStack(Material.BUCKET)
                         );
                     }
 
                     Bukkit.broadcast(Component.textOfChildren(
                             MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                            Component.text("The weather has been cleared by " + event.getPlayer().getName() + " using the sun ritual!", NamedTextColor.GOLD)
+                            Component.text("The weather has been changed to thunderstorm by " + event.getPlayer().getName() + " using the thunderstorm ritual!", NamedTextColor.GOLD)
                     ));
                     removeLock.run();
                 });
     }
 
     /**
-     * Returns the recipe for the WeatherClearAltarRecipe.
+     * Returns the recipe for the thunder ritual.
      *
-     * @return the recipe for the WeatherClearAltarRecipe.
+     * @return the recipe for the thunder ritual.
      */
     @Override
     public Map<PedestalLocation, ItemStack> getRecipe() {
         return Map.of(
                 PedestalLocation.CENTER, new ItemStack(Material.LIGHTNING_ROD),
-                PedestalLocation.NORTH_WEST, new ItemStack(Material.SPONGE),
-                PedestalLocation.SOUTH_WEST, new ItemStack(Material.SPONGE),
-                PedestalLocation.NORTH_EAST, new ItemStack(Material.SPONGE),
-                PedestalLocation.SOUTH_EAST, new ItemStack(Material.SPONGE)
+                PedestalLocation.NORTH_WEST, new ItemStack(Material.WATER_BUCKET),
+                PedestalLocation.SOUTH_WEST, new ItemStack(Material.WATER_BUCKET),
+                PedestalLocation.NORTH_EAST, new ItemStack(Material.WATER_BUCKET),
+                PedestalLocation.SOUTH_EAST, new ItemStack(Material.WATER_BUCKET)
         );
     }
 }

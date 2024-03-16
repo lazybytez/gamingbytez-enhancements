@@ -1,7 +1,11 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeInterface;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.WeatherClearAltarRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.time.TimeDayAltarRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.time.TimeNightAltarRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.weather.RainRitualAltarRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.weather.SunRitualAltarRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.weather.ThunderstormRitualAltarRecipe;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Vector;
@@ -25,7 +29,14 @@ public final class MythicAltar extends AbstractAltar {
 
     public static List<CompletableRecipeInterface> getDefaultRecipes() {
         return List.of(
-                new WeatherClearAltarRecipe()
+                // Weather recipes
+                new SunRitualAltarRecipe(),
+                new RainRitualAltarRecipe(),
+                new ThunderstormRitualAltarRecipe(),
+
+                // Time recipes
+                new TimeDayAltarRecipe(),
+                new TimeNightAltarRecipe()
         );
     }
 
