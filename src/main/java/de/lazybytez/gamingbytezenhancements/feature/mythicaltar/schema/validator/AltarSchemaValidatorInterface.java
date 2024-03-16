@@ -27,7 +27,6 @@ public interface AltarSchemaValidatorInterface {
      * @param altarStructure The altar structure to validate.
      * @param location       The location of the altar. This is the location of the center block.
      * @param world          The world in which the altar is located.
-     *
      * @return True if the entire structure (both blocks and pedestals) is valid, false otherwise.
      */
     boolean validate(AltarStructureInterface altarStructure, Location location, World world);
@@ -38,7 +37,6 @@ public interface AltarSchemaValidatorInterface {
      * @param altarStructure The altar structure to validate.
      * @param location       The location of the altar. This is the location of the center block.
      * @param world          The world in which the altar is located.
-     *
      * @return True if the structure is valid, false otherwise.
      */
     boolean validateStructure(AltarStructureInterface altarStructure, Location location, World world);
@@ -47,9 +45,8 @@ public interface AltarSchemaValidatorInterface {
      * Validates the given pedestal structure.
      *
      * @param pedestalStructure The pedestal structure to validate
-     * @param location       The location of the altar. This is the location of the center block.
-     * @param world          The world in which the altar is located.
-     *
+     * @param location          The location of the altar. This is the location of the center block.
+     * @param world             The world in which the altar is located.
      * @return True if the structure is valid, false otherwise.
      */
     boolean validatePedestal(AltarStructureInterface pedestalStructure, Location location, World world);

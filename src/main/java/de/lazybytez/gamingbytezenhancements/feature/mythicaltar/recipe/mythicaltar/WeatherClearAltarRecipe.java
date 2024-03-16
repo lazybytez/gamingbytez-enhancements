@@ -88,7 +88,7 @@ public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
                             Component.text("The weather has been cleared by " + event.getPlayer().getName() + " using the sun ritual!", NamedTextColor.GOLD)
                     ));
                     removeLock.run();
-        });
+                });
     }
 
     /**

@@ -19,7 +19,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -147,8 +146,8 @@ public class AltarCraftingListener implements Listener {
     /**
      * Cleans up the altar after a recipe has been completed.
      *
-     * @param recipe              The recipe that was completed.
-     * @param altar               The altar that was used.
+     * @param recipe The recipe that was completed.
+     * @param altar  The altar that was used.
      */
     private void cleanupAltar(CompletableRecipeInterface recipe, AltarInterface altar) {
         Location centerBlockLocation = altar.getLocation();
@@ -158,7 +157,7 @@ public class AltarCraftingListener implements Listener {
             altar.getPedestals().forEach((location, pedestal) -> {
                 pedestal.setItem(null);
                 // We always play cloud particles, when the altar is cleaned up.
-                pedestal.getWorld().spawnParticle(Particle.CLOUD , pedestal.getLocation(), 50);
+                pedestal.getWorld().spawnParticle(Particle.CLOUD, pedestal.getLocation(), 50);
             });
             this.logger.info("Altar at " + centerBlockLocation + " cleaned up.");
         }

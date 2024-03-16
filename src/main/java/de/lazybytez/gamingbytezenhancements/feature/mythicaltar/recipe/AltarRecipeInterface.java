@@ -15,6 +15,7 @@ import java.util.Map;
 public interface AltarRecipeInterface {
     /**
      * Returns the recipe structure of the AltarRecipe.
+     *
      * @return a Map with the PedestalLocation as key and the ItemStack as value.
      */
     Map<PedestalLocation, ItemStack> getRecipe();

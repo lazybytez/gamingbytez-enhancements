@@ -2,7 +2,6 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
-import org.bukkit.Bukkit;
 
 /**
  * This abstract class represents a CompletableRecipe.
@@ -18,7 +17,7 @@ public abstract class AbstractAltarRecipe implements CompletableRecipeInterface 
     /**
      * Constructor for the AbstractAltarRecipe.
      *
-     * @param altarType The type of the altar associated with this recipe.
+     * @param altarType        The type of the altar associated with this recipe.
      * @param autoCleanupAltar If true, the altar will be automatically cleaned up after the recipe is completed.
      */
     protected AbstractAltarRecipe(Class<? extends AltarInterface> altarType, boolean autoCleanupAltar) {

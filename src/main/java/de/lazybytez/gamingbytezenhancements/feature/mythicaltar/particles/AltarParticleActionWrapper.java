@@ -14,8 +14,8 @@ public interface AltarParticleActionWrapper {
      * This method is called when the particle effect is completed on an altar.
      *
      * @param plugin The plugin instance.
-     * @param altar The altar on which the particle effect was executed.
-     * @param event The event that triggered the particle effect.
+     * @param altar  The altar on which the particle effect was executed.
+     * @param event  The event that triggered the particle effect.
      */
     void onRecipeComplete(Plugin plugin, AltarInterface altar, PlayerItemFrameChangeEvent event);
 }

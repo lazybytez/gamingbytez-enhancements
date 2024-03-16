@@ -30,7 +30,6 @@ public interface CompletableRecipeRegistryInterface {
      * Registers a CompletableRecipe.
      *
      * @param recipe The CompletableRecipe to register.
-     *
      * @return true if the recipe was successfully registered, false otherwise.
      */
     boolean registerRecipe(CompletableRecipeInterface recipe);
@@ -39,7 +38,6 @@ public interface CompletableRecipeRegistryInterface {
      * Registers a list of CompletableRecipes.
      *
      * @param recipes The list of CompletableRecipes to register.
-     *
      * @return true if the recipes were successfully registered, false otherwise.
      */
     boolean registerRecipes(List<CompletableRecipeInterface> recipes);
@@ -48,7 +46,6 @@ public interface CompletableRecipeRegistryInterface {
      * Unregisters a CompletableRecipe.
      *
      * @param recipe The CompletableRecipe to unregister.
-     *
      * @return true if the recipe was successfully unregistered, false otherwise.
      */
     boolean unregisterRecipe(CompletableRecipeInterface recipe);

@@ -4,8 +4,6 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.Completab
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.WeatherClearAltarRecipe;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.GlowItemFrame;
-import org.bukkit.entity.ItemFrame;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,12 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public class MythicAltar extends AbstractAltar {
-    public static List<CompletableRecipeInterface> getDefaultRecipes() {
-        return List.of(
-            new WeatherClearAltarRecipe()
-        );
-    }
-
     /**
      * Create a new Mythic Altar.
      *
@@ -29,6 +21,12 @@ public class MythicAltar extends AbstractAltar {
             @NotNull Location location
     ) {
         super(location, EntityType.GLOW_ITEM_FRAME);
+    }
+
+    public static List<CompletableRecipeInterface> getDefaultRecipes() {
+        return List.of(
+                new WeatherClearAltarRecipe()
+        );
     }
 
     @Override

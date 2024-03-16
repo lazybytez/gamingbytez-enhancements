@@ -25,7 +25,7 @@ public class SimpleAltarSchemaValidator implements AltarSchemaValidatorInterface
     public boolean validate(AltarStructureInterface altarStructure, Location location, World world) {
         // First validate the pedestal as these most likely are fewer blocks to check.
         // If the pedestal is not valid, the altar is not valid anyway.
-        return this.validateStructure(altarStructure, location,  world)
+        return this.validateStructure(altarStructure, location, world)
                 && this.validatePedestal(altarStructure, location, world);
     }
 
@@ -44,9 +44,9 @@ public class SimpleAltarSchemaValidator implements AltarSchemaValidatorInterface
      * <p>
      * Validates the given altar block structure by checking if the blocks are at the correct location.
      *
-     * @param schema  The altar structure to validate.
+     * @param schema   The altar structure to validate.
      * @param location The location of the altar. This is the location of the center block.
-     * @param world  The world in which the altar is located.
+     * @param world    The world in which the altar is located.
      * @return True if the structure is valid, false otherwise.
      */
     private boolean validateStructureSchematic(Map<Vector, Material> schema, Location location, World world) {
@@ -70,9 +70,9 @@ public class SimpleAltarSchemaValidator implements AltarSchemaValidatorInterface
      * Unfortunately, we can't check for the item frame directly (as they are entities),
      * so we need to check for entities at the location.
      *
-     * @param schema  The pedestal structure to validate
+     * @param schema   The pedestal structure to validate
      * @param location The location of the altar. This is the location of the center block.
-     * @param world   The world in which the altar is located.
+     * @param world    The world in which the altar is located.
      * @return True if the structure is valid, false otherwise.
      */
     private boolean validatePedestalSchematic(Map<Vector, EntityType> schema, Location location, World world) {
@@ -102,7 +102,7 @@ public class SimpleAltarSchemaValidator implements AltarSchemaValidatorInterface
             }
 
             if (!found) {
-                Bukkit.broadcastMessage("Pedestal not found at " + relativeLocation.toString() + " for " + schema.get(schemaVector) + " at " + schemaVector.toString());
+                Bukkit.broadcastMessage("Pedestal not found at " + relativeLocation + " for " + schema.get(schemaVector) + " at " + schemaVector);
                 return false;
             }
         }

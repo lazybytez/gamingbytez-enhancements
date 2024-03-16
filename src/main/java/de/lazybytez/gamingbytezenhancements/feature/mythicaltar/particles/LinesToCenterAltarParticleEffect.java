@@ -24,7 +24,7 @@ public class LinesToCenterAltarParticleEffect implements AltarParticleEffectInte
      * Constructs a new LinesToCenterAltarParticleEffect with the given plugin and color.
      *
      * @param plugin The plugin instance.
-     * @param color The color of the particles.
+     * @param color  The color of the particles.
      */
     public LinesToCenterAltarParticleEffect(Plugin plugin, Color color) {
         this.plugin = plugin;
@@ -37,8 +37,8 @@ public class LinesToCenterAltarParticleEffect implements AltarParticleEffectInte
      * After all lines have been drawn, a lightning effect is executed at the location of the altar.
      * Finally, the action associated with the particle effect is executed.
      *
-     * @param altar The altar on which to execute the particle effect.
-     * @param event The event that triggered the particle effect.
+     * @param altar  The altar on which to execute the particle effect.
+     * @param event  The event that triggered the particle effect.
      * @param action The action to execute after the particle effect.
      */
     @Override

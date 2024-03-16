@@ -17,7 +17,7 @@ public class MythicAltarFeature extends AbstractFeature {
     public static final Component CHAT_MESSAFE_PREFIX = Component.text("[", NamedTextColor.DARK_GRAY)
             .append(Component.text("MythicAltar", NamedTextColor.GOLD))
             .append(Component.text("] ", NamedTextColor.DARK_GRAY));
-    private CompletableRecipeRegistryInterface recipeRegistry;
+    private final CompletableRecipeRegistryInterface recipeRegistry;
 
     public MythicAltarFeature(EnhancementsPlugin plugin) {
         super(plugin);

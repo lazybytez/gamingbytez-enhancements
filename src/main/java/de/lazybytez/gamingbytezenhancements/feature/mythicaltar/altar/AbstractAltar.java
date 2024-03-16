@@ -7,7 +7,10 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * This abstract class represents an Altar.
@@ -87,7 +90,7 @@ public abstract class AbstractAltar implements AltarInterface {
     /**
      * Returns the ItemFrame located at the given pedestal.
      *
-     * @param location           The location of the pedestal.
+     * @param location The location of the pedestal.
      * @return The ItemFrame at the given pedestal.
      */
     protected ItemFrame getPedestalAtLocation(Location location) {
