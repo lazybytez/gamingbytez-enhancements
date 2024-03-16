@@ -37,7 +37,7 @@ public class MythicAltarFeature extends AbstractFeature {
 
     private void registerEvents() {
         this.registerEvent(new AltarCraftingListener(
-                this.plugin.getLogger(),
+                this.plugin,
                 new SimpleAltarSchemaValidator(),
                 this.recipeRegistry
         ));

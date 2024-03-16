@@ -12,10 +12,12 @@ import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 
 import java.util.logging.Logger;
 
@@ -31,6 +33,7 @@ import java.util.logging.Logger;
  * to use factories to create the altars and registries for the structures.
  */
 public class AltarCraftingListener implements Listener {
+    private final Plugin plugin;
     private final Logger logger;
     private final AltarSchemaValidatorInterface validator;
     private final CompletableRecipeRegistryInterface recipeRegistry;
@@ -39,11 +42,12 @@ public class AltarCraftingListener implements Listener {
     private final MythicAltarStructure altarStructure = new MythicAltarStructure();
 
     public AltarCraftingListener(
-            Logger logger,
+            Plugin plugin,
             AltarSchemaValidatorInterface validator,
             CompletableRecipeRegistryInterface recipeRegistry
     ) {
-        this.logger = logger;
+        this.plugin = plugin;
+        this.logger = plugin.getLogger();
         this.validator = validator;
         this.recipeRegistry = recipeRegistry;
     }
@@ -108,7 +112,7 @@ public class AltarCraftingListener implements Listener {
         }
 
         this.logger.info("Recipe found for the items on the altar at " + centerBlockLocation + ", executing recipe.");
-        recipe.onRecipeComplete(altar, event);
+        recipe.onRecipeComplete(this.plugin, altar, event);
         this.logger.info("Recipe executed for the items on the altar at " + centerBlockLocation + ".");
 
         cleanupAltar(recipe, altar);
@@ -127,6 +131,8 @@ public class AltarCraftingListener implements Listener {
             this.logger.info("Cleaning up altar at " + centerBlockLocation + "...");
             altar.getPedestals().forEach((location, pedestal) -> {
                 pedestal.setItem(null);
+                // We always play cloud particles, when the altar is cleaned up.
+                pedestal.getWorld().spawnParticle(Particle.CLOUD , pedestal.getLocation(), 50);
             });
             this.logger.info("Altar at " + centerBlockLocation + " cleaned up.");
         }

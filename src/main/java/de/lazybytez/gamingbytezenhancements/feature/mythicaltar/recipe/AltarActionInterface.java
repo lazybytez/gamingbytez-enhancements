@@ -4,6 +4,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInter
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AltarRecipeInterface;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 /**
  * This interface represents an AltarAction.
@@ -22,9 +23,10 @@ public interface AltarActionInterface {
      * This method is called when an AltarRecipe is completed.
      *
      * @param altar The altar where the recipe was completed.
+     * @param plugin The plugin instance of the GamingBytezEnhancements plugin.
      * @param event The event that triggered the recipe completion.
      */
-    void onRecipeComplete(AltarInterface altar, PlayerItemFrameChangeEvent event);
+    void onRecipeComplete(Plugin plugin, AltarInterface altar, PlayerItemFrameChangeEvent event);
 
     /**
      * Returns the AltarType of the AltarRecipe.

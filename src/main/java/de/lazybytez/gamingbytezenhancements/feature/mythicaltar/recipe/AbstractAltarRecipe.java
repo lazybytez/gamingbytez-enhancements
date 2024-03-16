@@ -43,7 +43,6 @@ public abstract class AbstractAltarRecipe implements CompletableRecipeInterface 
     public boolean validateAltarState(AltarInterface altar) {
         for (PedestalLocation location : this.getRecipe().keySet()) {
             if (!altar.getPedestal(location).getItem().isSimilar(this.getRecipe().get(location))) {
-                Bukkit.broadcastMessage("Item not similar: " + altar.getPedestal(location).getItem().getType() + " " + this.getRecipe().get(location).getType());
                 return false;
             }
         }
