@@ -1,7 +1,6 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.validator;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.structure.AltarStructureInterface;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;

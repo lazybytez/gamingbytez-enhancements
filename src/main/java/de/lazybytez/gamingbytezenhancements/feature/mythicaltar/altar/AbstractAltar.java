@@ -3,7 +3,6 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.GlowItemFrame;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
