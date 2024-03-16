@@ -1,9 +1,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AltarRecipeInterface;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -22,11 +20,12 @@ public interface AltarActionInterface {
     /**
      * This method is called when an AltarRecipe is completed.
      *
-     * @param altar The altar where the recipe was completed.
-     * @param plugin The plugin instance of the GamingBytezEnhancements plugin.
-     * @param event The event that triggered the recipe completion.
+     * @param plugin     The plugin instance of the GamingBytezEnhancements plugin.
+     * @param altar      The altar where the recipe was completed.
+     * @param event      The event that triggered the recipe completion.
+     * @param removeLock A runnable that can be used to remove the lock from the altar.
      */
-    void onRecipeComplete(Plugin plugin, AltarInterface altar, PlayerItemFrameChangeEvent event);
+    void onRecipeComplete(Plugin plugin, AltarInterface altar, PlayerItemFrameChangeEvent event, Runnable removeLock);
 
     /**
      * Returns the AltarType of the AltarRecipe.

@@ -19,6 +19,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -33,10 +37,12 @@ import java.util.logging.Logger;
  * to use factories to create the altars and registries for the structures.
  */
 public class AltarCraftingListener implements Listener {
+    public static final long ALTAR_LOCK_TIMEOUT = 1000L * 60L * 5L; // 5 minutes
     private final Plugin plugin;
     private final Logger logger;
     private final AltarSchemaValidatorInterface validator;
     private final CompletableRecipeRegistryInterface recipeRegistry;
+    private final Map<UUID, Long> altarLock = new ConcurrentHashMap<>();
 
     // Right now we only support this one
     private final MythicAltarStructure altarStructure = new MythicAltarStructure();
@@ -80,6 +86,20 @@ public class AltarCraftingListener implements Listener {
             return;
         }
 
+        if (this.altarLock.containsKey(centerFrame.getUniqueId())) {
+            long lastTrigger = this.altarLock.get(centerFrame.getUniqueId());
+            if (System.currentTimeMillis() - lastTrigger < ALTAR_LOCK_TIMEOUT) {
+                this.logger.info("Player " + event.getPlayer().getName() + " tried to trigger the altar at " + centerBlockLocation + " too soon.");
+                event.getPlayer().sendMessage(Component.textOfChildren(
+                        MythicAltarFeature.CHAT_MESSAFE_PREFIX,
+                        Component.text("This altar is currently in use.", NamedTextColor.RED)
+                ));
+                event.setCancelled(true);
+
+                return;
+            }
+        }
+
         this.logger.info("Player " + event.getPlayer().getName() + " triggered a recipe on the altar at " + centerBlockLocation + ".");
 
         // Force item to be in frame before recipe validation
@@ -88,16 +108,22 @@ public class AltarCraftingListener implements Listener {
         event.setCancelled(true);
         centerPedestal.setItem(event.getItemStack());
 
-        handleTriggeredAltar(event, altar);
+        this.altarLock.put(centerFrame.getUniqueId(), System.currentTimeMillis());
+
+        // Closure that allows action to release the lock after the recipe is completed.
+        Runnable removeLock = () -> this.altarLock.remove(centerFrame.getUniqueId());
+
+        handleTriggeredAltar(event, altar, removeLock);
     }
 
     /**
      * Handles the triggered altar and starts the crafting process.
      *
-     * @param event The event that triggered the altar.
-     * @param altar The altar that was triggered.
+     * @param event      The event that triggered the altar.
+     * @param altar      The altar that was triggered.
+     * @param removeLock A runnable that can be used to remove the lock from the altar.
      */
-    private void handleTriggeredAltar(PlayerItemFrameChangeEvent event, AltarInterface altar) {
+    private void handleTriggeredAltar(PlayerItemFrameChangeEvent event, AltarInterface altar, Runnable removeLock) {
         Location centerBlockLocation = altar.getLocation();
 
         CompletableRecipeInterface recipe = this.recipeRegistry.findMatchingRecipe(altar);
@@ -112,7 +138,7 @@ public class AltarCraftingListener implements Listener {
         }
 
         this.logger.info("Recipe found for the items on the altar at " + centerBlockLocation + ", executing recipe.");
-        recipe.onRecipeComplete(this.plugin, altar, event);
+        recipe.onRecipeComplete(this.plugin, altar, event, removeLock);
         this.logger.info("Recipe executed for the items on the altar at " + centerBlockLocation + ".");
 
         cleanupAltar(recipe, altar);

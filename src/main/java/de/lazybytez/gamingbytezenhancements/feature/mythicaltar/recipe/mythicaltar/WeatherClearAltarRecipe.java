@@ -4,17 +4,14 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeatu
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.AltarParticleActionWrapper;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.LinesToCenterAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AltarActionInterface;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -38,12 +35,18 @@ public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
     /**
      * This method is called when the recipe is completed on an altar.
      *
-     * @param plugin The plugin instance of the GamingBytezEnhancements plugin.
-     * @param altar The altar where the recipe was completed.
-     * @param event The event that triggered the recipe completion.
+     * @param plugin     The plugin instance of the GamingBytezEnhancements plugin.
+     * @param altar      The altar where the recipe was completed.
+     * @param event      The event that triggered the recipe completion.
+     * @param removeLock A runnable that can be used to remove the lock from the altar.
      */
     @Override
-    public void onRecipeComplete(Plugin plugin, AltarInterface altar, PlayerItemFrameChangeEvent event) {
+    public void onRecipeComplete(
+            Plugin plugin,
+            AltarInterface altar,
+            PlayerItemFrameChangeEvent event,
+            Runnable removeLock
+    ) {
         Player player = event.getPlayer();
 
         if (player.getWorld().isClearWeather()) {
@@ -55,6 +58,8 @@ public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
             for (ItemFrame pedestal : altar.getPedestals().values()) {
                 player.getWorld().dropItem(pedestal.getLocation(), pedestal.getItem());
             }
+
+            removeLock.run();
 
             return;
         }
@@ -82,6 +87,7 @@ public class WeatherClearAltarRecipe extends AbstractAltarRecipe {
                             MythicAltarFeature.CHAT_MESSAFE_PREFIX,
                             Component.text("The weather has been cleared by " + event.getPlayer().getName() + " using the sun ritual!", NamedTextColor.GOLD)
                     ));
+                    removeLock.run();
         });
     }
 
