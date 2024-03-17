@@ -11,12 +11,14 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.validator
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.Map;
@@ -64,26 +66,10 @@ public class AltarCraftingListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onItemFrameInteract(PlayerItemFrameChangeEvent event) {
-        if (!event.getAction().equals(PlayerItemFrameChangeEvent.ItemFrameChangeAction.PLACE)) {
-            return;
-        }
-
         ItemFrame centerFrame = event.getItemFrame();
 
         Location centerFrameLocation = centerFrame.getLocation();
         Location centerBlockLocation = centerFrameLocation.clone().subtract(0, 1, 0);
-
-        if (!this.validator.validate(this.altarStructure, centerBlockLocation, centerBlockLocation.getWorld())) {
-            return;
-        }
-
-        AltarInterface altar = new MythicAltar(centerBlockLocation);
-
-        // Center completes a recipe and triggers recipe validation and crafting.
-        ItemFrame centerPedestal = altar.getPedestal(PedestalLocation.CENTER);
-        if (centerPedestal == null) {
-            return;
-        }
 
         if (this.altarLock.containsKey(centerFrame.getUniqueId())) {
             long lastTrigger = this.altarLock.get(centerFrame.getUniqueId());
@@ -99,13 +85,27 @@ public class AltarCraftingListener implements Listener {
             }
         }
 
-        this.logger.info("Player " + event.getPlayer().getName() + " triggered a recipe on the altar at " + centerBlockLocation + ".");
+        if (!event.getAction().equals(PlayerItemFrameChangeEvent.ItemFrameChangeAction.PLACE)) {
+            return;
+        }
 
-        // Force item to be in frame before recipe validation
-        // Cancel event as we fulfilled it here manually.
-        // TODO: Can we find a better solution to not have AIR in the center frame?
-        event.setCancelled(true);
+        if (!this.validator.validate(this.altarStructure, centerBlockLocation, centerBlockLocation.getWorld())) {
+            return;
+        }
+
+        AltarInterface altar = new MythicAltar(centerBlockLocation);
+
+        // Center completes a recipe and triggers recipe validation and crafting.
+        ItemFrame centerPedestal = altar.getPedestal(PedestalLocation.CENTER);
+        if (centerPedestal == null) {
+            return;
+        }
+
+        // Set item already before event is fully handled.
+        // At this point, we will clear the item frame after the recipe is completed anyway.
         centerPedestal.setItem(event.getItemStack());
+
+        this.logger.info("Player " + event.getPlayer().getName() + " triggered a recipe on the altar at " + centerBlockLocation + ".");
 
         this.altarLock.put(centerFrame.getUniqueId(), System.currentTimeMillis());
 
@@ -132,6 +132,7 @@ public class AltarCraftingListener implements Listener {
                     Component.text("No recipe found for the items on the altar.", NamedTextColor.RED)
             ));
             this.logger.info("No recipe found for the items on the altar at " + centerBlockLocation + ".");
+            removeLock.run();
 
             return;
         }
@@ -150,16 +151,22 @@ public class AltarCraftingListener implements Listener {
      * @param altar  The altar that was used.
      */
     private void cleanupAltar(CompletableRecipeInterface recipe, AltarInterface altar) {
-        Location centerBlockLocation = altar.getLocation();
+        // Delay cleanup of 1 tick to ensure the event is fully handled.
+        // Within a single tick, the risk that a player interacts with the altar again is very low.
+        // Most recipes take ~5 seconds to complete, so the player will not be able to interact with the altar
+        // before this scheduled task is executed.
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
+            Location centerBlockLocation = altar.getLocation();
 
-        if (recipe.autoCleanupAltar()) {
-            this.logger.info("Cleaning up altar at " + centerBlockLocation + "...");
-            altar.getPedestals().forEach((location, pedestal) -> {
-                pedestal.setItem(null);
-                // We always play cloud particles, when the altar is cleaned up.
-                pedestal.getWorld().spawnParticle(Particle.CLOUD, pedestal.getLocation(), 50);
-            });
-            this.logger.info("Altar at " + centerBlockLocation + " cleaned up.");
-        }
+            if (recipe.autoCleanupAltar()) {
+                this.logger.info("Cleaning up altar at " + centerBlockLocation + "...");
+                altar.getPedestals().forEach((location, pedestal) -> {
+                    pedestal.setItem(null);
+                    // We always play cloud particles, when the altar is cleaned up.
+                    pedestal.getWorld().spawnParticle(Particle.CLOUD, pedestal.getLocation(), 50);
+                });
+                this.logger.info("Altar at " + centerBlockLocation + " cleaned up.");
+            }
+        }, 1L);
     }
 }
