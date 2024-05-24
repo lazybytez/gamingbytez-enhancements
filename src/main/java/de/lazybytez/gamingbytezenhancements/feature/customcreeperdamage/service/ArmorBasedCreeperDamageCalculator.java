@@ -40,8 +40,8 @@ public class ArmorBasedCreeperDamageCalculator {
                 continue;
             }
 
-            enchantmentFactor += item.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL);
-            enchantmentFactor += item.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS);
+            enchantmentFactor += item.getEnchantmentLevel(Enchantment.PROTECTION);
+            enchantmentFactor += item.getEnchantmentLevel(Enchantment.BLAST_PROTECTION);
         }
 
         return enchantmentFactor;

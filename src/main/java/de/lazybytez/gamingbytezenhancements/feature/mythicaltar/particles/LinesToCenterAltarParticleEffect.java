@@ -75,7 +75,7 @@ public class LinesToCenterAltarParticleEffect implements AltarParticleEffectInte
                         double zPosition = pedestalLocation.getZ() + zDistance * j;
 
                         centerPedestalLocation.getWorld().spawnParticle(
-                                Particle.REDSTONE,
+                                Particle.DUST,
                                 xPosition,
                                 yPosition,
                                 zPosition,
