@@ -62,12 +62,12 @@ public class GriefProtectionRegistry {
             EntityType.PAINTING,
 
             // Other vehicles
-            EntityType.MINECART_CHEST,
-            EntityType.MINECART_COMMAND,
-            EntityType.MINECART_FURNACE,
-            EntityType.MINECART_HOPPER,
-            EntityType.MINECART_MOB_SPAWNER,
-            EntityType.MINECART_TNT,
+            EntityType.CHEST_MINECART,
+            EntityType.COMMAND_BLOCK_MINECART,
+            EntityType.FURNACE_MINECART,
+            EntityType.HOPPER_MINECART,
+            EntityType.SPAWNER_MINECART,
+            EntityType.TNT_MINECART,
             EntityType.CHEST_BOAT
     );
 }
