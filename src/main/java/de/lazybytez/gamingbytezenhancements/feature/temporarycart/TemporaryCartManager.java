@@ -42,8 +42,8 @@ public class TemporaryCartManager {
         this.setOnCoolDown(p);
         Vehicle minecart = p.getWorld().spawn(location, Minecart.class);
 
-        minecart.customName(Component.text(this.temporaryCartIdentifier));
         minecart.setCustomNameVisible(false);
+        minecart.customName(Component.text(this.temporaryCartIdentifier));
 
         Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
             if (minecart.isValid() && p.isValid()) {
