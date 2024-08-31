@@ -1,3 +1,5 @@
+chatbot:
+  enable_ai_answers: false
 openai:
   apiUrl: "https://api.openai.com/v1/chat/completions"
   apiKey: ""
