@@ -1,12 +1,13 @@
 package de.lazybytez.gamingbytezenhancements.feature.temporarycart;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
 
@@ -14,14 +15,6 @@ import java.util.HashMap;
  * Manages spawning and destroying temporary carts.
  */
 public class TemporaryCartManager {
-    /**
-     * Custom name for temporary carts.
-     * <p>
-     * We want to keep it simple, therefore we just use a custom name for our carts.
-     * The chance someone will name their cart like this is very low.
-     * </p>
-     */
-    private final String temporaryCartIdentifier = "gamingbytez-temporary-cart-identifier";
 
     private final EnhancementsPlugin plugin;
 
@@ -42,8 +35,7 @@ public class TemporaryCartManager {
         this.setOnCoolDown(p);
         Vehicle minecart = p.getWorld().spawn(location, Minecart.class);
 
-        minecart.setCustomNameVisible(false);
-        minecart.customName(Component.text(this.temporaryCartIdentifier));
+        this.tagMinecartAsTemporary(minecart);
 
         Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
             if (minecart.isValid() && p.isValid()) {
@@ -106,7 +98,7 @@ public class TemporaryCartManager {
      * @return Whether the given minecart is a temporary cart.
      */
     public boolean isTemporaryCart(Minecart minecart) {
-        return minecart.getName().equals(this.temporaryCartIdentifier);
+        return minecart.getPersistentDataContainer().has(this.getTemporaryCartKey());
     }
 
     /**
@@ -143,5 +135,27 @@ public class TemporaryCartManager {
 
             minecart.remove();
         }, 2L);
+    }
+
+    /**
+     * Tag a Minecart using a boolean PDC value as a temporary cart.
+     *
+     * @param vehicle the vehicle to tag
+     */
+    private void tagMinecartAsTemporary(Vehicle vehicle) {
+        vehicle.getPersistentDataContainer().set(
+                this.getTemporaryCartKey(),
+                PersistentDataType.BOOLEAN,
+                true
+        );
+    }
+
+    /**
+     * Get the {@see NamespacedKey} used for temporary cart tagging.
+     *
+     * @return the namespaced key used for temporary cart tagging
+     */
+    private NamespacedKey getTemporaryCartKey() {
+        return new NamespacedKey(this.plugin, "gamingbytez-temporary-cart");
     }
 }
