@@ -1,0 +1,381 @@
+package de.lazybytez.gamingbytezenhancements.feature.minecartportal;
+
+import de.lazybytez.gamingbytezenhancements.feature.minecartportal.model.MinecartPortal;
+import org.bukkit.Location;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+
+/**
+ * Service that handles portal configuration.
+ * <p>
+ * This service deals with the configuration of portals.
+ * It is expected that the number of portals per server will be limited.
+ * Therefore, portals are stored in a dedicated configuration file.
+ * <p>
+ * For improved performance, all portals are loaded during startup
+ * and cached throughout the server's lifetime.
+ */
+public class PortalConfiguration {
+    /**
+     * Name of the configuration file that will hold all Minecart Portals.
+     */
+    protected static final String PORTAL_CONFIG_FILE = "minecart_portals.yaml";
+
+    /**
+     * Key in the YAML configuration that stores the portals.
+     */
+    protected static final String PORTAL_CONFIG_KEY = "portals";
+
+    /**
+     * Plugin instance used to locate the portal configuration file.
+     */
+    private final Plugin plugin;
+
+    /**
+     * The config instance that was last loaded.
+     */
+    private YamlConfiguration config;
+
+    /**
+     * The list of available portals.
+     */
+    private List<MinecartPortal> portals;
+
+    /**
+     * Lock to ensure portal access does not cause concurrency trouble.
+     */
+    private final ReentrantReadWriteLock portalsLock;
+
+    /**
+     * Lock to ensure config access does not cause concurrency trouble.
+     */
+    private final ReentrantLock configLock;
+
+    public PortalConfiguration(Plugin plugin) {
+        this.plugin = plugin;
+
+        this.portalsLock = new ReentrantReadWriteLock();
+        this.configLock = new ReentrantLock();
+    }
+
+    /**
+     * Add a new portal to the available Minecart portals.
+     *
+     * @param portal is the portal to add
+     * @return whether the portal has been added or not
+     */
+    public boolean addPortal(MinecartPortal portal) {
+        if (this.hasPortal(portal.getName())) {
+            this.portalsLock.writeLock().lock();
+            this.portals.add(portal);
+            this.portalsLock.writeLock().unlock();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Update a portal with a new version.
+     * <p>
+     * This methode updates a specific portal with a new version.
+     * The method will replace the original portal instance with the supplied one.
+     * Matching happens by name.
+     *
+     * @param portal is the portal to update
+     * @return whether the portal has been updated or not
+     */
+    public boolean updatePortal(MinecartPortal portal) {
+        this.portalsLock.writeLock().lock();
+
+        boolean updated = false;
+        for (int i = 0; i < this.portals.size(); i++) {
+            if (this.portals.get(i).getName().equals(portal.getName())) {
+                this.portals.set(i, portal);
+                updated = true;
+                break;
+            }
+        }
+
+        this.portalsLock.writeLock().unlock();
+
+        return updated;
+    }
+
+    /**
+     * Check if a portal with the given name exists
+     *
+     * @param name is the name of the portal to search for
+     * @return whether a portal with the given name exists or not.
+     */
+    public boolean hasPortal(String name) {
+        this.portalsLock.readLock().lock();
+        boolean portalExists = false;
+
+        for (MinecartPortal portal : this.portals) {
+            if (portal.getName().equals(name)) {
+                portalExists = true;
+                break;
+            }
+        }
+
+        this.portalsLock.readLock().unlock();
+
+        return portalExists;
+    }
+
+    /**
+     * Get a portal at a specific location
+     *
+     * @param location the location of the portal to get
+     * @return the found portal or null
+     */
+    public MinecartPortal getPortalAtLocation(Location location) {
+        MinecartPortal portal = null;
+
+        this.portalsLock.readLock().lock();
+        for (MinecartPortal currentPortal : this.portals) {
+            if (currentPortal.getPortal().distance(location) < 1.0) {
+                portal = currentPortal;
+                break;
+            }
+        }
+        this.portalsLock.readLock().unlock();
+
+        return portal;
+    }
+
+    /**
+     * Get a portal by its name
+     *
+     * @param name is the name of the portal to get
+     * @return the found portal or null
+     */
+    public MinecartPortal getPortalByName(String name) {
+        MinecartPortal portal = null;
+
+        this.portalsLock.readLock().lock();
+        for (MinecartPortal currentPortal : this.portals) {
+            if (currentPortal.getName().equals(name)) {
+                portal = currentPortal;
+                break;
+            }
+        }
+        this.portalsLock.readLock().unlock();
+
+        return portal;
+    }
+
+    /**
+     * Load the configuration from disk synchronously.
+     * <p>
+     * This function loads the configuration synchronously from disk.
+     * If the configuration file does not exist, it is created and prepared to store
+     * portals.
+     * <p>
+     * This function may not be used during server operation.
+     * Use the asynchronous load function instead to ensure smooth operation.
+     *
+     * @throws IOException                   if any file operation fails
+     * @throws InvalidConfigurationException when the configuration format is invalid
+     */
+    public void loadSync() throws IOException, InvalidConfigurationException {
+        // Load config ion a thread safe manner
+        try {
+            this.configLock.lock();
+            this.plugin.getLogger().info("Loading minecart portals file...");
+
+            File file = this.getConfigurationFile();
+            this.ensureFileExists(file);
+
+            // Either load or reload the configuration
+            if (this.config == null) {
+                this.config = YamlConfiguration.loadConfiguration(file);
+            } else {
+                this.config.load(file);
+            }
+
+            this.plugin.getLogger().info("Successfully loaded minecart portals file...");
+        } catch (IOException|InvalidConfigurationException e) {
+            this.plugin.getLogger().log(
+                    Level.SEVERE,
+                    "Failed to load minecart portals file!",
+                    e
+            );
+
+            throw e;
+        } finally {
+            this.configLock.unlock();
+        }
+
+
+        // Handle fresh configuration that is still empty
+        this.configLock.lock();
+        boolean portalsConfigured = config.isSet(PortalConfiguration.PORTAL_CONFIG_KEY);
+        this.configLock.unlock();
+
+        if (!portalsConfigured) {
+            this.plugin.getLogger().info("Minecart Portal storage is missing, adding it...");
+            this.portalsLock.writeLock().lock();
+            this.portals = new ArrayList<>();
+            this.portalsLock.writeLock().unlock();
+
+            // In this case, we want to save the configuration
+            this.saveSync();
+            this.plugin.getLogger().info("Added portal storage to Minecart Portal storage file!");
+        }
+
+        this.plugin.getLogger().info("Parsing portal instances from portal storage...");
+        this.portalsLock.writeLock().lock();
+        this.portals = this.getPortalsFromConfig(config);
+        this.portalsLock.writeLock().unlock();
+        this.plugin.getLogger().info("Finished parsing portal instances from portal storage!");
+    }
+
+    /**
+     * Try to load the configuration asynchronously.
+     * <p>
+     * This method tries to load the configuration asynchronously using the
+     * Bukkit scheduler. If loading the configuration fails, the issue will
+     * be logged to the console.
+     * <p>
+     * As long as the initial load of the configuration was successful, a failed
+     * reload of the configuration should not cause any issues.
+     */
+    public void loadAsync() {
+        this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, () -> {
+            try {
+                this.loadSync();
+            } catch (IOException | InvalidConfigurationException e) {
+                this.plugin.getLogger().log(
+                        Level.SEVERE,
+                        "Failed to load minecart portal configuration asynchronously!",
+                        e
+                );
+            }
+        });
+    }
+
+    /**
+     * Get portals from the configuration in a type safe manner.
+     *
+     * @param config the config to load the portals from
+     * @return a list of minecart portal instances
+     */
+    private List<MinecartPortal> getPortalsFromConfig(YamlConfiguration config) {
+        List<?> rawPortals = config.getList(PortalConfiguration.PORTAL_CONFIG_KEY, new ArrayList<>());
+
+        ArrayList<MinecartPortal> loadedPortals = new ArrayList<>();
+        for (Object o : rawPortals) {
+            if (o instanceof MinecartPortal) {
+                loadedPortals.add((MinecartPortal) o);
+            }
+        }
+
+        return loadedPortals;
+    }
+
+    /**
+     * Saves the configuration file synchronously.
+     * <p>
+     * This method saves the current configuration synchronously.
+     * This includes updating the portals value in the configuration
+     * with the current portal list of this configuration.
+     * <p>
+     * As this function is synchronous, it should only be used during
+     * plugin initialization. Please use asynchronous functions
+     * during normal operation.
+     *
+     * @throws IOException when the configuration could not be saved
+     */
+    public void saveSync() throws IOException {
+        File file = this.getConfigurationFile();
+
+        // Update config value with cache
+        try {
+            this.plugin.getLogger().info("Saving Minecart Portals to file...");
+
+            this.portalsLock.readLock().lock();
+            this.config.set(PortalConfiguration.PORTAL_CONFIG_KEY, this.portals);
+            int portalCount = this.portals.size();
+            this.portalsLock.readLock().unlock();
+
+            // Save
+            this.configLock.lock();
+            this.config.save(file);
+
+            this.plugin.getLogger().info("Saved " + portalCount + " Minecart Portals in the configuration file!");
+        } catch (IOException e) {
+            this.plugin.getLogger().log(
+                    Level.SEVERE,
+                    "Failed to save minecart portals file!",
+                    e
+            );
+
+            throw e;
+        } finally {
+            this.configLock.unlock();
+        }
+    }
+
+    /**
+     * Try to save the configuration asynchronously.
+     * <p>
+     * This method tries to sae the configuration asynchronously using the
+     * Bukkit scheduler. If saving the configuration fails, the issue will
+     * be logged to the console.
+     */
+    public void saveAsync() {
+        this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, () -> {
+            try {
+                this.saveSync();
+            } catch (IOException e) {
+                this.plugin.getLogger().log(
+                        Level.SEVERE,
+                        "Failed to save minecart portal configuration asynchronously!",
+                        e
+                );
+            }
+        });
+    }
+
+    /**
+     * Ensure that the portal configuration file exists.
+     *
+     * @param configFile is the file that should be created (if it does not exist)
+     * @throws IOException thrown when the directory path or file could not be created
+     */
+    private void ensureFileExists(File configFile) throws IOException {
+        // Ignore result of mkdirs, as in this case it does not matter if
+        // directories where actually created or not.
+        //noinspection ResultOfMethodCallIgnored
+        configFile.getParentFile().mkdirs();
+
+        if (!configFile.exists()) {
+            // Here the same is true as for mkdirs, the result does not matter.
+            // Only exceptions matter.
+            //noinspection ResultOfMethodCallIgnored
+            configFile.createNewFile();
+        }
+
+    }
+
+    /**
+     * Get a file instance pointing to the portal configuration files location.
+     *
+     * @return the file instance pointing to the configuration file.
+     */
+    private File getConfigurationFile() {
+        return new File(this.plugin.getDataFolder(), PortalConfiguration.PORTAL_CONFIG_FILE);
+    }
+}
