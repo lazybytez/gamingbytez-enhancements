@@ -6,6 +6,7 @@ import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotFeature;
 import de.lazybytez.gamingbytezenhancements.feature.customcreeperdamage.CustomCreeperDamageFeature;
 import de.lazybytez.gamingbytezenhancements.feature.customloot.CustomLootFeature;
 import de.lazybytez.gamingbytezenhancements.feature.farmlandprotection.FarmlandProtectionFeature;
+import de.lazybytez.gamingbytezenhancements.feature.minecartportal.MinecartPortalFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.temporarycart.TemporaryCartFeature;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiApiConfig;
@@ -24,6 +25,8 @@ public final class EnhancementsPlugin extends JavaPlugin {
             new CustomCreeperDamageFeature(this),
             new MythicAltarFeature(this),
             new CustomLootFeature(this),
+            new MythicAltarFeature(this),
+            new MinecartPortalFeature(this),
     };
 
     @Override
