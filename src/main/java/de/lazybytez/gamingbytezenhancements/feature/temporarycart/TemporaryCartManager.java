@@ -10,6 +10,7 @@ import org.bukkit.entity.Vehicle;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages spawning and destroying temporary carts.
@@ -18,7 +19,7 @@ public class TemporaryCartManager {
 
     private final EnhancementsPlugin plugin;
 
-    private final HashMap<String, Long> coolDownMap = new HashMap<>();
+    private final ConcurrentHashMap<String, Long> coolDownMap = new ConcurrentHashMap<>();
 
     public TemporaryCartManager(EnhancementsPlugin plugin) {
         this.plugin = plugin;
