@@ -374,14 +374,4 @@ public class MinecartPortalCommand implements BasicCommand {
     public boolean canUse(@NotNull CommandSender sender) {
         return sender instanceof Player && sender.isOp();
     }
-
-//    protected MinecartPortalCommand() {
-//        super(
-//                "minecartportals",
-//                "Manage the Minecart Portals of the GamingBytez Enhancements plugin",
-//                "/minecart portals <command> <portal-name>",
-//                List.of("gbmcp")
-//        );
-//    }
-
 }
