@@ -3,9 +3,11 @@ package de.lazybytez.gamingbytezenhancements.feature.minecartportal;
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.command.MinecartPortalCommand;
+import de.lazybytez.gamingbytezenhancements.feature.minecartportal.model.MinecartPortal;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,6 +27,9 @@ public class MinecartPortalFeature extends AbstractFeature {
 
     @Override
     public void onEnable() {
+        // Register portal model as configuration serializable
+        ConfigurationSerialization.registerClass(MinecartPortal.class);
+        // Load portals for the first time
         this.portalConfig = this.loadPortals();
         if (portalConfig == null) {
             this.plugin.getLogger().severe("Failed to prepare configuration of Minecart Portals.");
@@ -47,7 +52,7 @@ public class MinecartPortalFeature extends AbstractFeature {
                     "minecartportals",
                     "Manage the Minecart Portals of the GamingBytez Enhancements plugin",
                     List.of("gbmcp"),
-                    new MinecartPortalCommand(this.portalConfig)
+                    new MinecartPortalCommand(this)
             );
         });
     }
@@ -71,5 +76,9 @@ public class MinecartPortalFeature extends AbstractFeature {
     @Override
     public String getName() {
         return "Minecart Portal";
+    }
+
+    public PortalConfiguration getPortalConfig() {
+        return portalConfig;
     }
 }

@@ -7,10 +7,12 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 /**
@@ -42,7 +44,7 @@ public class PortalConfiguration {
     /**
      * The config instance that was last loaded.
      */
-    private YamlConfiguration config;
+    private final YamlConfiguration config;
 
     /**
      * The list of available portals.
@@ -51,6 +53,7 @@ public class PortalConfiguration {
 
     public PortalConfiguration(Plugin plugin) {
         this.plugin = plugin;
+        this.config = new YamlConfiguration();
         this.portals = new CopyOnWriteArrayList<>();
     }
 
@@ -73,7 +76,7 @@ public class PortalConfiguration {
     /**
      * Update a portal with a new version.
      * <p>
-     * This methode updates a specific portal with a new version.
+     * This method updates a specific portal with a new version.
      * The method will replace the original portal instance with the supplied one.
      * Matching happens by name.
      *
@@ -91,6 +94,34 @@ public class PortalConfiguration {
         }
 
         return updated;
+    }
+
+    /**
+     * Delete a portal from the known portals.
+     * <p>
+     * This method deletes the provided portal from the portal list.
+     * Matching happens by name.
+     *
+     * @param portal the portal to delete
+     * @return whether the portal could be deleted or not
+     */
+    public synchronized boolean deletePortal(MinecartPortal portal) {
+        boolean deleted = false;
+        int portalIndex = 0;
+
+        for (int i = 0; i < this.portals.size(); i++) {
+            if (this.portals.get(i).getName().equals(portal.getName())) {
+                portalIndex = i;
+                deleted = true;
+                break;
+            }
+        }
+
+        if (deleted) {
+            this.portals.remove(portalIndex);
+        }
+
+        return deleted;
     }
 
     /**
@@ -151,6 +182,15 @@ public class PortalConfiguration {
     }
 
     /**
+     * Get all currently registered (not only saved!) portals.
+     *
+     * @return all currently registered portals
+     */
+    public List<MinecartPortal> getPortals() {
+        return List.copyOf(this.portals);
+    }
+
+    /**
      * Load the configuration from disk synchronously.
      * <p>
      * This function loads the configuration synchronously from disk.
@@ -171,15 +211,12 @@ public class PortalConfiguration {
             File file = this.getConfigurationFile();
             this.ensureFileExists(file);
 
-            // Either load or reload the configuration
-            if (this.config == null) {
-                this.config = YamlConfiguration.loadConfiguration(file);
-            } else {
-                this.config.load(file);
-            }
+            // We do not use YamlConfiguration.loadConfiguration as we want to handle
+            // exceptions our own. this.config is initialized in constructor
+            this.config.load(file);
 
-            this.plugin.getLogger().info("Successfully loaded minecart portals file...");
-        } catch (IOException|InvalidConfigurationException e) {
+            this.plugin.getLogger().info("Loaded minecart portals file!");
+        } catch (IOException | InvalidConfigurationException e) {
             this.plugin.getLogger().log(
                     Level.SEVERE,
                     "Failed to load minecart portals file!",
@@ -215,17 +252,22 @@ public class PortalConfiguration {
      * <p>
      * As long as the initial load of the configuration was successful, a failed
      * reload of the configuration should not cause any issues.
+     *
+     * @param callback A consumer used as callback called after load.
+     *                 The boolean parameter indicates success of the save operation.
      */
-    public void loadAsync() {
+    public void loadAsync(Consumer<Boolean> callback) {
         this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, () -> {
             try {
                 this.loadSync();
+                callback.accept(true);
             } catch (IOException | InvalidConfigurationException e) {
                 this.plugin.getLogger().log(
                         Level.SEVERE,
                         "Failed to load minecart portal configuration asynchronously!",
                         e
                 );
+                callback.accept(false);
             }
         });
     }
@@ -293,17 +335,22 @@ public class PortalConfiguration {
      * This method tries to sae the configuration asynchronously using the
      * Bukkit scheduler. If saving the configuration fails, the issue will
      * be logged to the console.
+     *
+     * @param callback A consumer used as callback called after save.
+     *                 The boolean parameter indicates success of the save operation.
      */
-    public void saveAsync() {
+    public void saveAsync(Consumer<Boolean> callback) {
         this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, () -> {
             try {
                 this.saveSync();
+                callback.accept(true);
             } catch (IOException e) {
                 this.plugin.getLogger().log(
                         Level.SEVERE,
                         "Failed to save minecart portal configuration asynchronously!",
                         e
                 );
+                callback.accept(false);
             }
         });
     }
