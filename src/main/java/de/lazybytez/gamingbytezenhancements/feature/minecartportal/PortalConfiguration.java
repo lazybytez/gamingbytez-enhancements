@@ -10,8 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
 /**
@@ -48,23 +47,11 @@ public class PortalConfiguration {
     /**
      * The list of available portals.
      */
-    private List<MinecartPortal> portals;
-
-    /**
-     * Lock to ensure portal access does not cause concurrency trouble.
-     */
-    private final ReentrantReadWriteLock portalsLock;
-
-    /**
-     * Lock to ensure config access does not cause concurrency trouble.
-     */
-    private final ReentrantLock configLock;
+    private volatile CopyOnWriteArrayList<MinecartPortal> portals;
 
     public PortalConfiguration(Plugin plugin) {
         this.plugin = plugin;
-
-        this.portalsLock = new ReentrantReadWriteLock();
-        this.configLock = new ReentrantLock();
+        this.portals = new CopyOnWriteArrayList<>();
     }
 
     /**
@@ -73,11 +60,9 @@ public class PortalConfiguration {
      * @param portal is the portal to add
      * @return whether the portal has been added or not
      */
-    public boolean addPortal(MinecartPortal portal) {
-        if (this.hasPortal(portal.getName())) {
-            this.portalsLock.writeLock().lock();
+    public synchronized boolean addPortal(MinecartPortal portal) {
+        if (!this.hasPortal(portal.getName())) {
             this.portals.add(portal);
-            this.portalsLock.writeLock().unlock();
 
             return true;
         }
@@ -95,9 +80,7 @@ public class PortalConfiguration {
      * @param portal is the portal to update
      * @return whether the portal has been updated or not
      */
-    public boolean updatePortal(MinecartPortal portal) {
-        this.portalsLock.writeLock().lock();
-
+    public synchronized boolean updatePortal(MinecartPortal portal) {
         boolean updated = false;
         for (int i = 0; i < this.portals.size(); i++) {
             if (this.portals.get(i).getName().equals(portal.getName())) {
@@ -106,8 +89,6 @@ public class PortalConfiguration {
                 break;
             }
         }
-
-        this.portalsLock.writeLock().unlock();
 
         return updated;
     }
@@ -119,7 +100,6 @@ public class PortalConfiguration {
      * @return whether a portal with the given name exists or not.
      */
     public boolean hasPortal(String name) {
-        this.portalsLock.readLock().lock();
         boolean portalExists = false;
 
         for (MinecartPortal portal : this.portals) {
@@ -128,8 +108,6 @@ public class PortalConfiguration {
                 break;
             }
         }
-
-        this.portalsLock.readLock().unlock();
 
         return portalExists;
     }
@@ -143,14 +121,12 @@ public class PortalConfiguration {
     public MinecartPortal getPortalAtLocation(Location location) {
         MinecartPortal portal = null;
 
-        this.portalsLock.readLock().lock();
         for (MinecartPortal currentPortal : this.portals) {
             if (currentPortal.getPortal().distance(location) < 1.0) {
                 portal = currentPortal;
                 break;
             }
         }
-        this.portalsLock.readLock().unlock();
 
         return portal;
     }
@@ -164,14 +140,12 @@ public class PortalConfiguration {
     public MinecartPortal getPortalByName(String name) {
         MinecartPortal portal = null;
 
-        this.portalsLock.readLock().lock();
         for (MinecartPortal currentPortal : this.portals) {
             if (currentPortal.getName().equals(name)) {
                 portal = currentPortal;
                 break;
             }
         }
-        this.portalsLock.readLock().unlock();
 
         return portal;
     }
@@ -189,10 +163,9 @@ public class PortalConfiguration {
      * @throws IOException                   if any file operation fails
      * @throws InvalidConfigurationException when the configuration format is invalid
      */
-    public void loadSync() throws IOException, InvalidConfigurationException {
+    public synchronized void loadSync() throws IOException, InvalidConfigurationException {
         // Load config ion a thread safe manner
         try {
-            this.configLock.lock();
             this.plugin.getLogger().info("Loading minecart portals file...");
 
             File file = this.getConfigurationFile();
@@ -214,31 +187,22 @@ public class PortalConfiguration {
             );
 
             throw e;
-        } finally {
-            this.configLock.unlock();
         }
 
 
         // Handle fresh configuration that is still empty
-        this.configLock.lock();
         boolean portalsConfigured = config.isSet(PortalConfiguration.PORTAL_CONFIG_KEY);
-        this.configLock.unlock();
 
         if (!portalsConfigured) {
             this.plugin.getLogger().info("Minecart Portal storage is missing, adding it...");
-            this.portalsLock.writeLock().lock();
-            this.portals = new ArrayList<>();
-            this.portalsLock.writeLock().unlock();
-
             // In this case, we want to save the configuration
+            // Constructor of class ensures we have an empty list just in case
             this.saveSync();
             this.plugin.getLogger().info("Added portal storage to Minecart Portal storage file!");
         }
 
         this.plugin.getLogger().info("Parsing portal instances from portal storage...");
-        this.portalsLock.writeLock().lock();
         this.portals = this.getPortalsFromConfig(config);
-        this.portalsLock.writeLock().unlock();
         this.plugin.getLogger().info("Finished parsing portal instances from portal storage!");
     }
 
@@ -272,10 +236,10 @@ public class PortalConfiguration {
      * @param config the config to load the portals from
      * @return a list of minecart portal instances
      */
-    private List<MinecartPortal> getPortalsFromConfig(YamlConfiguration config) {
+    private CopyOnWriteArrayList<MinecartPortal> getPortalsFromConfig(YamlConfiguration config) {
         List<?> rawPortals = config.getList(PortalConfiguration.PORTAL_CONFIG_KEY, new ArrayList<>());
 
-        ArrayList<MinecartPortal> loadedPortals = new ArrayList<>();
+        CopyOnWriteArrayList<MinecartPortal> loadedPortals = new CopyOnWriteArrayList<>();
         for (Object o : rawPortals) {
             if (o instanceof MinecartPortal) {
                 loadedPortals.add((MinecartPortal) o);
@@ -298,20 +262,17 @@ public class PortalConfiguration {
      *
      * @throws IOException when the configuration could not be saved
      */
-    public void saveSync() throws IOException {
+    public synchronized void saveSync() throws IOException {
         File file = this.getConfigurationFile();
 
         // Update config value with cache
         try {
             this.plugin.getLogger().info("Saving Minecart Portals to file...");
 
-            this.portalsLock.readLock().lock();
             this.config.set(PortalConfiguration.PORTAL_CONFIG_KEY, this.portals);
             int portalCount = this.portals.size();
-            this.portalsLock.readLock().unlock();
 
             // Save
-            this.configLock.lock();
             this.config.save(file);
 
             this.plugin.getLogger().info("Saved " + portalCount + " Minecart Portals in the configuration file!");
@@ -323,8 +284,6 @@ public class PortalConfiguration {
             );
 
             throw e;
-        } finally {
-            this.configLock.unlock();
         }
     }
 
@@ -367,7 +326,6 @@ public class PortalConfiguration {
             //noinspection ResultOfMethodCallIgnored
             configFile.createNewFile();
         }
-
     }
 
     /**
