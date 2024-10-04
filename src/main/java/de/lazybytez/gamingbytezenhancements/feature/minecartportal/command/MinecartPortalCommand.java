@@ -107,6 +107,10 @@ public class MinecartPortalCommand implements BasicCommand {
                     return;
                 }
                 sender.sendMessage("Added portal with name \"" + name + "\"!");
+                this.feature.getPlugin().getLogger().info("The player "
+                                + sender.getName()
+                                + " added a Minecart Portal with name \"" + name + "\""
+                );
             });
         });
     }
@@ -149,6 +153,11 @@ public class MinecartPortalCommand implements BasicCommand {
                 }
 
                 sender.sendMessage("Successfully placed entrypoint of the Minecart Portal \"" + name + "\"!");
+                this.feature.getPlugin().getLogger().info("The player "
+                        + sender.getName()
+                        + " set the entrypoint of the Minecart Portal with name \"" + name + "\" to location: "
+                        + location
+                );
             });
         });
     }
@@ -191,6 +200,11 @@ public class MinecartPortalCommand implements BasicCommand {
                 }
 
                 sender.sendMessage("Successfully placed exit point of the Minecart Portal \"" + name + "\"!");
+                this.feature.getPlugin().getLogger().info("The player "
+                        + sender.getName()
+                        + " set the exit point of the Minecart Portal with name \"" + name + "\" to location: "
+                        + location
+                );
             });
         });
     }
@@ -226,6 +240,10 @@ public class MinecartPortalCommand implements BasicCommand {
                 }
 
                 sender.sendMessage("Successfully deleted the Minecart Portal \"" + name + "\"!");
+                this.feature.getPlugin().getLogger().info("The player "
+                        + sender.getName()
+                        + " deleted theMinecart Portal with name \"" + name + "\""
+                );
             });
         });
     }
@@ -293,6 +311,11 @@ public class MinecartPortalCommand implements BasicCommand {
             sender.sendMessage("The save subcommand does not expect any additional arguments!");
             return;
         }
+
+        this.feature.getPlugin().getLogger().info("The player "
+                + sender.getName()
+                + " triggered a save of all Minecart Portals to the storage file"
+        );
 
         this.feature.getPortalConfig().saveAsync(success -> {
             // Resync message send to main thread
