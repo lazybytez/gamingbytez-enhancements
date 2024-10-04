@@ -4,6 +4,7 @@ import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.command.MinecartPortalCommand;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.listener.MinecartPortalActivationListener;
+import de.lazybytez.gamingbytezenhancements.feature.minecartportal.listener.MinecartPortalDestructionListener;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.model.MinecartPortal;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -64,6 +65,7 @@ public class MinecartPortalFeature extends AbstractFeature {
      */
     private void registerEvents() {
         this.registerEvent(new MinecartPortalActivationListener(this));
+        this.registerEvent(new MinecartPortalDestructionListener(this.portalConfig));
     }
 
     /**

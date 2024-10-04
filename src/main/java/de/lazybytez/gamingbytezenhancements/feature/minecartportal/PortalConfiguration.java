@@ -153,6 +153,10 @@ public class PortalConfiguration {
         MinecartPortal portal = null;
 
         for (MinecartPortal currentPortal : this.portals) {
+            if (currentPortal.getPortal() == null) {
+                continue;
+            }
+
             if (currentPortal.getPortal().distance(location) < 1.0) {
                 portal = currentPortal;
                 break;

@@ -49,7 +49,7 @@ public class MinecartPortalActivationListener implements Listener {
 
         // Check if current detector rail is a portal
         MinecartPortal portal = this.feature.getPortalConfig().getPortalAtLocation(block.getLocation());
-        if (portal == null) {
+        if (portal == null || portal.getDestination() == null) {
             return;
         }
 
