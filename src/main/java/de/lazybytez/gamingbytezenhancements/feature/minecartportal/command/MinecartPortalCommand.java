@@ -5,6 +5,7 @@ import de.lazybytez.gamingbytezenhancements.feature.minecartportal.model.Minecar
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -137,6 +138,11 @@ public class MinecartPortalCommand implements BasicCommand {
         }
 
         Location location = css.getLocation();
+        if (!location.getBlock().getType().equals(Material.DETECTOR_RAIL)) {
+            sender.sendMessage("The entrypoint of a Minecart Portal can only be placed on a detector rail!");
+            return;
+        }
+
         MinecartPortal updatedPortal = new MinecartPortal(
                 portal.getName(),
                 location,
