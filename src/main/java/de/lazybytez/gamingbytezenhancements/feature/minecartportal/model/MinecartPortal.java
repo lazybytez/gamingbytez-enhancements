@@ -4,6 +4,12 @@ import org.bukkit.Location;
 
 /**
  * Simple model that represents a Minecart Portal with all its attributes.
+ * <p>
+ * A portal has a name, a portal location and a destination.
+ * The portal location is where a player sitting in a minecart triggers the portal.
+ * The destination location is where the player will be teleported to.
+ * <p>
+ * Note that MinecartPortals are immutable to prevent concurrency issues.
  */
 public class MinecartPortal {
     /**
@@ -34,23 +40,11 @@ public class MinecartPortal {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Location getPortal() {
         return portal;
     }
 
-    public void setPortal(Location portal) {
-        this.portal = portal;
-    }
-
     public Location getDestination() {
         return destination;
-    }
-
-    public void setDestination(Location destination) {
-        this.destination = destination;
     }
 }
