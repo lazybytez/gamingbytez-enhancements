@@ -76,7 +76,7 @@ public class MinecartPortalCommand implements BasicCommand {
     /**
      * Handle the "add" subcommand that allows to initialize a new portal.
      *
-     * @param css the command source stack that provides context information
+     * @param css  the command source stack that provides context information
      * @param args the arguments passed to the command
      */
     private void handleAddSubCommand(CommandSourceStack css, String[] args) {
@@ -110,8 +110,8 @@ public class MinecartPortalCommand implements BasicCommand {
                 }
                 sender.sendMessage("Added portal with name \"" + name + "\"!");
                 this.feature.getPlugin().getLogger().info("The player "
-                                + sender.getName()
-                                + " added a Minecart Portal with name \"" + name + "\""
+                        + sender.getName()
+                        + " added a Minecart Portal with name \"" + name + "\""
                 );
             });
         });
@@ -120,7 +120,7 @@ public class MinecartPortalCommand implements BasicCommand {
     /**
      * Handle the "entry" subcommand that allows to set the entrypoint of a portal.
      *
-     * @param css the command source stack that provides context information
+     * @param css  the command source stack that provides context information
      * @param args the arguments passed to the command
      */
     private void handleEntrySubCommand(CommandSourceStack css, String[] args) {
@@ -172,7 +172,7 @@ public class MinecartPortalCommand implements BasicCommand {
     /**
      * Handle the "exit" subcommand that allows to set the exit point of a portal.
      *
-     * @param css the command source stack that provides context information
+     * @param css  the command source stack that provides context information
      * @param args the arguments passed to the command
      */
     private void handleExitSubCommand(CommandSourceStack css, String[] args) {
@@ -224,7 +224,7 @@ public class MinecartPortalCommand implements BasicCommand {
     /**
      * Handle the "delete" subcommand that allows to delete a portal.
      *
-     * @param css the command source stack that provides context information
+     * @param css  the command source stack that provides context information
      * @param args the arguments passed to the command
      */
     private void handleDeleteSubCommand(CommandSourceStack css, String[] args) {
@@ -263,7 +263,7 @@ public class MinecartPortalCommand implements BasicCommand {
     /**
      * Handle the "list" subcommand that allows to list registered portals.
      *
-     * @param css the command source stack that provides context information
+     * @param css  the command source stack that provides context information
      * @param args the arguments passed to the command
      */
     private void handleListSubCommand(CommandSourceStack css, String[] args) {
@@ -282,7 +282,7 @@ public class MinecartPortalCommand implements BasicCommand {
     /**
      * Handle the "inspect" subcommand that allows to inspect registered portals.
      *
-     * @param css the command source stack that provides context information
+     * @param css  the command source stack that provides context information
      * @param args the arguments passed to the command
      */
     private void handleInspectSubCommand(CommandSourceStack css, String[] args) {
@@ -312,7 +312,7 @@ public class MinecartPortalCommand implements BasicCommand {
     /**
      * Handle the "save" subcommand that allows to save portals to the portal storage.
      *
-     * @param css the command source stack that provides context information
+     * @param css  the command source stack that provides context information
      * @param args the arguments passed to the command
      */
     private void handleSaveSubCommand(CommandSourceStack css, String[] args) {
@@ -345,7 +345,7 @@ public class MinecartPortalCommand implements BasicCommand {
     /**
      * Handle the "reload" subcommand that allows to reload portals from portal storage.
      *
-     * @param css the command source stack that provides context information
+     * @param css  the command source stack that provides context information
      * @param args the arguments passed to the command
      */
     private void handleReloadSubCommand(CommandSourceStack css, String[] args) {

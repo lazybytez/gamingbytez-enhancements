@@ -77,7 +77,7 @@ public class MinecartPortalFeature extends AbstractFeature {
         PortalConfiguration config = new PortalConfiguration(this.plugin);
         try {
             config.loadSync();
-        } catch (IOException|InvalidConfigurationException e) {
+        } catch (IOException | InvalidConfigurationException e) {
             return null;
         }
 
