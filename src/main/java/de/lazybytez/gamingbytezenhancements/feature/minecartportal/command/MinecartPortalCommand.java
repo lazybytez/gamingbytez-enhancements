@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -190,6 +191,11 @@ public class MinecartPortalCommand implements BasicCommand {
         }
 
         Location location = css.getLocation();
+        if (!location.getBlock().getType().equals(Material.RAIL)) {
+            sender.sendMessage("The exit point of a Minecart Portal can only be placed on a normal rail!");
+            return;
+        }
+
         MinecartPortal updatedPortal = new MinecartPortal(
                 portal.getName(),
                 portal.getPortal(),
