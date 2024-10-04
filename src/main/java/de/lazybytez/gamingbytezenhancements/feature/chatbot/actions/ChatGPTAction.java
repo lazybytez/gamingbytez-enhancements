@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ChatGPTAction implements ChatBotAction {
     private static final String[] BUZZWORDS = {
@@ -51,9 +52,9 @@ public class ChatGPTAction implements ChatBotAction {
 
     private final EnhancementsPlugin enhancementsPlugin;
 
-    private long lastAction = 0L;
+    private final AtomicLong lastAction = new AtomicLong(0L);
 
-    private long totalTokensUsed = 0L;
+    private final AtomicLong totalTokensUsed = new AtomicLong(0L);
 
     public ChatGPTAction(EnhancementsPlugin enhancementsPlugin) {
         this.enhancementsPlugin = enhancementsPlugin;
@@ -71,9 +72,10 @@ public class ChatGPTAction implements ChatBotAction {
             this.enhancementsPlugin.getLogger().severe(
                     "Cannot send OpenAI chat bot response as client was not initialized!"
             );
+            return null;
         }
 
-        long lastActionSeconds = (System.currentTimeMillis() - lastAction) / 1000;
+        long lastActionSeconds = (System.currentTimeMillis() - this.lastAction.get()) / 1000;
         if (lastActionSeconds < OPEN_AI_RATE_LIMIT) {
             this.enhancementsPlugin.getLogger().info(String.format(
                     "ChatGPT action was triggered for message \"%s\". However, the action is currently on cool down for another %d seconds (%d in total).",
@@ -87,7 +89,7 @@ public class ChatGPTAction implements ChatBotAction {
 
         try {
             this.enhancementsPlugin.getLogger().info(String.format("Requesting answer for \"%s\" from OpenAI...", message));
-            this.lastAction = System.currentTimeMillis();
+            this.lastAction.set(System.currentTimeMillis());
             OpenAiResponse response = this.enhancementsPlugin
                     .getOpenAiClient()
                     .completion(String.format(PROMPT_TEMPLATE, message));
@@ -107,10 +109,10 @@ public class ChatGPTAction implements ChatBotAction {
                     message,
                     response.getTotalTokens()
             ));
-            this.totalTokensUsed += response.getTotalTokens();
+            this.totalTokensUsed.addAndGet(response.getTotalTokens());
             this.enhancementsPlugin.getLogger().info(String.format(
                     "The server has used a total of %d OpenAI tokens since the last restart!",
-                    this.totalTokensUsed
+                    this.totalTokensUsed.get()
             ));
 
             return new ChatBotResponse(false, null, response.getContent(), ChatBotTarget.BROADCAST);

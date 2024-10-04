@@ -121,7 +121,7 @@ public class ChatBotChatListener implements Listener {
         }
 
         if (actions.size() < 2) {
-            return actions.get(0);
+            return actions.getFirst();
         }
 
         return actions.get(new Random().nextInt(0, actions.size() - 1));
