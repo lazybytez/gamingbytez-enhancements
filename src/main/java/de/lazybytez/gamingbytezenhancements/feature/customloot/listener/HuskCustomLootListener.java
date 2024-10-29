@@ -29,6 +29,11 @@ public class HuskCustomLootListener implements Listener {
     private void addSandToDrops(EntityDeathEvent event) {
         int sandAmount = ((int) (Math.random() * 5));
 
+        // Cannot create item stacks with quantity 0
+        if (sandAmount == 0) {
+            return;
+        }
+
         event.getDrops().add(new ItemStack(Material.SAND, sandAmount));
     }
 }
