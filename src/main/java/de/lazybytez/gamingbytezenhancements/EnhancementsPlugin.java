@@ -25,7 +25,6 @@ public final class EnhancementsPlugin extends JavaPlugin {
             new CustomCreeperDamageFeature(this),
             new MythicAltarFeature(this),
             new CustomLootFeature(this),
-            new MythicAltarFeature(this),
             new MinecartPortalFeature(this),
     };
 
