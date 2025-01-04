@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
@@ -22,10 +23,43 @@ import java.util.List;
  * special events like player breaking the blocks or pistons causing movement.
  */
 public class MinecartPortalDestructionListener implements Listener {
+    private static final double LOCATION_SIMILARITY_DISTANCE = 1.0;
+
     private final PortalConfiguration config;
 
     public MinecartPortalDestructionListener(PortalConfiguration config) {
         this.config = config;
+    }
+
+    @EventHandler
+    public void onMinecartPortalDestroyedByExplosion(EntityExplodeEvent event) {
+        List<Block> portalBlocks = new ArrayList<>();
+
+        for (Block block : event.blockList()) {
+            if (!block.getType().equals(Material.DETECTOR_RAIL) && !block.getType().equals(Material.RAIL)) {
+                continue;
+            }
+
+            for (MinecartPortal portal : this.config.getPortals()) {
+                // Custom implementation for explosions, as this works with a list of blocks
+                // where the portal block must be removed.
+                Location entry = portal.getPortal();
+                Location exit = portal.getDestination();
+
+                if (block.getType().equals(Material.DETECTOR_RAIL)
+                        && this.isSimilarLocation(block.getLocation(), entry)
+                ) {
+                    portalBlocks.add(block);
+                    continue;
+                }
+
+                if (block.getType().equals(Material.RAIL) && this.isSimilarLocation(block.getLocation(), exit)) {
+                    portalBlocks.add(block);
+                }
+            }
+        }
+
+        event.blockList().removeAll(portalBlocks);
     }
 
     @EventHandler
@@ -38,24 +72,8 @@ public class MinecartPortalDestructionListener implements Listener {
         }
 
         for (MinecartPortal portal : this.config.getPortals()) {
-            Location entry = portal.getPortal();
-            Location exit = portal.getDestination();
-
-            if (block.getType().equals(Material.DETECTOR_RAIL)
-                    && entry != null
-                    && block.getLocation().distance(entry) < 1.0
-            ) {
-                event.setCancelled(true);
-                player.sendMessage("Please remove the Minecart Portal first before breaking this detector rail!");
-                return;
-            }
-
-            if (block.getType().equals(Material.RAIL)
-                    && exit != null
-                    && block.getLocation().distance(exit) < 1.0
-            ) {
-                event.setCancelled(true);
-                player.sendMessage("Please remove the Minecart Portal first before breaking this rail!");
+            if (this.handleSingleBlockEvent(event, block, portal)) {
+                player.sendMessage("Please remove the Minecart Portal first before breaking this block!");
             }
         }
     }
@@ -69,57 +87,8 @@ public class MinecartPortalDestructionListener implements Listener {
         }
 
         for (MinecartPortal portal : this.config.getPortals()) {
-            Location entry = portal.getPortal();
-            Location exit = portal.getDestination();
-
-            if (block.getType().equals(Material.DETECTOR_RAIL)
-                    && entry != null
-                    && block.getLocation().distance(entry) < 1.0
-            ) {
-                event.setCancelled(true);
-                return;
-            }
-
-            if (block.getType().equals(Material.RAIL)
-                    && exit != null
-                    && block.getLocation().distance(exit) < 1.0
-            ) {
-                event.setCancelled(true);
-            }
+            this.handleSingleBlockEvent(event, block, portal);
         }
-    }
-
-    @EventHandler
-    public void onMinecartPortalDestroyedByExplosion(EntityExplodeEvent event) {
-        List<Block> portalBlocks = new ArrayList<>();
-
-        for (Block block : event.blockList()) {
-            if (!block.getType().equals(Material.DETECTOR_RAIL) && !block.getType().equals(Material.RAIL)) {
-                continue;
-            }
-
-            for (MinecartPortal portal : this.config.getPortals()) {
-                Location entry = portal.getPortal();
-                Location exit = portal.getDestination();
-
-                if (block.getType().equals(Material.DETECTOR_RAIL)
-                        && entry != null
-                        && block.getLocation().distance(entry) < 1.0
-                ) {
-                    portalBlocks.add(block);
-                    continue;
-                }
-
-                if (block.getType().equals(Material.RAIL)
-                        && exit != null
-                        && block.getLocation().distance(exit) < 1.0
-                ) {
-                    portalBlocks.add(block);
-                }
-            }
-        }
-
-        event.blockList().removeAll(portalBlocks);
     }
 
     @EventHandler
@@ -130,23 +99,7 @@ public class MinecartPortalDestructionListener implements Listener {
             }
 
             for (MinecartPortal portal : this.config.getPortals()) {
-                Location entry = portal.getPortal();
-                Location exit = portal.getDestination();
-
-                if (block.getType().equals(Material.DETECTOR_RAIL)
-                        && entry != null
-                        && block.getLocation().distance(entry) < 1.0
-                ) {
-                    event.setCancelled(true);
-                    return;
-                }
-
-                if (block.getType().equals(Material.RAIL)
-                        && exit != null
-                        && block.getLocation().distance(exit) < 1.0
-                ) {
-                    event.setCancelled(true);
-                }
+                this.handleSingleBlockEvent(event, block, portal);
             }
         }
     }
@@ -159,24 +112,54 @@ public class MinecartPortalDestructionListener implements Listener {
             }
 
             for (MinecartPortal portal : this.config.getPortals()) {
-                Location entry = portal.getPortal();
-                Location exit = portal.getDestination();
-
-                if (block.getType().equals(Material.DETECTOR_RAIL)
-                        && entry != null
-                        && block.getLocation().distance(entry) < 1.0
-                ) {
-                    event.setCancelled(true);
-                    return;
-                }
-
-                if (block.getType().equals(Material.RAIL)
-                        && exit != null
-                        && block.getLocation().distance(exit) < 1.0
-                ) {
-                    event.setCancelled(true);
-                }
+                this.handleSingleBlockEvent(event, block, portal);
             }
         }
+    }
+
+    /**
+     * Handle potential destruction of a specific portal at a specific block.
+     *
+     * @param cancellable the cancellable event instance used to cancel the event on a match
+     * @param block the block that has been destroyed / affected by the event
+     * @param portal the portal that should be checked
+     *
+     * @return whether the affected block was a portal (and event has been cancelled) or not
+     */
+    private boolean handleSingleBlockEvent(Cancellable cancellable, Block block, MinecartPortal portal) {
+        Location entry = portal.getPortal();
+        Location exit = portal.getDestination();
+
+        if (block.getType().equals(Material.DETECTOR_RAIL)
+                && this.isSimilarLocation(block.getLocation(), entry)
+        ) {
+            cancellable.setCancelled(true);
+            return true;
+        }
+
+        if (block.getType().equals(Material.RAIL) && this.isSimilarLocation(block.getLocation(), exit)) {
+            cancellable.setCancelled(true);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Compare whether the base location is similar to the comparison location.
+     * <p>
+     * A location is similar, if:
+     *  - It is in the same world
+     *  - The total (coordinate) distance is less than 1.0
+     *
+     * @param base the base location to compare against
+     * @param compare the location to compare
+     * @return whether the location is similar or not
+     */
+    private boolean isSimilarLocation(Location base, Location compare) {
+        return base != null
+                && compare != null
+                && base.getWorld().getUID().equals(compare.getWorld().getUID())
+                && base.distance(compare) < MinecartPortalDestructionListener.LOCATION_SIMILARITY_DISTANCE;
     }
 }
