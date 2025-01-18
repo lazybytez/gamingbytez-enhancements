@@ -6,7 +6,7 @@
 
     <groupId>de.lazybytez</groupId>
     <artifactId>gamingbytez-enhancements</artifactId>
-    <version>1.8.3</version>
+    <version>1.9.0</version>
     <packaging>jar</packaging>
 
     <name>gamingbytez-enhancements</name>
@@ -54,12 +54,8 @@
 
     <repositories>
         <repository>
-            <id>papermc-repo</id>
+            <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
-        </repository>
-        <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
     </repositories>
 
@@ -67,7 +63,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
