@@ -3,6 +3,7 @@ package de.lazybytez.gamingbytezenhancements.feature.antimobgriefing;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.boat.*;
 
 import java.util.Set;
 
@@ -54,7 +55,18 @@ public class GriefProtectionRegistry {
             // Common decorative entities and vehicles
             EntityType.ARMOR_STAND,
             EntityType.MINECART,
-            EntityType.BOAT,
+
+            // Boats
+            EntityType.ACACIA_BOAT,
+            EntityType.BAMBOO_RAFT,
+            EntityType.BIRCH_BOAT,
+            EntityType.CHERRY_BOAT,
+            EntityType.DARK_OAK_BOAT,
+            EntityType.JUNGLE_BOAT,
+            EntityType.MANGROVE_BOAT,
+            EntityType.OAK_BOAT,
+            EntityType.PALE_OAK_BOAT,
+            EntityType.SPRUCE_BOAT,
 
             // Hanging entities
             EntityType.ITEM_FRAME,
@@ -68,6 +80,17 @@ public class GriefProtectionRegistry {
             EntityType.HOPPER_MINECART,
             EntityType.SPAWNER_MINECART,
             EntityType.TNT_MINECART,
-            EntityType.CHEST_BOAT
+
+            // Chest Boats
+            EntityType.ACACIA_CHEST_BOAT,
+            EntityType.BAMBOO_CHEST_RAFT,
+            EntityType.BIRCH_CHEST_BOAT,
+            EntityType.CHERRY_CHEST_BOAT,
+            EntityType.DARK_OAK_CHEST_BOAT,
+            EntityType.JUNGLE_CHEST_BOAT,
+            EntityType.MANGROVE_CHEST_BOAT,
+            EntityType.OAK_CHEST_BOAT,
+            EntityType.PALE_OAK_CHEST_BOAT,
+            EntityType.SPRUCE_CHEST_BOAT
     );
 }

@@ -27,8 +27,8 @@ public class CreeperDamageListener implements Listener {
 
         Player p = (Player) e.getEntity();
 
-        AttributeInstance armorPointAttribute = p.getAttribute(Attribute.GENERIC_ARMOR);
-        AttributeInstance armorToughnessAttribute = p.getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS);
+        AttributeInstance armorPointAttribute = p.getAttribute(Attribute.ARMOR);
+        AttributeInstance armorToughnessAttribute = p.getAttribute(Attribute.ARMOR_TOUGHNESS);
 
         e.setDamage(this.armorBasedCreeperDamageCalculator.calculateDamage(
                 p.getEquipment().getArmorContents(),
