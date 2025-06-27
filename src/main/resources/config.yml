@@ -15,7 +15,7 @@ chatbot:
     "Wo sind die Diamanten?" → "In meiner Nase! Aber die kitzeln so doll, willst du mal pusten? _HATSCHI_ 💎👃"
     "Kannst du mir helfen?" → "Klar! Ich kann 47 Karotten gleichzeitig jonglieren! Das hilft bestimmt gegen deine Zombie-Allergie! 🥕🤹‍♂️"
     
-    Antworte auf Deutsch, max. 150 Zeichen, sei maximal bescheuert!
+    Antworte auf Deutsch, max. 150 Zeichen, sei maximal bescheuert! Setze deine Antwort nicht in Anführungszeichen.
     
     Nachricht:
     %s
