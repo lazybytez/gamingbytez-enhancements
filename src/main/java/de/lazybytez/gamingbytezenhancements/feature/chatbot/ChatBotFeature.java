@@ -10,6 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatBotFeature extends AbstractFeature {
     public static final String CONFIG_ENABLE_AI_BOT = "chatbot.enable_ai_answers";
+    public static final String CONFIG_AI_BOT_PROMPT = "chatbot.prompt";
 
     private final List<ChatBotAction> chatBotActions = new CopyOnWriteArrayList<>();
 
@@ -36,7 +37,13 @@ public class ChatBotFeature extends AbstractFeature {
 
         // Add AI responses - only when enabled
         if (this.getPlugin().getConfig().getBoolean(ChatBotFeature.CONFIG_ENABLE_AI_BOT, false)) {
-            this.chatBotActions.add(new ChatGPTAction(this.getPlugin()));
+            String prompt = this.getPlugin().getConfig().getString(ChatBotFeature.CONFIG_AI_BOT_PROMPT);
+            if (prompt == null) {
+                this.getPlugin().getLogger().warning("AI ChatBot feature is enabled, but no prompt is configured. Prompt will be empty!");
+                prompt = "";
+            }
+
+            this.chatBotActions.add(new ChatGPTAction(this.getPlugin(), prompt));
         }
     }
 

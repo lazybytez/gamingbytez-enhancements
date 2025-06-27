@@ -65,10 +65,11 @@ public final class EnhancementsPlugin extends JavaPlugin {
 
         try {
             this.openAiClient = new OpenAiClient(
-                    OpenAiApiConfig.getConfigValue(this, OpenAiApiConfig.OPENAI_URL),
-                    OpenAiApiConfig.getConfigValue(this, OpenAiApiConfig.OPENAI_API_KEY),
-                    OpenAiApiConfig.getConfigValue(this, OpenAiApiConfig.OPENAI_ORGANIZATION),
-                    OpenAiApiConfig.getConfigValue(this, OpenAiApiConfig.OPENAI_MODEL)
+                    OpenAiApiConfig.getStringConfigValue(this, OpenAiApiConfig.OPENAI_URL),
+                    OpenAiApiConfig.getStringConfigValue(this, OpenAiApiConfig.OPENAI_API_KEY),
+                    OpenAiApiConfig.getStringConfigValue(this, OpenAiApiConfig.OPENAI_ORGANIZATION),
+                    OpenAiApiConfig.getStringConfigValue(this, OpenAiApiConfig.OPENAI_MODEL),
+                    OpenAiApiConfig.getDoubleConfigValue(this, OpenAiApiConfig.OPENAI_TEMPERATURE)
             );
         } catch (InvalidConfigurationException e) {
             this.getLogger().severe("Failed to initialize OpenAI client: " + e.getMessage());

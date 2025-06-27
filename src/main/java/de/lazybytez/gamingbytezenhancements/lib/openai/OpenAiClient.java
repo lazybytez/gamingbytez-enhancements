@@ -26,7 +26,6 @@ public class OpenAiClient {
     public static final String BODY_MESSAGES = "messages";
 
     public static final String BODY_TEMPERATURE = "temperature";
-    public static final float DEFAULT_TEMPERATURE = 1.0F;
 
     public static final String MESSAGE_ROLE = "role";
     public static final String MESSAGE_ROLE_USER = "user";
@@ -36,14 +35,16 @@ public class OpenAiClient {
     private final String apiUrl;
     private final String apiKey;
     private final String organization;
+    private final double temperature;
 
     private final String model;
 
-    public OpenAiClient(String apiUrl, String apiKey, String organization, String model) {
+    public OpenAiClient(String apiUrl, String apiKey, String organization, String model, double temperature) {
         this.apiUrl = apiUrl;
         this.apiKey = apiKey;
         this.organization = organization;
         this.model = model;
+        this.temperature = temperature;
     }
 
     public OpenAiResponse completion(String inputMessage) throws IOException, OpenAiException {
@@ -132,7 +133,7 @@ public class OpenAiClient {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(BODY_MODEL, this.model);
         jsonObject.add(BODY_MESSAGES, getMessageElement(message));
-        jsonObject.addProperty(BODY_TEMPERATURE, DEFAULT_TEMPERATURE);
+        jsonObject.addProperty(BODY_TEMPERATURE, this.temperature);
 
 
         return jsonObject.toString();
