@@ -109,7 +109,12 @@ public class ChatGPTAction implements ChatBotAction {
                     this.totalTokensUsed.get()
             ));
 
-            return new ChatBotResponse(false, null, response.getContent(), ChatBotTarget.BROADCAST);
+            return new ChatBotResponse(
+                    false,
+                    null,
+                    response.getContent().trim(),
+                    ChatBotTarget.BROADCAST
+            );
         } catch (IOException | OpenAiException e) {
             this.enhancementsPlugin.getLogger().severe(
                     "An error occurred while trying to answer to a message using the OpenAI client: " +
