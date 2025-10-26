@@ -41,9 +41,14 @@ public class MinecartPortalActivationListener implements Listener {
         }
 
         // Check if detector rail was triggered (and not deactivated)
-        int oldCurrent = event.getOldCurrent();
+        // Currently this event is somehow broken. Therefore, check has been simplified.
+        // This unfortunately may trigger portals to happen multiple times at a single activation.
+        // If Paper does not fix this issue, we should implement a cooldown (like done for temporary carts)
+        // in the future.
+//        int oldCurrent = event.getOldCurrent();
         int newCurrent = event.getNewCurrent();
-        if (oldCurrent != 0 || newCurrent == 0) {
+//        if (oldCurrent != 0 || newCurrent == 0) {
+        if (newCurrent != 15) {
             return;
         }
 
@@ -79,7 +84,7 @@ public class MinecartPortalActivationListener implements Listener {
             // Especially as portals are intended for far distance travel that will require chunk loading.
             // However, teleportAsync with passengers seems to be buggy right now.
             // Using sync teleport is therefore our only viable option, as we cannot
-            // unmount the player and teleport the player and minecart separatly due to the
+            // unmount the player and teleport the player and minecart separately due to the
             // temporary carts feature.
             boolean success = minecart.teleport(
                     portal.getDestination(),
