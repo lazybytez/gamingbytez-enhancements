@@ -1,0 +1,95 @@
+package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magic;
+
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.EssenceOfSpawnerManager;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.ExperienceGemManager;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.LinesToCenterAltarParticleEffect;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
+import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
+import org.bukkit.Color;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class CraftExperienceGemRecipe extends AbstractAltarRecipe {
+
+    private final MythicAltarFeature mythicAltarFeature;
+
+    /**
+     * Constructs a new MagicXpBottleRecipe.
+     */
+    public CraftExperienceGemRecipe(MythicAltarFeature mythicAltarFeature) {
+        super(MythicAltar.class, true);
+
+        this.mythicAltarFeature = mythicAltarFeature;
+    }
+
+    @Override
+    public void onRecipeComplete(Plugin plugin, AltarInterface altar, PlayerItemFrameChangeEvent event, Runnable removeLock) {
+        new LinesToCenterAltarParticleEffect(plugin, Color.GREEN).executeParticleEffect(
+                altar,
+                event,
+                (effectPlugin, effectAltar, effectEvent) -> {
+                    World effectWorld = effectAltar.getLocation().getWorld();
+
+                    ItemFrame pedestal = effectAltar.getPedestal(PedestalLocation.CENTER);
+                    ItemStack essenceOfSpawner = this.mythicAltarFeature
+                            .getCustomItemManagerRegistry()
+                            .getCustomItemManager(EssenceOfSpawnerManager.class)
+                            .createCustomItem();
+
+                    effectWorld.dropItem(pedestal.getLocation(), essenceOfSpawner);
+
+                    removeLock.run();
+                });
+    }
+
+    @Override
+    public boolean validateAltarState(AltarInterface altar) {
+        if (altar.getPedestal(PedestalLocation.CENTER).getItem().getType() != Material.DIAMOND) {
+            return false;
+        }
+
+        // Cannot craft gem using gem as input
+        ExperienceGemManager experienceGemManager = this.mythicAltarFeature
+                .getCustomItemManagerRegistry()
+                .getCustomItemManager(ExperienceGemManager.class);
+        if (experienceGemManager.isCustomItem(altar.getPedestal(PedestalLocation.CENTER).getItem())) {
+            return false;
+        }
+
+        List<PedestalLocation> outerPedestals = List.of(
+                PedestalLocation.NORTH_WEST,
+                PedestalLocation.SOUTH_WEST,
+                PedestalLocation.NORTH_EAST,
+                PedestalLocation.SOUTH_EAST
+        );
+
+        EssenceOfSpawnerManager essenceOfSpawnerManager = this.mythicAltarFeature
+                .getCustomItemManagerRegistry()
+                .getCustomItemManager(EssenceOfSpawnerManager.class);
+        for (PedestalLocation location : outerPedestals) {
+            if (!essenceOfSpawnerManager.isCustomItem(altar.getPedestal(location).getItem())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    @Override
+    public Map<PedestalLocation, ItemStack> getRecipe() {
+        // Standard mechanism is not used for this recipe due to custom items.
+        return Map.of();
+    }
+}

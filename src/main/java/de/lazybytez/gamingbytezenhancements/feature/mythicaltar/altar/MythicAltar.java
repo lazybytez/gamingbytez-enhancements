@@ -1,6 +1,9 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
 
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeInterface;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magic.CraftExperienceGemRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magic.CraftMagicXpBottleRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.time.TimeDayAltarRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.time.TimeNightAltarRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.weather.RainRitualAltarRecipe;
@@ -8,6 +11,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicalt
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.weather.ThunderstormRitualAltarRecipe;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +31,7 @@ public final class MythicAltar extends AbstractAltar {
         super(location, EntityType.GLOW_ITEM_FRAME);
     }
 
-    public static List<CompletableRecipeInterface> getDefaultRecipes() {
+    public static List<CompletableRecipeInterface> getDefaultRecipes(MythicAltarFeature mythicAltarFeature) {
         return List.of(
                 // Weather recipes
                 new SunRitualAltarRecipe(),
@@ -36,7 +40,11 @@ public final class MythicAltar extends AbstractAltar {
 
                 // Time recipes
                 new TimeDayAltarRecipe(),
-                new TimeNightAltarRecipe()
+                new TimeNightAltarRecipe(),
+
+                // Magic XP Bottle
+                new CraftExperienceGemRecipe(mythicAltarFeature),
+                new CraftMagicXpBottleRecipe(mythicAltarFeature)
         );
     }
 
