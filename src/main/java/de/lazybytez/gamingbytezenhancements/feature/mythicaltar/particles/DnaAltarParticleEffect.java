@@ -28,9 +28,9 @@ public class DnaAltarParticleEffect implements AltarParticleEffectInterface {
     /**
      * Constructs a new DNA AltarParticleEffect with default configurations.
      *
-     * @param plugin                 The plugin instance.
-     * @param color1                 The primary color representing the first strand.
-     * @param color2                 The secondary color representing the second strand.
+     * @param plugin The plugin instance.
+     * @param color1 The primary color representing the first strand.
+     * @param color2 The secondary color representing the second strand.
      */
     public DnaAltarParticleEffect(Plugin plugin, Color color1, Color color2) {
         this(plugin, color1, color2, 0.1, 2.5, 5.0, 3, 120);

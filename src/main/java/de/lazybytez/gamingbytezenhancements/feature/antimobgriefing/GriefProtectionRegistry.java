@@ -3,7 +3,6 @@ package de.lazybytez.gamingbytezenhancements.feature.antimobgriefing;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.boat.*;
 
 import java.util.Set;
 

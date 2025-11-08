@@ -7,7 +7,6 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLo
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.ExperienceGemManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.MagicXpBottleManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.DnaAltarParticleEffect;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.DoubleHelixAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import org.bukkit.Color;

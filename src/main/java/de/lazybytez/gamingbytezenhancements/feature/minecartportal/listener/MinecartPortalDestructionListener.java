@@ -2,7 +2,6 @@ package de.lazybytez.gamingbytezenhancements.feature.minecartportal.listener;
 
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.PortalConfiguration;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.model.MinecartPortal;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -10,7 +9,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
 import java.util.ArrayList;
@@ -121,9 +123,8 @@ public class MinecartPortalDestructionListener implements Listener {
      * Handle potential destruction of a specific portal at a specific block.
      *
      * @param cancellable the cancellable event instance used to cancel the event on a match
-     * @param block the block that has been destroyed / affected by the event
-     * @param portal the portal that should be checked
-     *
+     * @param block       the block that has been destroyed / affected by the event
+     * @param portal      the portal that should be checked
      * @return whether the affected block was a portal (and event has been cancelled) or not
      */
     private boolean handleSingleBlockEvent(Cancellable cancellable, Block block, MinecartPortal portal) {
@@ -149,10 +150,10 @@ public class MinecartPortalDestructionListener implements Listener {
      * Compare whether the base location is similar to the comparison location.
      * <p>
      * A location is similar, if:
-     *  - It is in the same world
-     *  - The total (coordinate) distance is less than 1.0
+     * - It is in the same world
+     * - The total (coordinate) distance is less than 1.0
      *
-     * @param base the base location to compare against
+     * @param base    the base location to compare against
      * @param compare the location to compare
      * @return whether the location is similar or not
      */

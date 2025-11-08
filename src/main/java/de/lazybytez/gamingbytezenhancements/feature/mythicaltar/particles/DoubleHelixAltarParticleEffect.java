@@ -6,6 +6,7 @@ import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import org.bukkit.*;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.plugin.Plugin;
+
 /**
  * This class represents a DoubleHelixAltarParticleEffect.
  * A DoubleHelixAltarParticleEffect is responsible for executing a particle effect that

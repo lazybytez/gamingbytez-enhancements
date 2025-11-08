@@ -19,10 +19,12 @@ public abstract class AbstractFeature implements Feature {
     }
 
     @Override
-    public void onLoad() {}
+    public void onLoad() {
+    }
 
     @Override
-    public void onDisable() {}
+    public void onDisable() {
+    }
 
     /**
      * Registers an event listener.
@@ -31,8 +33,8 @@ public abstract class AbstractFeature implements Feature {
      */
     protected void registerEvent(Listener listener) {
         this.plugin.getServer().getPluginManager().registerEvents(
-            listener,
-            this.getPlugin()
+                listener,
+                this.getPlugin()
         );
     }
 

@@ -1,8 +1,6 @@
 package de.lazybytez.gamingbytezenhancements.feature.temporarycart.event;
 
-import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.temporarycart.TemporaryCartManager;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
@@ -23,11 +21,9 @@ public class MinecartDestroyListener implements Listener {
     public void onMineCartDestroy(VehicleDestroyEvent event) {
         Vehicle vehicle = event.getVehicle();
 
-        if (!(vehicle instanceof Minecart)) {
+        if (!(vehicle instanceof Minecart minecart)) {
             return;
         }
-
-        Minecart minecart = (Minecart) vehicle;
 
         if (!this.temporaryCartManager.isTemporaryCart(minecart)) {
             return;

@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ChatGPTAction implements ChatBotAction {
+    public static final long OPEN_AI_RATE_LIMIT = 60;
     private static final String[] BUZZWORDS = {
             "wer",
             "was",
@@ -38,9 +39,6 @@ public class ChatGPTAction implements ChatBotAction {
             "willst\\sdu",
             "hast\\sdu"
     };
-
-    public static final long OPEN_AI_RATE_LIMIT = 60;
-
     private final EnhancementsPlugin enhancementsPlugin;
 
     private final String promptTemplate;
@@ -88,7 +86,7 @@ public class ChatGPTAction implements ChatBotAction {
                     .getOpenAiClient()
                     .completion(String.format(promptTemplate, message));
 
-            if (response.getContent() == null || response.getContent().isEmpty()) {
+            if (response.content() == null || response.content().isEmpty()) {
                 this.enhancementsPlugin.getLogger().info(String.format(
                         "Received answer for \"%s\" from OpenAI is empty!",
                         message
@@ -99,11 +97,11 @@ public class ChatGPTAction implements ChatBotAction {
 
             this.enhancementsPlugin.getLogger().info(String.format(
                     "Received answer \"%s\" for input message \"%s\" from OpenAI and used %d tokens",
-                    response.getContent(),
+                    response.content(),
                     message,
-                    response.getTotalTokens()
+                    response.totalTokens()
             ));
-            this.totalTokensUsed.addAndGet(response.getTotalTokens());
+            this.totalTokensUsed.addAndGet(response.totalTokens());
             this.enhancementsPlugin.getLogger().info(String.format(
                     "The server has used a total of %d OpenAI tokens since the last restart!",
                     this.totalTokensUsed.get()
@@ -112,13 +110,13 @@ public class ChatGPTAction implements ChatBotAction {
             return new ChatBotResponse(
                     false,
                     null,
-                    response.getContent().trim(),
+                    response.content().trim(),
                     ChatBotTarget.BROADCAST
             );
         } catch (IOException | OpenAiException e) {
             this.enhancementsPlugin.getLogger().severe(
                     "An error occurred while trying to answer to a message using the OpenAI client: " +
-                    e.getLocalizedMessage()
+                            e.getLocalizedMessage()
             );
         }
 

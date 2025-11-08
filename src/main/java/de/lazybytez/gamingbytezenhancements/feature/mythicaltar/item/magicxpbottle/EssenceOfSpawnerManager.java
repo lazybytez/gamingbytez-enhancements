@@ -1,7 +1,5 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle;
 
-import static net.kyori.adventure.text.Component.text;
-
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.AbstractCustomItemManager;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -10,6 +8,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
+
+import static net.kyori.adventure.text.Component.text;
 
 public class EssenceOfSpawnerManager extends AbstractCustomItemManager {
 

@@ -10,6 +10,13 @@ public class OpenAiException extends Exception {
 
     private final String errorCode;
 
+    public OpenAiException(String message, int statusCode, String errorCode) {
+        super(message);
+
+        this.statusCode = statusCode;
+        this.errorCode = errorCode;
+    }
+
     /**
      * Create an error from some OpenAI API response JSON.
      */
@@ -27,13 +34,6 @@ public class OpenAiException extends Exception {
         } catch (IllegalStateException e) {
             return new OpenAiException(e.getMessage(), statusCode, "failed_to_parse_json");
         }
-    }
-
-    public OpenAiException(String message, int statusCode, String errorCode) {
-        super(message);
-
-        this.statusCode = statusCode;
-        this.errorCode = errorCode;
     }
 
     public int getStatusCode() {

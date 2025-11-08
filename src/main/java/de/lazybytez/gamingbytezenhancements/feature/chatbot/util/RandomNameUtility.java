@@ -13,7 +13,7 @@ public class RandomNameUtility {
 
     static {
         NAMES = new CopyOnWriteArrayList<>(Lists.newArrayList(
-            "AmogusPogus",
+                "AmogusPogus",
                 "GigaChad",
                 "BlockyMcBlockface",
                 "CreeperCrusher2000",

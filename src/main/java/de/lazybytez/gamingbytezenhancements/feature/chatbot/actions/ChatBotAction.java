@@ -1,7 +1,6 @@
 package de.lazybytez.gamingbytezenhancements.feature.chatbot.actions;
 
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotResponse;
-import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.entity.Player;
 

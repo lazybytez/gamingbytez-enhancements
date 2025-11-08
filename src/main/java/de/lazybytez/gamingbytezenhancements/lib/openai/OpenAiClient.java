@@ -1,6 +1,9 @@
 package de.lazybytez.gamingbytezenhancements.lib.openai;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -47,40 +50,6 @@ public class OpenAiClient {
         this.temperature = temperature;
     }
 
-    public OpenAiResponse completion(String inputMessage) throws IOException, OpenAiException {
-        String body = this.getRequestJsonWithSingleMessage(inputMessage);
-        byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
-
-        HttpURLConnection httpURLConnection = getHttpURLConnection(bodyBytes);
-        httpURLConnection.getOutputStream().write(bodyBytes);
-
-        String responseBody = getResponseBodyAsString(httpURLConnection);
-
-        int statusCode = httpURLConnection.getResponseCode();
-        JsonObject parsedBody;
-        try {
-            parsedBody = JsonParser.parseString(responseBody).getAsJsonObject();
-        } catch (JsonSyntaxException|IllegalStateException e) {
-            parsedBody = new JsonObject();
-
-            JsonObject errorObject = new JsonObject();
-            errorObject.addProperty(
-                    OpenAiError.MESSAGE,
-                    "Could not parse JSON body (Status: " + statusCode + "): " + e.getMessage()
-            );
-            errorObject.addProperty(OpenAiError.CODE, "json_parse_failed");
-
-            parsedBody.add(OpenAiError.ERROR, errorObject);
-        }
-
-        OpenAiException possibleException = OpenAiException.createFromResponse(parsedBody, statusCode);
-        if (possibleException != null) {
-            throw possibleException;
-        }
-
-        return OpenAiResponse.createFromJsonResponse(parsedBody);
-    }
-
     @NotNull
     private static String getResponseBodyAsString(HttpURLConnection httpURLConnection) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
@@ -106,6 +75,40 @@ public class OpenAiClient {
             }
         }
         return stringBuilder.toString();
+    }
+
+    public OpenAiResponse completion(String inputMessage) throws IOException, OpenAiException {
+        String body = this.getRequestJsonWithSingleMessage(inputMessage);
+        byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
+
+        HttpURLConnection httpURLConnection = getHttpURLConnection(bodyBytes);
+        httpURLConnection.getOutputStream().write(bodyBytes);
+
+        String responseBody = getResponseBodyAsString(httpURLConnection);
+
+        int statusCode = httpURLConnection.getResponseCode();
+        JsonObject parsedBody;
+        try {
+            parsedBody = JsonParser.parseString(responseBody).getAsJsonObject();
+        } catch (JsonSyntaxException | IllegalStateException e) {
+            parsedBody = new JsonObject();
+
+            JsonObject errorObject = new JsonObject();
+            errorObject.addProperty(
+                    OpenAiError.MESSAGE,
+                    "Could not parse JSON body (Status: " + statusCode + "): " + e.getMessage()
+            );
+            errorObject.addProperty(OpenAiError.CODE, "json_parse_failed");
+
+            parsedBody.add(OpenAiError.ERROR, errorObject);
+        }
+
+        OpenAiException possibleException = OpenAiException.createFromResponse(parsedBody, statusCode);
+        if (possibleException != null) {
+            throw possibleException;
+        }
+
+        return OpenAiResponse.createFromJsonResponse(parsedBody);
     }
 
     @NotNull
