@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Recipe that allows players to craft a magic xp bottle.
+ */
 public class CraftMagicXpBottleRecipe extends AbstractAltarRecipe {
 
     private final MythicAltarFeature mythicAltarFeature;

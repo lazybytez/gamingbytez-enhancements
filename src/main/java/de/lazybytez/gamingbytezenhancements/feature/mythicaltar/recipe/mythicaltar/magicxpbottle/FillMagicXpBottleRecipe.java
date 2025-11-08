@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Recipe that allows players to fill a magic xp bottle with experience points.
+ */
 public class FillMagicXpBottleRecipe extends AbstractAltarRecipe {
 
     private final MythicAltarFeature mythicAltarFeature;

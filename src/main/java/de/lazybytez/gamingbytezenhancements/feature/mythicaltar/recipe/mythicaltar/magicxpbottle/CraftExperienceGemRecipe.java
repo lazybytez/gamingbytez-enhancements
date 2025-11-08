@@ -19,6 +19,9 @@ import org.bukkit.plugin.Plugin;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Recipe that allows players to craft an experience gem.
+ */
 public class CraftExperienceGemRecipe extends AbstractAltarRecipe {
 
     private final MythicAltarFeature mythicAltarFeature;
