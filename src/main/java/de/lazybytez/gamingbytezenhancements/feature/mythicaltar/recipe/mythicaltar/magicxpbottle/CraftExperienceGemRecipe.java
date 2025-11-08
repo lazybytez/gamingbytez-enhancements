@@ -6,6 +6,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAlta
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.EssenceOfSpawnerManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.ExperienceGemManager;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.HelixAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.LinesToCenterAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
@@ -34,7 +35,16 @@ public class CraftExperienceGemRecipe extends AbstractAltarRecipe {
 
     @Override
     public void onRecipeComplete(Plugin plugin, AltarInterface altar, PlayerItemFrameChangeEvent event, Runnable removeLock) {
-        new LinesToCenterAltarParticleEffect(plugin, Color.GREEN).executeParticleEffect(
+        HelixAltarParticleEffect effect = new HelixAltarParticleEffect(
+                plugin,
+                Color.SILVER,
+                0.025,
+                2.5,
+                4.0,
+                3
+        );
+
+        effect.executeParticleEffect(
                 altar,
                 event,
                 (effectPlugin, effectAltar, effectEvent) -> {

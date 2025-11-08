@@ -9,7 +9,7 @@ import org.bukkit.plugin.Plugin;
 /**
  * This class represents a DoubleHelixAltarParticleEffect.
  * A DoubleHelixAltarParticleEffect is responsible for executing a particle effect that
- * draws two intertwined helices (like DNA) rotating in opposite directions.
+ * draws two helices.
  * The double helix starts from the bottom and spirals upward.
  * After the animation completes, a dying wither sound is played.
  * Finally, the action associated with the particle effect is executed.
@@ -30,7 +30,7 @@ public class DoubleHelixAltarParticleEffect implements AltarParticleEffectInterf
      * @param color  The color of the particles.
      */
     public DoubleHelixAltarParticleEffect(Plugin plugin, Color color) {
-        this(plugin, color, 0.05, 2.5, 2.5, 2, 50);
+        this(plugin, color, 0.05, 2.5, 5, 3, 50);
     }
 
     /**
@@ -58,7 +58,8 @@ public class DoubleHelixAltarParticleEffect implements AltarParticleEffectInterf
 
     /**
      * Executes the particle effect on the given Altar.
-     * The particle effect draws two intertwined helices rotating in opposite directions.
+     * The particle effect draws two intertwined helices like a DNA structure
+     * with overlapping connectors rotating in opposite directions.
      * After the animation completes, a dying wither sound is played.
      * Finally, the action associated with the particle effect is executed.
      *
@@ -107,7 +108,7 @@ public class DoubleHelixAltarParticleEffect implements AltarParticleEffectInterf
                     double heightProgress = (double) i / steps;
                     double angle = heightProgress * totalAngle;
 
-                    // First helix strand
+                    // First helix strand (rotating clockwise)
                     double x1 = startX + helixRadius * Math.cos(angle);
                     double y = startY + heightProgress * helixHeight;
                     double z1 = startZ + helixRadius * Math.sin(angle);
@@ -121,7 +122,7 @@ public class DoubleHelixAltarParticleEffect implements AltarParticleEffectInterf
                             new Particle.DustOptions(this.color, 1.0F)
                     );
 
-                    // Second helix strand (offset by π radians = 180 degrees)
+                    // Second helix strand (rotating counter-clockwise)
                     double x2 = startX + helixRadius * Math.cos(angle + Math.PI);
                     double z2 = startZ + helixRadius * Math.sin(angle + Math.PI);
 
@@ -133,10 +134,29 @@ public class DoubleHelixAltarParticleEffect implements AltarParticleEffectInterf
                             1,
                             new Particle.DustOptions(this.color, 1.0F)
                     );
+
+                    // Connecting line between the two strands for a true DNA-like structure
+                    if (i % 10 == 0) {
+                        int connectionParticles = 6;  // Number of particles in the connecting line
+                        for (int j = 0; j < connectionParticles; j++) {
+                            double t = (double) j / (connectionParticles - 1); // Interpolation factor
+                            double connectorX = x1 + t * (x2 - x1);
+                            double connectorZ = z1 + t * (z2 - z1);
+
+                            world.spawnParticle(
+                                    Particle.DUST,
+                                    connectorX,
+                                    y,
+                                    connectorZ,
+                                    1,
+                                    new Particle.DustOptions(this.color, 0.5F)
+                            );
+                        }
+                    }
                 }
 
                 // Play sound periodically during animation
-                if (currentFrame % 15 == 0) {
+                if (currentFrame % 10 == 0) {
                     world.playSound(
                             centerLocation,
                             Sound.BLOCK_NOTE_BLOCK_CHIME,

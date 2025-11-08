@@ -18,10 +18,10 @@ import org.bukkit.plugin.Plugin;
 public class HelixAltarParticleEffect implements AltarParticleEffectInterface {
     private final Plugin plugin;
     private final Color color;
-    private final double particleSpacing = 0.1;
-    private final double helixRadius = 4.0;
-    private final double helixHeight = 3.0;
-    private final int rotations = 3; // Number of complete rotations
+    private final double particleSpacing;
+    private final double helixRadius;
+    private final double helixHeight;
+    private final int rotations;
 
     /**
      * Constructs a new HelixAltarParticleEffect with the given plugin and color.
@@ -30,8 +30,34 @@ public class HelixAltarParticleEffect implements AltarParticleEffectInterface {
      * @param color  The color of the particles.
      */
     public HelixAltarParticleEffect(Plugin plugin, Color color) {
+        this(plugin, color, 0.1, 4.0, 3.0, 3);
+    }
+
+    /**
+     * Constructs a new HelixAltarParticleEffect with the given plugin, color,
+     * particle spacing, radius, height, and number of rotations.
+     *
+     * @param plugin          The plugin instance.
+     * @param color           The color of the particles.
+     * @param particleSpacing The distance between particles (default: 0.1).
+     * @param helixRadius     The radius of the helix (default: 4.0).
+     * @param helixHeight     The height of the helix (default: 3.0).
+     * @param rotations       The number of helix rotations (default: 3).
+     */
+    public HelixAltarParticleEffect(
+            Plugin plugin,
+            Color color,
+            double particleSpacing,
+            double helixRadius,
+            double helixHeight,
+            int rotations
+    ) {
         this.plugin = plugin;
         this.color = color;
+        this.particleSpacing = particleSpacing;
+        this.helixRadius = helixRadius;
+        this.helixHeight = helixHeight;
+        this.rotations = rotations;
     }
 
     /**
