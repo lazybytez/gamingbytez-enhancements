@@ -14,7 +14,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -72,23 +75,23 @@ public class ChatBotChatListener implements Listener {
 
         Component component = this.buildMessage(response);
 
-        this.sendMessage(component, response.getTarget(), sender, receivers);
+        this.sendMessage(component, response.target(), sender, receivers);
     }
 
     private Component buildMessage(ChatBotResponse response) {
         StringBuilder msg = new StringBuilder();
 
-        if (!response.isOmitSender()) {
-            String sender = response.getSender() == null || response.getSender().isEmpty()
+        if (!response.omitSender()) {
+            String sender = response.sender() == null || response.sender().isEmpty()
                     ? RandomNameUtility.getRandomName()
-                    : response.getSender();
+                    : response.sender();
 
             msg.append("<");
             msg.append(sender);
             msg.append("> ");
         }
 
-        msg.append(response.getMessage());
+        msg.append(response.message());
 
         return Component.text(msg.toString());
     }

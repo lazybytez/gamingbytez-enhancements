@@ -18,7 +18,6 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.Map;
@@ -137,9 +136,9 @@ public class AltarCraftingListener implements Listener {
             return;
         }
 
-        this.logger.info("Recipe found for the items on the altar at " + centerBlockLocation + ", executing recipe.");
+        this.logger.info("Recipe " + recipe.getClass().getSimpleName() + " found for the items on the altar at " + centerBlockLocation + ", executing recipe.");
         recipe.onRecipeComplete(this.plugin, altar, event, removeLock);
-        this.logger.info("Recipe executed for the items on the altar at " + centerBlockLocation + ".");
+        this.logger.info("Recipe " + recipe.getClass().getSimpleName() + " executed for the items on the altar at " + centerBlockLocation + ".");
 
         cleanupAltar(recipe, altar);
     }

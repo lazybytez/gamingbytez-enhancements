@@ -15,8 +15,6 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class EnhancementsPlugin extends JavaPlugin {
-    private OpenAiClient openAiClient;
-
     private final Feature[] features = new Feature[]{
             new TemporaryCartFeature(this),
             new ChatBotFeature(this),
@@ -27,6 +25,7 @@ public final class EnhancementsPlugin extends JavaPlugin {
             new CustomLootFeature(this),
             new MinecartPortalFeature(this),
     };
+    private OpenAiClient openAiClient;
 
     @Override
     public void onLoad() {

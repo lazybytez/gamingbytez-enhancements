@@ -1,6 +1,5 @@
 package de.lazybytez.gamingbytezenhancements.feature.minecartportal.model;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +32,15 @@ public class MinecartPortal implements ConfigurationSerializable {
      */
     private Location destination;
 
+    public MinecartPortal() {
+    }
+
+    public MinecartPortal(String name, Location portal, Location destination) {
+        this.name = name;
+        this.portal = portal;
+        this.destination = destination;
+    }
+
     /**
      * Deserialize a MinecartPortal object from the storage (config file).
      *
@@ -46,15 +54,6 @@ public class MinecartPortal implements ConfigurationSerializable {
         Location destination = (Location) data.get("destination");
 
         return new MinecartPortal(name, portal, destination);
-    }
-
-    public MinecartPortal() {
-    }
-
-    public MinecartPortal(String name, Location portal, Location destination) {
-        this.name = name;
-        this.portal = portal;
-        this.destination = destination;
     }
 
     /**
