@@ -6,6 +6,8 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAlta
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.ExperienceGemManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.MagicXpBottleManager;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.DoubleHelixAltarParticleEffect;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.HelixAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.LinesToCenterAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
@@ -45,7 +47,7 @@ public class FillMagicXpBottleRecipe extends AbstractAltarRecipe {
         }
 
         int originalExperience = magicXpBottleManager.getExperience(originalMagicXPBottle);
-        new LinesToCenterAltarParticleEffect(plugin, Color.LIME).executeParticleEffect(
+        new DoubleHelixAltarParticleEffect(plugin, Color.LIME).executeParticleEffect(
                 altar,
                 event,
                 (effectPlugin, effectAltar, effectEvent) -> {
