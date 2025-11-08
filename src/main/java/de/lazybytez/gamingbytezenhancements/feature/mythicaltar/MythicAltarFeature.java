@@ -5,6 +5,7 @@ import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.AltarCraftingListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.DropEssenceOfSpawnerOnSpawnerBreakListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.UseMagicXpBottleOnClickListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.CustomItemManagerRegistry;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.EssenceOfSpawnerManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.ExperienceGemManager;
@@ -61,6 +62,7 @@ public class MythicAltarFeature extends AbstractFeature {
 
         // Magic XP Bottle
         this.registerEvent(new DropEssenceOfSpawnerOnSpawnerBreakListener(this));
+        this.registerEvent(new UseMagicXpBottleOnClickListener(this));
     }
 
     public CustomItemManagerRegistry getCustomItemManagerRegistry() {

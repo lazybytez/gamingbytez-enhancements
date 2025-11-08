@@ -15,9 +15,10 @@ import org.bukkit.plugin.Plugin;
  */
 public abstract class AbstractCustomItemManager {
 
-    private final Plugin plugin;
+    protected final Plugin plugin;
 
-    private final Material material;
+    protected final Material material;
+
     private final String pdcKey;
 
     private NamespacedKey namespacedKey;
@@ -62,11 +63,9 @@ public abstract class AbstractCustomItemManager {
         );
     }
 
-    public NamespacedKey getPdcKey() {
+    protected NamespacedKey getPdcKey() {
         if (this.namespacedKey == null) {
             this.namespacedKey = new NamespacedKey(this.plugin, this.pdcKey);
-
-            return this.namespacedKey;
         }
 
         return this.namespacedKey;

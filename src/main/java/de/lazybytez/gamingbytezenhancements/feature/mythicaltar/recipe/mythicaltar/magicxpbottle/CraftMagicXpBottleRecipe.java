@@ -1,11 +1,11 @@
-package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magic;
+package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.EssenceOfSpawnerManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.ExperienceGemManager;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.MagicXpBottleManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.LinesToCenterAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
@@ -20,14 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CraftExperienceGemRecipe extends AbstractAltarRecipe {
+public class CraftMagicXpBottleRecipe extends AbstractAltarRecipe {
 
     private final MythicAltarFeature mythicAltarFeature;
 
     /**
      * Constructs a new MagicXpBottleRecipe.
      */
-    public CraftExperienceGemRecipe(MythicAltarFeature mythicAltarFeature) {
+    public CraftMagicXpBottleRecipe(MythicAltarFeature mythicAltarFeature) {
         super(MythicAltar.class, true);
 
         this.mythicAltarFeature = mythicAltarFeature;
@@ -35,7 +35,7 @@ public class CraftExperienceGemRecipe extends AbstractAltarRecipe {
 
     @Override
     public void onRecipeComplete(Plugin plugin, AltarInterface altar, PlayerItemFrameChangeEvent event, Runnable removeLock) {
-        new LinesToCenterAltarParticleEffect(plugin, Color.GREEN).executeParticleEffect(
+        new LinesToCenterAltarParticleEffect(plugin, Color.RED).executeParticleEffect(
                 altar,
                 event,
                 (effectPlugin, effectAltar, effectEvent) -> {
@@ -44,7 +44,7 @@ public class CraftExperienceGemRecipe extends AbstractAltarRecipe {
                     ItemFrame pedestal = effectAltar.getPedestal(PedestalLocation.CENTER);
                     ItemStack essenceOfSpawner = this.mythicAltarFeature
                             .getCustomItemManagerRegistry()
-                            .getCustomItemManager(EssenceOfSpawnerManager.class)
+                            .getCustomItemManager(MagicXpBottleManager.class)
                             .createCustomItem();
 
                     effectWorld.dropItem(pedestal.getLocation(), essenceOfSpawner);
@@ -55,15 +55,7 @@ public class CraftExperienceGemRecipe extends AbstractAltarRecipe {
 
     @Override
     public boolean validateAltarState(AltarInterface altar) {
-        if (altar.getPedestal(PedestalLocation.CENTER).getItem().getType() != Material.DIAMOND) {
-            return false;
-        }
-
-        // Cannot craft gem using gem as input
-        ExperienceGemManager experienceGemManager = this.mythicAltarFeature
-                .getCustomItemManagerRegistry()
-                .getCustomItemManager(ExperienceGemManager.class);
-        if (experienceGemManager.isCustomItem(altar.getPedestal(PedestalLocation.CENTER).getItem())) {
+        if (altar.getPedestal(PedestalLocation.CENTER).getItem().getType() != Material.GLASS_BOTTLE) {
             return false;
         }
 
@@ -74,18 +66,38 @@ public class CraftExperienceGemRecipe extends AbstractAltarRecipe {
                 PedestalLocation.SOUTH_EAST
         );
 
-        EssenceOfSpawnerManager essenceOfSpawnerManager = this.mythicAltarFeature
+        List<PedestalLocation> pedestalWithEssenceOfSpawner = new ArrayList<>();
+        List<PedestalLocation> pedestalWithNetheriteBlock = new ArrayList<>();
+
+        ExperienceGemManager experienceGemManager = this.mythicAltarFeature
                 .getCustomItemManagerRegistry()
-                .getCustomItemManager(EssenceOfSpawnerManager.class);
+                .getCustomItemManager(ExperienceGemManager.class);
         for (PedestalLocation location : outerPedestals) {
-            if (!essenceOfSpawnerManager.isCustomItem(altar.getPedestal(location).getItem())) {
-                return false;
+            if (altar.getPedestal(location).getItem().getType().equals(Material.NETHERITE_BLOCK)) {
+                pedestalWithNetheriteBlock.add(location);
+            }
+
+            if (experienceGemManager.isCustomItem(altar.getPedestal(location).getItem())) {
+                pedestalWithEssenceOfSpawner.add(location);
             }
         }
 
-        return true;
-    }
+        if (pedestalWithNetheriteBlock.size() != 2 || pedestalWithEssenceOfSpawner.size() != 2) {
+            return false;
+        }
 
+        boolean netheriteOnNESW = pedestalWithNetheriteBlock.contains(PedestalLocation.NORTH_EAST)
+                && pedestalWithNetheriteBlock.contains(PedestalLocation.SOUTH_WEST);
+        boolean netheriteOnNWSE = pedestalWithNetheriteBlock.contains(PedestalLocation.NORTH_WEST)
+                && pedestalWithNetheriteBlock.contains(PedestalLocation.SOUTH_EAST);
+
+        boolean essenceOnNESW = pedestalWithEssenceOfSpawner.contains(PedestalLocation.NORTH_EAST)
+                && pedestalWithEssenceOfSpawner.contains(PedestalLocation.SOUTH_WEST);
+        boolean essenceOnNWSE = pedestalWithEssenceOfSpawner.contains(PedestalLocation.NORTH_WEST)
+                && pedestalWithEssenceOfSpawner.contains(PedestalLocation.SOUTH_EAST);
+
+        return (netheriteOnNESW && essenceOnNWSE) || (netheriteOnNWSE && essenceOnNESW);
+    }
 
     @Override
     public Map<PedestalLocation, ItemStack> getRecipe() {

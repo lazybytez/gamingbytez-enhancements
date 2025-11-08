@@ -2,8 +2,9 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeInterface;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magic.CraftExperienceGemRecipe;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magic.CraftMagicXpBottleRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle.CraftExperienceGemRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle.CraftMagicXpBottleRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle.FillMagicXpBottleRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.time.TimeDayAltarRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.time.TimeNightAltarRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.weather.RainRitualAltarRecipe;
@@ -11,7 +12,6 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicalt
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.weather.ThunderstormRitualAltarRecipe;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,7 +44,8 @@ public final class MythicAltar extends AbstractAltar {
 
                 // Magic XP Bottle
                 new CraftExperienceGemRecipe(mythicAltarFeature),
-                new CraftMagicXpBottleRecipe(mythicAltarFeature)
+                new CraftMagicXpBottleRecipe(mythicAltarFeature),
+                new FillMagicXpBottleRecipe(mythicAltarFeature)
         );
     }
 
