@@ -7,7 +7,6 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -57,18 +56,18 @@ public class SafariNetReleaseEntityListener implements Listener {
         // Cancel the event to prevent throwing the snowball
         event.setCancelled(true);
 
-        // Get the entity type
-        EntityType entityType = safariNetManager.getEntityType(item);
-        if (entityType == null) {
-            return;
-        }
-
         // Get spawn location (in front of the player)
         Location spawnLocation = player.getEyeLocation().add(player.getLocation().getDirection().multiply(2));
         spawnLocation.setY(player.getLocation().getY());
 
-        // Spawn the entity
-        Entity spawnedEntity = player.getWorld().spawnEntity(spawnLocation, entityType);
+        // Spawn the entity with all its metadata
+        Entity spawnedEntity = safariNetManager.spawnEntityFromNet(item, spawnLocation);
+
+        if (spawnedEntity == null) {
+            // Failed to spawn entity, notify player
+            player.sendMessage(net.kyori.adventure.text.Component.text("Failed to release entity from Safari Net!", net.kyori.adventure.text.format.NamedTextColor.RED));
+            return;
+        }
 
         // Play success sound and particles
         player.getWorld().playSound(spawnLocation, Sound.ENTITY_CHICKEN_EGG, 1.0f, 0.8f);

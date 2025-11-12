@@ -14,6 +14,7 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,19 +75,53 @@ public class SafariNetRecipe extends AbstractAltarRecipe {
     }
 
     /**
+     * Validates whether the given altar currently matches the recipe.
+     * Recipe requires: Snowball in center, 2 Diamonds and 2 Eggs in any outer pedestal positions.
+     *
+     * @param altar The altar to validate.
+     * @return whether the given altar currently matches the recipe.
+     */
+    @Override
+    public boolean validateAltarState(AltarInterface altar) {
+        // Check center has a snowball
+        if (altar.getPedestal(PedestalLocation.CENTER).getItem().getType() != Material.SNOWBALL) {
+            return false;
+        }
+
+        // Get outer pedestal locations
+        List<PedestalLocation> outerPedestals = List.of(
+                PedestalLocation.NORTH_WEST,
+                PedestalLocation.SOUTH_WEST,
+                PedestalLocation.NORTH_EAST,
+                PedestalLocation.SOUTH_EAST
+        );
+
+        int diamondCount = 0;
+        int eggCount = 0;
+
+        // Count diamonds and eggs on outer pedestals
+        for (PedestalLocation location : outerPedestals) {
+            Material itemType = altar.getPedestal(location).getItem().getType();
+
+            if (itemType == Material.DIAMOND) {
+                diamondCount++;
+            } else if (itemType == Material.EGG) {
+                eggCount++;
+            }
+        }
+
+        // Must have exactly 2 diamonds and 2 eggs
+        return diamondCount == 2 && eggCount == 2;
+    }
+
+    /**
      * Returns the recipe for the Safari Net.
-     * Layout: Snowball in center, Diamonds on NW and SE, Eggs on NE and SW
+     * Since we use custom validation, this returns an empty map.
      *
      * @return the recipe for the Safari Net.
      */
     @Override
     public Map<PedestalLocation, ItemStack> getRecipe() {
-        return Map.of(
-                PedestalLocation.CENTER, new ItemStack(Material.SNOWBALL),
-                PedestalLocation.NORTH_WEST, new ItemStack(Material.DIAMOND),
-                PedestalLocation.SOUTH_EAST, new ItemStack(Material.DIAMOND),
-                PedestalLocation.NORTH_EAST, new ItemStack(Material.EGG),
-                PedestalLocation.SOUTH_WEST, new ItemStack(Material.EGG)
-        );
+        return Map.of();
     }
 }

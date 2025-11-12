@@ -93,11 +93,8 @@ public class SafariNetCatchEntityListener implements Listener {
 
         // Remove the entity if caught successfully
         if (success) {
-            // Serialize entity data
-            String entityData = livingEntity.getUniqueId().toString();
-
-            // Store entity in the Safari Net
-            safariNetManager.storeEntity(item, livingEntity.getType(), entityData);
+            // Store entity in the Safari Net (with all metadata)
+            safariNetManager.storeEntity(item, livingEntity);
 
             // Remove the entity
             livingEntity.remove();
