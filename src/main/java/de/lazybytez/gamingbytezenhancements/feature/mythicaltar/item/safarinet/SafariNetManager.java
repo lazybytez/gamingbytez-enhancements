@@ -258,7 +258,7 @@ public class SafariNetManager extends AbstractCustomItemManager {
             lore.add(text("A mystical net that can capture creatures.", NamedTextColor.GRAY));
             lore.add(text(""));
             lore.add(text("Throw to catch entities!", NamedTextColor.GOLD));
-            lore.add(text("50% success rate", NamedTextColor.GRAY));
+            lore.add(text("25% success rate", NamedTextColor.GRAY));
         } else {
             String entityName;
             // Use custom name if available, otherwise use formatted entity type

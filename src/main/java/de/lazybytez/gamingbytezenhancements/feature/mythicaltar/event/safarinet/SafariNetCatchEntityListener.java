@@ -77,102 +77,167 @@ public class SafariNetCatchEntityListener implements Listener {
 
         // Check if the snowball hit an entity
         Entity hitEntity = event.getHitEntity();
-        if (hitEntity == null || !(hitEntity instanceof LivingEntity livingEntity)) {
+        if (!(hitEntity instanceof LivingEntity livingEntity)) {
             return;
         }
-
-        // Check if entity type is blacklisted
-        if (BLACKLISTED_ENTITIES.contains(livingEntity.getType())) {
-            return;
-        }
-
-        // 50% chance to catch
-        boolean success = random.nextBoolean();
 
         Location entityLocation = livingEntity.getLocation();
 
-        // Remove the entity if caught successfully
-        if (success) {
-            // Store entity in the Safari Net (with all metadata)
-            safariNetManager.storeEntity(item, livingEntity);
+        // Check if entity type is blacklisted - show immediate failure
+        boolean isBlacklisted = BLACKLISTED_ENTITIES.contains(livingEntity.getType());
 
-            // Remove the entity
-            livingEntity.remove();
+        if (isBlacklisted) {
+            // Blacklisted entities: show immediate dark gray effect without capture attempt
+            showBlacklistedParticleEffect(entityLocation);
 
-            // Play success sound
-            entityLocation.getWorld().playSound(entityLocation, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-        } else {
             // Play failure sound
             entityLocation.getWorld().playSound(entityLocation, Sound.ENTITY_ITEM_BREAK, 1.0f, 0.5f);
+
+            // Safari Net is consumed (don't drop anything)
+        } else {
+            // 25% chance to catch non-blacklisted entities
+            boolean success = random.nextDouble() < 0.25;
+
+            // Store entity metadata before removing
+            safariNetManager.storeEntity(item, livingEntity);
+
+            // Remove the entity from world during capture attempt
+            livingEntity.remove();
+
+            // Show capture animation (2x red, then white/gray)
+            showCaptureAnimation(entityLocation, success, () -> {
+                if (success) {
+                    // Success: Play success sound and drop the Safari Net with captured entity
+                    entityLocation.getWorld().playSound(entityLocation, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+
+                    Item droppedItem = entityLocation.getWorld().dropItem(entityLocation, item);
+                    droppedItem.setVelocity(droppedItem.getVelocity().multiply(0));
+                    droppedItem.setPickupDelay(20);
+                } else {
+                    // Failure: Play failure sound, respawn entity as clone, consume Safari Net
+                    entityLocation.getWorld().playSound(entityLocation, Sound.ENTITY_ITEM_BREAK, 1.0f, 0.5f);
+
+                    // Respawn the entity as an exact clone
+                    safariNetManager.spawnEntityFromNet(item, entityLocation);
+
+                    // Safari Net is consumed (don't drop anything)
+                }
+            });
         }
 
-        // Drop the Safari Net as an item at the entity location
-        // First remove any existing Safari Net items nearby (from the snowball)
-        entityLocation.getNearbyEntitiesByType(Item.class, 1.0).forEach(itemEntity -> {
-            if (safariNetManager.isCustomItem(itemEntity.getItemStack())) {
-                itemEntity.remove();
-            }
-        });
-
-        Item droppedItem = entityLocation.getWorld().dropItem(entityLocation, item);
-        droppedItem.setVelocity(droppedItem.getVelocity().multiply(0));
-        droppedItem.setPickupDelay(20);
-
-        // Show particle effects (3 pulses)
-        showParticleEffects(entityLocation, success);
+        // Remove any Safari Net items that might have been dropped by the snowball
+        Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+            entityLocation.getNearbyEntitiesByType(Item.class, 2.0).forEach(itemEntity -> {
+                ItemStack droppedItemStack = itemEntity.getItemStack();
+                // Remove empty Safari Nets (ones without captured entity)
+                if (safariNetManager.isCustomItem(droppedItemStack) && !safariNetManager.hasEntity(droppedItemStack)) {
+                    itemEntity.remove();
+                }
+            });
+        }, 1L);
 
         // Remove the snowball projectile
         snowball.remove();
     }
 
     /**
-     * Show particle effects at the given location.
-     * Red and white firework particles, 3 pulses.
+     * Show immediate dark gray effect for blacklisted entities.
      */
-    private void showParticleEffects(Location location, boolean success) {
-        Color color1 = success ? Color.WHITE : Color.RED;
-        Color color2 = success ? Color.AQUA : Color.MAROON;
+    private void showBlacklistedParticleEffect(Location location) {
+        Color darkGray = Color.fromRGB(64, 64, 64);
+        Particle.DustOptions dustOptions = new Particle.DustOptions(darkGray, 1.5f);
 
-        for (int pulse = 0; pulse < 3; pulse++) {
-            int delay = pulse * 10; // 10 ticks (0.5 seconds) between each pulse
+        // Spawn dark gray particles in a sphere pattern
+        for (int i = 0; i < 30; i++) {
+            double angle1 = random.nextDouble() * Math.PI * 2;
+            double angle2 = random.nextDouble() * Math.PI * 2;
+            double radius = 0.5 + random.nextDouble() * 0.5;
 
-            Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
-                // Create firework effect
-                Particle.DustOptions dustOptions1 = new Particle.DustOptions(color1, 1.5f);
-                Particle.DustOptions dustOptions2 = new Particle.DustOptions(color2, 1.5f);
+            double x = radius * Math.sin(angle1) * Math.cos(angle2);
+            double y = radius * Math.sin(angle1) * Math.sin(angle2);
+            double z = radius * Math.cos(angle1);
 
-                // Spawn particles in a sphere pattern
-                for (int i = 0; i < 30; i++) {
-                    double angle1 = random.nextDouble() * Math.PI * 2;
-                    double angle2 = random.nextDouble() * Math.PI * 2;
-                    double radius = 0.5 + random.nextDouble() * 0.5;
+            Location particleLocation = location.clone().add(x, y + 0.5, z);
 
-                    double x = radius * Math.sin(angle1) * Math.cos(angle2);
-                    double y = radius * Math.sin(angle1) * Math.sin(angle2);
-                    double z = radius * Math.cos(angle1);
-
-                    Location particleLocation = location.clone().add(x, y + 0.5, z);
-
-                    location.getWorld().spawnParticle(
-                            Particle.DUST,
-                            particleLocation,
-                            1,
-                            0, 0, 0,
-                            0,
-                            i % 2 == 0 ? dustOptions1 : dustOptions2
-                    );
-                }
-
-                // Add some sparkle particles
-                location.getWorld().spawnParticle(
-                        Particle.FIREWORK,
-                        location.clone().add(0, 0.5, 0),
-                        10,
-                        0.3, 0.3, 0.3,
-                        0.1
-                );
-
-            }, delay);
+            location.getWorld().spawnParticle(
+                    Particle.DUST,
+                    particleLocation,
+                    1,
+                    0, 0, 0,
+                    0,
+                    dustOptions
+            );
         }
+
+        // Add a few failure firework particles
+        location.getWorld().spawnParticle(
+                Particle.FIREWORK,
+                location.clone().add(0, 0.5, 0),
+                5,
+                0.3, 0.3, 0.3,
+                0.1
+        );
+    }
+
+    /**
+     * Show capture animation with callback.
+     * Animation: RED (1 second) → RED (1 second) → WHITE (success) or DARK GRAY (failure)
+     * The callback is executed after the animation completes.
+     */
+    private void showCaptureAnimation(Location location, boolean success, Runnable callback) {
+        // Tick 1: RED (wiggle)
+        showParticlePulse(location, Color.RED, 0L);
+
+        // Tick 2: RED (wiggle) - after ~1 second (20 ticks)
+        showParticlePulse(location, Color.RED, 20L);
+
+        // Tick 3: WHITE (success) or DARK GRAY (failure) - after ~2 seconds (40 ticks)
+        Color finalColor = success ? Color.WHITE : Color.fromRGB(64, 64, 64);
+        Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+            showParticlePulse(location, finalColor, 0L);
+
+            // Add firework particles on final tick
+            location.getWorld().spawnParticle(
+                    Particle.FIREWORK,
+                    location.clone().add(0, 0.5, 0),
+                    success ? 20 : 5,  // More particles on success
+                    0.3, 0.3, 0.3,
+                    0.1
+            );
+
+            // Execute callback after animation completes
+            callback.run();
+        }, 40L);
+    }
+
+    /**
+     * Show a single particle pulse at the given location.
+     */
+    private void showParticlePulse(Location location, Color color, long delay) {
+        Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+            Particle.DustOptions dustOptions = new Particle.DustOptions(color, 1.5f);
+
+            // Spawn particles in a sphere pattern
+            for (int i = 0; i < 30; i++) {
+                double angle1 = random.nextDouble() * Math.PI * 2;
+                double angle2 = random.nextDouble() * Math.PI * 2;
+                double radius = 0.5 + random.nextDouble() * 0.5;
+
+                double x = radius * Math.sin(angle1) * Math.cos(angle2);
+                double y = radius * Math.sin(angle1) * Math.sin(angle2);
+                double z = radius * Math.cos(angle1);
+
+                Location particleLocation = location.clone().add(x, y + 0.5, z);
+
+                location.getWorld().spawnParticle(
+                        Particle.DUST,
+                        particleLocation,
+                        1,
+                        0, 0, 0,
+                        0,
+                        dustOptions
+                );
+            }
+        }, delay);
     }
 }
