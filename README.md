@@ -89,6 +89,20 @@ Also see [CONTRIBUTING.md#commits](https://github.com/lazybytez/.github/blob/mai
 
 - [IntelliJ](https://www.jetbrains.com/idea/) (free & paid)
 
+### Using AI Assistance (Claude Code)
+
+This repository supports the use of [Claude Code](https://claude.ai/code) for development assistance. A `CLAUDE.md` file is provided to help Claude understand the codebase structure and conventions.
+
+**Important guidelines when using AI assistance:**
+
+- **Code quality and style must remain consistent** with the existing codebase
+- **Use with caution** - AI-generated code is a tool, not a replacement for understanding
+- **All code MUST be thoroughly reviewed** before merging into main
+- **Pull requests are mandatory** for any AI-assisted changes
+- **Never merge code you don't completely understand** - if the AI generates something unclear, refactor it or ask for clarification
+- AI suggestions should follow existing architectural patterns unless you explicitly want to introduce improvements
+- Review AI-generated code for security vulnerabilities, edge cases, and maintainability
+
 ## Useful links
 
 [License][gh-license] -
