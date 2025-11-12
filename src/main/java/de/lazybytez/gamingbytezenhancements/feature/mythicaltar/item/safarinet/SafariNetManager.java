@@ -99,35 +99,28 @@ public class SafariNetManager extends AbstractCustomItemManager {
         }
 
         try {
-            // Decode the JSON data
             String jsonData = new String(Base64.getDecoder().decode(encodedData));
             Gson gson = new Gson();
             JsonObject data = gson.fromJson(jsonData, JsonObject.class);
 
-            // Spawn the base entity
             Entity spawnedEntity = location.getWorld().spawnEntity(location, entityType);
 
-            // Restore entity properties
             if (spawnedEntity instanceof LivingEntity livingEntity) {
-                // Restore custom name
                 if (data.has("customName")) {
                     String customName = data.get("customName").getAsString();
                     livingEntity.customName(Component.text(customName));
                     livingEntity.setCustomNameVisible(data.get("customNameVisible").getAsBoolean());
                 }
 
-                // Restore health
                 if (data.has("health")) {
                     livingEntity.setHealth(Math.min(data.get("health").getAsDouble(),
                                                     livingEntity.getAttribute(Attribute.MAX_HEALTH).getValue()));
                 }
 
-                // Restore AI enabled state
                 if (data.has("aiEnabled") && livingEntity instanceof Mob mob) {
                     mob.setAware(data.get("aiEnabled").getAsBoolean());
                 }
 
-                // Restore age for baby entities
                 if (data.has("age") && livingEntity instanceof org.bukkit.entity.Ageable ageable) {
                     int age = data.get("age").getAsInt();
                     if (age < 0) {
@@ -141,7 +134,6 @@ public class SafariNetManager extends AbstractCustomItemManager {
 
             return spawnedEntity;
         } catch (Exception e) {
-            // If deserialization fails, log and return null
             plugin.getLogger().warning("Failed to spawn entity from Safari Net: " + e.getMessage());
             return null;
         }
@@ -158,9 +150,7 @@ public class SafariNetManager extends AbstractCustomItemManager {
             Gson gson = new Gson();
             JsonObject data = new JsonObject();
 
-            // Store entity properties
             if (entity instanceof LivingEntity livingEntity) {
-                // Store custom name
                 if (livingEntity.customName() != null) {
                     Component nameComponent = livingEntity.customName();
                     if (nameComponent instanceof net.kyori.adventure.text.TextComponent textComponent) {
@@ -169,21 +159,17 @@ public class SafariNetManager extends AbstractCustomItemManager {
                     }
                 }
 
-                // Store health
                 data.addProperty("health", livingEntity.getHealth());
 
-                // Store AI enabled state
                 if (livingEntity instanceof Mob mob) {
                     data.addProperty("aiEnabled", mob.isAware());
                 }
 
-                // Store age for baby entities
                 if (livingEntity instanceof org.bukkit.entity.Ageable ageable) {
                     data.addProperty("age", ageable.getAge());
                 }
             }
 
-            // Convert to JSON string and encode as Base64
             String jsonString = gson.toJson(data);
             String encodedData = Base64.getEncoder().encodeToString(jsonString.getBytes());
 
@@ -235,7 +221,6 @@ public class SafariNetManager extends AbstractCustomItemManager {
         }
 
         String entityName;
-        // Use custom name if available, otherwise use formatted entity type
         if (entity != null && entity.customName() != null) {
             entityName = ((net.kyori.adventure.text.TextComponent) entity.customName()).content();
         } else {
@@ -261,7 +246,6 @@ public class SafariNetManager extends AbstractCustomItemManager {
             lore.add(text("25% success rate", NamedTextColor.GRAY));
         } else {
             String entityName;
-            // Use custom name if available, otherwise use formatted entity type
             if (entity != null && entity.customName() != null) {
                 entityName = ((net.kyori.adventure.text.TextComponent) entity.customName()).content();
             } else {

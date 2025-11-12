@@ -61,7 +61,6 @@ public class SafariNetRecipe extends AbstractAltarRecipe {
                 altar,
                 event,
                 (effectPlugin, effectAltar, effectEvent) -> {
-                    // Create and drop the Safari Net
                     ItemFrame pedestal = effectAltar.getPedestal(PedestalLocation.CENTER);
                     ItemStack safariNet = this.mythicAltarFeature
                             .getCustomItemManagerRegistry()
@@ -83,12 +82,10 @@ public class SafariNetRecipe extends AbstractAltarRecipe {
      */
     @Override
     public boolean validateAltarState(AltarInterface altar) {
-        // Check center has a snowball
         if (altar.getPedestal(PedestalLocation.CENTER).getItem().getType() != Material.SNOWBALL) {
             return false;
         }
 
-        // Get outer pedestal locations
         List<PedestalLocation> outerPedestals = List.of(
                 PedestalLocation.NORTH_WEST,
                 PedestalLocation.SOUTH_WEST,
@@ -99,7 +96,6 @@ public class SafariNetRecipe extends AbstractAltarRecipe {
         int diamondCount = 0;
         int eggCount = 0;
 
-        // Count diamonds and eggs on outer pedestals
         for (PedestalLocation location : outerPedestals) {
             Material itemType = altar.getPedestal(location).getItem().getType();
 
@@ -110,7 +106,6 @@ public class SafariNetRecipe extends AbstractAltarRecipe {
             }
         }
 
-        // Must have exactly 2 diamonds and 2 eggs
         return diamondCount == 2 && eggCount == 2;
     }
 

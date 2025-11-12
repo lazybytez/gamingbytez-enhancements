@@ -30,12 +30,10 @@ public class SafariNetReleaseEntityListener implements Listener {
         Player player = event.getPlayer();
         ItemStack item = event.getItem();
 
-        // Check if player right-clicked
         if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
-        // Check if item is a Safari Net
         if (item == null) {
             return;
         }
@@ -48,28 +46,22 @@ public class SafariNetReleaseEntityListener implements Listener {
             return;
         }
 
-        // Check if Safari Net has an entity
         if (!safariNetManager.hasEntity(item)) {
             return;
         }
 
-        // Cancel the event to prevent throwing the snowball
         event.setCancelled(true);
 
-        // Get spawn location (in front of the player)
         Location spawnLocation = player.getEyeLocation().add(player.getLocation().getDirection().multiply(2));
         spawnLocation.setY(player.getLocation().getY());
 
-        // Spawn the entity with all its metadata
         Entity spawnedEntity = safariNetManager.spawnEntityFromNet(item, spawnLocation);
 
         if (spawnedEntity == null) {
-            // Failed to spawn entity, notify player
             player.sendMessage(net.kyori.adventure.text.Component.text("Failed to release entity from Safari Net!", net.kyori.adventure.text.format.NamedTextColor.RED));
             return;
         }
 
-        // Play success sound and particles
         player.getWorld().playSound(spawnLocation, Sound.ENTITY_CHICKEN_EGG, 1.0f, 0.8f);
         player.getWorld().spawnParticle(
                 Particle.FIREWORK,
@@ -79,10 +71,8 @@ public class SafariNetReleaseEntityListener implements Listener {
                 0.1
         );
 
-        // Clear the entity from the Safari Net
         safariNetManager.clearEntity(item);
 
-        // Remove the Safari Net from inventory
         if (item.getAmount() > 1) {
             item.setAmount(item.getAmount() - 1);
         } else {
