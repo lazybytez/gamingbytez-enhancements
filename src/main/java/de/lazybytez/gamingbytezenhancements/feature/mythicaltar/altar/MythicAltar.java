@@ -5,6 +5,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.Completab
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle.CraftExperienceGemRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle.CraftMagicXpBottleRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle.FillMagicXpBottleRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.safarinet.SafariNetRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.time.TimeDayAltarRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.time.TimeNightAltarRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.weather.RainRitualAltarRecipe;
@@ -45,7 +46,10 @@ public final class MythicAltar extends AbstractAltar {
                 // Magic XP Bottle
                 new CraftExperienceGemRecipe(mythicAltarFeature),
                 new CraftMagicXpBottleRecipe(mythicAltarFeature),
-                new FillMagicXpBottleRecipe(mythicAltarFeature)
+                new FillMagicXpBottleRecipe(mythicAltarFeature),
+
+                // Safari Net
+                new SafariNetRecipe(mythicAltarFeature)
         );
     }
 
