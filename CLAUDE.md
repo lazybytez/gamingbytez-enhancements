@@ -14,8 +14,23 @@ When working with this repository, adhere to these critical requirements:
 - **Never generate unclear code** - If generated code is complex or unclear, refactor it for maintainability
 - **Follow existing architectural patterns** - Use established design patterns (Template Method, Strategy, Registry) unless explicitly introducing improvements
 - **Security is paramount** - Review all code for vulnerabilities, edge cases, and proper error handling
-- **No inline comments** - Use JavaDoc blocks only, matching the existing codebase style
+- **JavaDoc only** - Use clean, concise JavaDoc for all public/protected methods with @param/@return; use multi-line JavaDoc for complex logic to explain "why"; avoid inline comments except for explaining non-obvious decisions or workarounds
 - **Validate assumptions** - When uncertain about implementation details, ask for clarification rather than guessing
+- **Prefer early returns** - Use guard clauses and early returns to reduce nesting. Never use if-else when early returns are applicable
+- **Use switch statements** - Prefer switch over multiple if-else chains when comparing constant values
+- **Use constants judiciously** - Extract constants when they improve code clarity, NOT as a blanket rule:
+  - **Always use constants for**: PDC keys, namespaced keys, and technical identifiers
+  - **Use constants for**: Configuration values (timeouts, cooldowns, thresholds), values used multiple times in the same class, complex calculations (e.g., `1000L * 60L * 5L` for "5 minutes")
+  - **Never use constants for**: User-facing text (display names, lore), one-off magic numbers (particle counts, delays used once), simple inline values (0.0, 1, 20 ticks when used once), colors (use `NamedTextColor.RED`, `Color.RED`), sound parameters (volume/pitch like 1.0f, 0.8f)
+  - **Rule of thumb**: If it's used once and self-explanatory in context, keep it inline; if it's reused or a tuning value, extract it
+- **Clean coding style** - Write clean, readable code following SOLID, DRY, KISS principles
+- **No deprecated APIs** - Never use deprecated APIs or methods; always find and use the modern alternative
+- **Method visibility** - Use private for internal helpers, public only when needed externally
+- **Keep methods focused** - Methods should be short and do one thing; extract private helper methods when logic becomes complex
+- **Proper exception handling** - Use try-catch for operations that can fail; log errors appropriately
+- **Balance loops vs streams** - Use traditional for/while loops for simple iterations (more performant and readable); use streams for complex filtering/transforming chains where they improve readability
+- **Use `this.` prefix** - Always use `this.` to access fields and call methods for consistency
+- **Blank lines for clarity** - Use blank lines to separate logical sections within methods
 
 ## Build & Development Commands
 
