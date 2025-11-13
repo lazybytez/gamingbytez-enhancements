@@ -8,19 +8,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import static net.kyori.adventure.text.Component.text;
 
@@ -83,7 +80,7 @@ public class SafariNetManager extends AbstractCustomItemManager {
 
     /**
      * Spawn an entity from the Safari Net at the given location.
-     * Restores the complete entity state using Paper's entity serialization API.
+     * Restores the complete entity state using Paper's EntitySnapshot API.
      *
      * @param safariNet The Safari Net containing the entity
      * @param location  The location to spawn the entity at
@@ -98,23 +95,12 @@ public class SafariNetManager extends AbstractCustomItemManager {
         }
 
         try {
-            byte[] compressedData = Base64.getDecoder().decode(encodedData);
-            byte[] serializedData = decompressGzip(compressedData);
-            Entity entity = Bukkit.getUnsafe().deserializeEntity(serializedData, location.getWorld(), false);
+            String nbtString = new String(Base64.getDecoder().decode(encodedData));
+            EntitySnapshot snapshot = Bukkit.getServer().getEntityFactory().createEntitySnapshot(nbtString);
 
-            if (entity == null) {
-                return null;
-            }
-
-            boolean spawned = entity.spawnAt(location, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM);
-            if (!spawned) {
-                plugin.getLogger().warning("Failed to spawn entity at location: " + location);
-                return null;
-            }
-
-            return entity;
-        } catch (java.util.zip.ZipException e) {
-            plugin.getLogger().info("Safari Net contains old format data. Spawning fresh entity of type: " + entityType);
+            return snapshot.createEntity(location);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().info("Safari Net contains old or invalid format data. Spawning fresh entity of type: " + entityType);
             return location.getWorld().spawnEntity(location, entityType);
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to spawn entity from Safari Net: " + e.getMessage());
@@ -124,15 +110,20 @@ public class SafariNetManager extends AbstractCustomItemManager {
 
     /**
      * Store an entity in the Safari Net.
-     * Uses Paper's entity serialization API to preserve the complete entity state dynamically.
+     * Uses Paper's EntitySnapshot API to preserve the complete entity state dynamically.
      */
     public void storeEntity(ItemStack safariNet, Entity entity) {
         EntityType entityType = entity.getType();
 
         try {
-            byte[] serializedData = Bukkit.getUnsafe().serializeEntity(entity);
-            byte[] compressedData = compressGzip(serializedData);
-            String encodedData = Base64.getEncoder().encodeToString(compressedData);
+            EntitySnapshot snapshot = entity.createSnapshot();
+            if (snapshot == null) {
+                plugin.getLogger().warning("Failed to create snapshot for entity: " + entityType);
+                return;
+            }
+
+            String nbtString = snapshot.getAsString();
+            String encodedData = Base64.getEncoder().encodeToString(nbtString.getBytes());
 
             safariNet.editPersistentDataContainer(pdc -> {
                 pdc.set(this.getEntityTypePdcKey(), PersistentDataType.STRING, entityType.name());
@@ -267,32 +258,5 @@ public class SafariNetManager extends AbstractCustomItemManager {
         }
 
         return this.entityDataPdcKey;
-    }
-
-    /**
-     * Compress data using GZIP.
-     */
-    private byte[] compressGzip(byte[] data) throws Exception {
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        try (GZIPOutputStream gzipStream = new GZIPOutputStream(byteStream)) {
-            gzipStream.write(data);
-        }
-        return byteStream.toByteArray();
-    }
-
-    /**
-     * Decompress GZIP data.
-     */
-    private byte[] decompressGzip(byte[] compressedData) throws Exception {
-        ByteArrayInputStream byteStream = new ByteArrayInputStream(compressedData);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (GZIPInputStream gzipStream = new GZIPInputStream(byteStream)) {
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = gzipStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, len);
-            }
-        }
-        return outputStream.toByteArray();
     }
 }
