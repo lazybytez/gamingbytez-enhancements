@@ -2,6 +2,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.safarinet;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.AbstractCustomItemManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -86,6 +87,7 @@ public class SafariNetManager extends AbstractCustomItemManager {
      * @param location  The location to spawn the entity at
      * @return The spawned entity, or null if spawning failed
      */
+    @SuppressWarnings("UnstableApiUsage")
     public Entity spawnEntityFromNet(ItemStack safariNet, org.bukkit.Location location) {
         String encodedData = getEntityData(safariNet);
         EntityType entityType = getEntityType(safariNet);
@@ -112,6 +114,7 @@ public class SafariNetManager extends AbstractCustomItemManager {
      * Store an entity in the Safari Net.
      * Uses Paper's EntitySnapshot API to preserve the complete entity state dynamically.
      */
+    @SuppressWarnings("UnstableApiUsage")
     public void storeEntity(ItemStack safariNet, Entity entity) {
         EntityType entityType = entity.getType();
 
@@ -173,8 +176,13 @@ public class SafariNetManager extends AbstractCustomItemManager {
         }
 
         String entityName;
-        if (entity != null && entity.customName() != null) {
-            entityName = ((net.kyori.adventure.text.TextComponent) entity.customName()).content();
+        if (entity != null) {
+            Component customName = entity.customName();
+            if (customName instanceof TextComponent textComponent) {
+                entityName = textComponent.content();
+            } else {
+                entityName = formatEntityName(entityType);
+            }
         } else {
             entityName = formatEntityName(entityType);
         }
@@ -198,8 +206,13 @@ public class SafariNetManager extends AbstractCustomItemManager {
             lore.add(text("25% success rate", NamedTextColor.GRAY));
         } else {
             String entityName;
-            if (entity != null && entity.customName() != null) {
-                entityName = ((net.kyori.adventure.text.TextComponent) entity.customName()).content();
+            if (entity != null) {
+                Component customName = entity.customName();
+                if (customName instanceof TextComponent textComponent) {
+                    entityName = textComponent.content();
+                } else {
+                    entityName = formatEntityName(entityType);
+                }
             } else {
                 entityName = formatEntityName(entityType);
             }

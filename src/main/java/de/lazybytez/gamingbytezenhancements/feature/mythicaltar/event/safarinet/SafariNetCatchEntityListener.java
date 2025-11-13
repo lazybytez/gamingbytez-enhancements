@@ -72,15 +72,38 @@ public class SafariNetCatchEntityListener implements Listener {
             return;
         }
 
+        String playerName = snowball.getShooter() instanceof org.bukkit.entity.Player player
+                ? player.getName()
+                : "Unknown";
+
         Entity hitEntity = event.getHitEntity();
         if (!(hitEntity instanceof LivingEntity livingEntity)) {
+            plugin.getLogger().info("The player "
+                    + playerName
+                    + " threw a Safari Net at "
+                    + snowball.getLocation()
+                    + " but did not hit an entity");
             return;
         }
 
         Location entityLocation = livingEntity.getLocation();
         boolean isBlacklisted = BLACKLISTED_ENTITIES.contains(livingEntity.getType());
 
+        plugin.getLogger().info("The player "
+                + playerName
+                + " threw a Safari Net at a "
+                + livingEntity.getType()
+                + " at "
+                + entityLocation);
+
         if (isBlacklisted) {
+            plugin.getLogger().info("The player "
+                    + playerName
+                    + " attempted to capture a blacklisted entity "
+                    + livingEntity.getType()
+                    + " at "
+                    + entityLocation);
+
             showBlacklistedParticleEffect(entityLocation);
             entityLocation.getWorld().playSound(entityLocation, Sound.ENTITY_ITEM_BREAK, 1.0f, 0.5f);
         } else {
@@ -101,12 +124,27 @@ public class SafariNetCatchEntityListener implements Listener {
                 }
 
                 if (success) {
+                    plugin.getLogger().info("The player "
+                            + playerName
+                            + " successfully captured a "
+                            + livingEntity.getType()
+                            + " at "
+                            + entityLocation);
+
                     entityLocation.getWorld().playSound(entityLocation, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
 
                     Item droppedItem = entityLocation.getWorld().dropItem(entityLocation, item);
                     droppedItem.setVelocity(droppedItem.getVelocity().multiply(0));
                     droppedItem.setPickupDelay(20);
                 } else {
+                    plugin.getLogger().info("The player "
+                            + playerName
+                            + " failed to capture a "
+                            + livingEntity.getType()
+                            + " at "
+                            + entityLocation
+                            + " and the entity has been respawned");
+
                     entityLocation.getWorld().playSound(entityLocation, Sound.ENTITY_ITEM_BREAK, 1.0f, 0.5f);
                     safariNetManager.spawnEntityFromNet(item, entityLocation);
                 }

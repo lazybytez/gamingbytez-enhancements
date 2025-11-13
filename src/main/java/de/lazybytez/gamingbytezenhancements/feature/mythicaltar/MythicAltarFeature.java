@@ -7,6 +7,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.AltarCraft
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.DropEssenceOfSpawnerOnSpawnerBreakListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.UseMagicXpBottleOnClickListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetCatchEntityListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetPickupListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetReleaseEntityListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.CustomItemManagerRegistry;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.EssenceOfSpawnerManager;
@@ -73,6 +74,7 @@ public class MythicAltarFeature extends AbstractFeature {
         // Safari Net
         this.registerEvent(new SafariNetCatchEntityListener(this, this.plugin));
         this.registerEvent(new SafariNetReleaseEntityListener(this));
+        this.registerEvent(new SafariNetPickupListener(this));
     }
 
     public CustomItemManagerRegistry getCustomItemManagerRegistry() {

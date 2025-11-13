@@ -55,12 +55,26 @@ public class SafariNetReleaseEntityListener implements Listener {
         Location spawnLocation = player.getEyeLocation().add(player.getLocation().getDirection().multiply(2));
         spawnLocation.setY(player.getLocation().getY());
 
+        org.bukkit.entity.EntityType entityType = safariNetManager.getEntityType(item);
         Entity spawnedEntity = safariNetManager.spawnEntityFromNet(item, spawnLocation);
 
         if (spawnedEntity == null) {
+            mythicAltarFeature.getPlugin().getLogger().warning("The player "
+                    + player.getName()
+                    + " failed to release a "
+                    + entityType
+                    + " from Safari Net at "
+                    + spawnLocation);
             player.sendMessage(net.kyori.adventure.text.Component.text("Failed to release entity from Safari Net!", net.kyori.adventure.text.format.NamedTextColor.RED));
             return;
         }
+
+        mythicAltarFeature.getPlugin().getLogger().info("The player "
+                + player.getName()
+                + " released a "
+                + entityType
+                + " from Safari Net at "
+                + spawnLocation);
 
         player.getWorld().playSound(spawnLocation, Sound.ENTITY_CHICKEN_EGG, 1.0f, 0.8f);
         player.getWorld().spawnParticle(
