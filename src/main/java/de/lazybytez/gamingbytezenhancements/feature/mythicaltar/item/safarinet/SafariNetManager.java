@@ -4,24 +4,23 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.AbstractCus
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Mob;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static net.kyori.adventure.text.Component.text;
 
@@ -84,7 +83,7 @@ public class SafariNetManager extends AbstractCustomItemManager {
 
     /**
      * Spawn an entity from the Safari Net at the given location.
-     * Restores all entity properties from the serialized data.
+     * Restores the complete entity state using Paper's entity serialization API.
      *
      * @param safariNet The Safari Net containing the entity
      * @param location  The location to spawn the entity at
@@ -99,40 +98,24 @@ public class SafariNetManager extends AbstractCustomItemManager {
         }
 
         try {
-            String jsonData = new String(Base64.getDecoder().decode(encodedData));
-            Gson gson = new Gson();
-            JsonObject data = gson.fromJson(jsonData, JsonObject.class);
+            byte[] compressedData = Base64.getDecoder().decode(encodedData);
+            byte[] serializedData = decompressGzip(compressedData);
+            Entity entity = Bukkit.getUnsafe().deserializeEntity(serializedData, location.getWorld(), false);
 
-            Entity spawnedEntity = location.getWorld().spawnEntity(location, entityType);
-
-            if (spawnedEntity instanceof LivingEntity livingEntity) {
-                if (data.has("customName")) {
-                    String customName = data.get("customName").getAsString();
-                    livingEntity.customName(Component.text(customName));
-                    livingEntity.setCustomNameVisible(data.get("customNameVisible").getAsBoolean());
-                }
-
-                if (data.has("health")) {
-                    livingEntity.setHealth(Math.min(data.get("health").getAsDouble(),
-                                                    livingEntity.getAttribute(Attribute.MAX_HEALTH).getValue()));
-                }
-
-                if (data.has("aiEnabled") && livingEntity instanceof Mob mob) {
-                    mob.setAware(data.get("aiEnabled").getAsBoolean());
-                }
-
-                if (data.has("age") && livingEntity instanceof org.bukkit.entity.Ageable ageable) {
-                    int age = data.get("age").getAsInt();
-                    if (age < 0) {
-                        ageable.setBaby();
-                        ageable.setAge(age);
-                    } else {
-                        ageable.setAdult();
-                    }
-                }
+            if (entity == null) {
+                return null;
             }
 
-            return spawnedEntity;
+            boolean spawned = entity.spawnAt(location, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM);
+            if (!spawned) {
+                plugin.getLogger().warning("Failed to spawn entity at location: " + location);
+                return null;
+            }
+
+            return entity;
+        } catch (java.util.zip.ZipException e) {
+            plugin.getLogger().info("Safari Net contains old format data. Spawning fresh entity of type: " + entityType);
+            return location.getWorld().spawnEntity(location, entityType);
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to spawn entity from Safari Net: " + e.getMessage());
             return null;
@@ -141,37 +124,15 @@ public class SafariNetManager extends AbstractCustomItemManager {
 
     /**
      * Store an entity in the Safari Net.
-     * Serializes important entity properties to preserve name, health, etc.
+     * Uses Paper's entity serialization API to preserve the complete entity state dynamically.
      */
     public void storeEntity(ItemStack safariNet, Entity entity) {
         EntityType entityType = entity.getType();
 
         try {
-            Gson gson = new Gson();
-            JsonObject data = new JsonObject();
-
-            if (entity instanceof LivingEntity livingEntity) {
-                if (livingEntity.customName() != null) {
-                    Component nameComponent = livingEntity.customName();
-                    if (nameComponent instanceof net.kyori.adventure.text.TextComponent textComponent) {
-                        data.addProperty("customName", textComponent.content());
-                        data.addProperty("customNameVisible", livingEntity.isCustomNameVisible());
-                    }
-                }
-
-                data.addProperty("health", livingEntity.getHealth());
-
-                if (livingEntity instanceof Mob mob) {
-                    data.addProperty("aiEnabled", mob.isAware());
-                }
-
-                if (livingEntity instanceof org.bukkit.entity.Ageable ageable) {
-                    data.addProperty("age", ageable.getAge());
-                }
-            }
-
-            String jsonString = gson.toJson(data);
-            String encodedData = Base64.getEncoder().encodeToString(jsonString.getBytes());
+            byte[] serializedData = Bukkit.getUnsafe().serializeEntity(entity);
+            byte[] compressedData = compressGzip(serializedData);
+            String encodedData = Base64.getEncoder().encodeToString(compressedData);
 
             safariNet.editPersistentDataContainer(pdc -> {
                 pdc.set(this.getEntityTypePdcKey(), PersistentDataType.STRING, entityType.name());
@@ -306,5 +267,32 @@ public class SafariNetManager extends AbstractCustomItemManager {
         }
 
         return this.entityDataPdcKey;
+    }
+
+    /**
+     * Compress data using GZIP.
+     */
+    private byte[] compressGzip(byte[] data) throws Exception {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzipStream = new GZIPOutputStream(byteStream)) {
+            gzipStream.write(data);
+        }
+        return byteStream.toByteArray();
+    }
+
+    /**
+     * Decompress GZIP data.
+     */
+    private byte[] decompressGzip(byte[] compressedData) throws Exception {
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(compressedData);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (GZIPInputStream gzipStream = new GZIPInputStream(byteStream)) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = gzipStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, len);
+            }
+        }
+        return outputStream.toByteArray();
     }
 }
