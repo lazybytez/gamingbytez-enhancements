@@ -11,6 +11,8 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * Listener for picking up Safari Nets.
+ * <p>
+ * Logs when players pick up Safari Nets, including whether they contain entities.
  */
 public class SafariNetPickupListener implements Listener {
 
@@ -20,6 +22,14 @@ public class SafariNetPickupListener implements Listener {
         this.mythicAltarFeature = mythicAltarFeature;
     }
 
+    /**
+     * Handle entity pickup events for Safari Nets.
+     * <p>
+     * Logs when a player picks up a Safari Net, distinguishing between empty nets
+     * and nets containing entities.
+     *
+     * @param event The entity pickup item event
+     */
     @EventHandler
     public void onItemPickup(EntityPickupItemEvent event) {
         if (!(event.getEntity() instanceof Player player)) {
@@ -36,14 +46,32 @@ public class SafariNetPickupListener implements Listener {
         }
 
         if (safariNetManager.hasEntity(item)) {
-            EntityType entityType = safariNetManager.getEntityType(item);
-            mythicAltarFeature.getPlugin().getLogger().info("A player picked up a Safari Net containing a "
-                    + entityType
-                    + " at "
-                    + player.getLocation());
+            this.logPickupWithEntity(player, safariNetManager.getEntityType(item));
         } else {
-            mythicAltarFeature.getPlugin().getLogger().info("A player picked up an empty Safari Net at "
-                    + player.getLocation());
+            this.logPickupEmpty(player);
         }
+    }
+
+    /**
+     * Log when a player picks up a Safari Net containing an entity.
+     *
+     * @param player     The player who picked up the item
+     * @param entityType The type of entity in the Safari Net
+     */
+    private void logPickupWithEntity(Player player, EntityType entityType) {
+        this.mythicAltarFeature.getPlugin().getLogger().info("A player picked up a Safari Net containing a "
+                + entityType
+                + " at "
+                + player.getLocation());
+    }
+
+    /**
+     * Log when a player picks up an empty Safari Net.
+     *
+     * @param player The player who picked up the item
+     */
+    private void logPickupEmpty(Player player) {
+        this.mythicAltarFeature.getPlugin().getLogger().info("A player picked up an empty Safari Net at "
+                + player.getLocation());
     }
 }
