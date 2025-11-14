@@ -6,10 +6,14 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAlta
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.AltarCraftingListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.DropEssenceOfSpawnerOnSpawnerBreakListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.UseMagicXpBottleOnClickListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetCatchEntityListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetPickupListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetReleaseEntityListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.CustomItemManagerRegistry;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.EssenceOfSpawnerManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.ExperienceGemManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.MagicXpBottleManager;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.safarinet.SafariNetManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeRegistry;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeRegistryInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.validator.SimpleAltarSchemaValidator;
@@ -50,6 +54,9 @@ public class MythicAltarFeature extends AbstractFeature {
         this.customItemManagerRegistry.registerCustomItemManager(new EssenceOfSpawnerManager(this.plugin));
         this.customItemManagerRegistry.registerCustomItemManager(new ExperienceGemManager(this.plugin));
         this.customItemManagerRegistry.registerCustomItemManager(new MagicXpBottleManager(this.plugin));
+
+        // Safari Net
+        this.customItemManagerRegistry.registerCustomItemManager(new SafariNetManager(this.plugin));
     }
 
     private void registerEvents() {
@@ -63,6 +70,11 @@ public class MythicAltarFeature extends AbstractFeature {
         // Magic XP Bottle
         this.registerEvent(new DropEssenceOfSpawnerOnSpawnerBreakListener(this));
         this.registerEvent(new UseMagicXpBottleOnClickListener(this));
+
+        // Safari Net
+        this.registerEvent(new SafariNetCatchEntityListener(this, this.plugin));
+        this.registerEvent(new SafariNetReleaseEntityListener(this));
+        this.registerEvent(new SafariNetPickupListener(this));
     }
 
     public CustomItemManagerRegistry getCustomItemManagerRegistry() {
