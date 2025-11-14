@@ -75,7 +75,7 @@ public class SafariNetRecipe extends AbstractAltarRecipe {
 
     /**
      * Validates whether the given altar currently matches the recipe.
-     * Recipe requires: Snowball in center, 2 Diamonds and 2 Eggs in any outer pedestal positions.
+     * Recipe requires: Snowball in center, golden apple, diamond, redstone block, and phantom membrane in any outer pedestal positions.
      *
      * @param altar The altar to validate.
      * @return whether the given altar currently matches the recipe.
@@ -93,20 +93,23 @@ public class SafariNetRecipe extends AbstractAltarRecipe {
                 PedestalLocation.SOUTH_EAST
         );
 
-        int diamondCount = 0;
-        int eggCount = 0;
+        boolean hasGoldenApple = false;
+        boolean hasDiamond = false;
+        boolean hasRedstoneBlock = false;
+        boolean hasPhantomMembrane = false;
 
         for (PedestalLocation location : outerPedestals) {
             Material itemType = altar.getPedestal(location).getItem().getType();
 
-            if (itemType == Material.DIAMOND) {
-                diamondCount++;
-            } else if (itemType == Material.EGG) {
-                eggCount++;
+            switch (itemType) {
+                case GOLDEN_APPLE -> hasGoldenApple = true;
+                case DIAMOND -> hasDiamond = true;
+                case REDSTONE_BLOCK -> hasRedstoneBlock = true;
+                case PHANTOM_MEMBRANE -> hasPhantomMembrane = true;
             }
         }
 
-        return diamondCount == 2 && eggCount == 2;
+        return hasGoldenApple && hasDiamond && hasRedstoneBlock && hasPhantomMembrane;
     }
 
     /**
