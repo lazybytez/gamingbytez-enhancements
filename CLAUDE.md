@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-GamingBytez Enhancements is a modular Minecraft Paper/Spigot plugin (Java 21, Paper API 1.21.4) for a private server. The plugin provides custom game mechanics and enhancements through a feature-based architecture.
+GamingBytez Enhancements is a modular Minecraft Paper/Spigot plugin (Java 21, Paper API 1.21.10) for a private server. The plugin provides custom game mechanics and enhancements through a feature-based architecture.
 
 ## AI Assistance Guidelines
 
@@ -191,7 +191,7 @@ api-version: '1.21'
 ## Dependencies
 
 **Maven (pom.xml):**
-- Paper API 1.21.4-R0.1-SNAPSHOT (provided scope)
+- Paper API 1.21.10-R0.1-SNAPSHOT (provided scope)
 - Maven Shade Plugin for creating uber-JARs
 
 No additional runtime dependencies are bundled.
