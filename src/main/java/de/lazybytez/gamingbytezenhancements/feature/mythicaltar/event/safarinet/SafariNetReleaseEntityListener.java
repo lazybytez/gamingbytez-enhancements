@@ -105,9 +105,9 @@ public class SafariNetReleaseEntityListener implements Listener {
     /**
      * Handle successful entity release with logging.
      *
-     * @param player         The player who released the entity
-     * @param entityType     The type of entity released
-     * @param spawnLocation  The location where the entity was spawned
+     * @param player        The player who released the entity
+     * @param entityType    The type of entity released
+     * @param spawnLocation The location where the entity was spawned
      */
     private void handleReleaseSuccess(Player player, org.bukkit.entity.EntityType entityType, Location spawnLocation) {
         this.mythicAltarFeature.getPlugin().getLogger().info("The player "
@@ -121,9 +121,9 @@ public class SafariNetReleaseEntityListener implements Listener {
     /**
      * Handle failed entity release with logging and player notification.
      *
-     * @param player         The player who attempted to release the entity
-     * @param entityType     The type of entity that failed to spawn
-     * @param spawnLocation  The location where spawning was attempted
+     * @param player        The player who attempted to release the entity
+     * @param entityType    The type of entity that failed to spawn
+     * @param spawnLocation The location where spawning was attempted
      */
     private void handleReleaseFailure(Player player, org.bukkit.entity.EntityType entityType, Location spawnLocation) {
         this.mythicAltarFeature.getPlugin().getLogger().warning("The player "

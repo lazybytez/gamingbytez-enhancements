@@ -2,18 +2,8 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.safarinet.SafariNetManager;
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.Snowball;
+import org.bukkit.*;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -147,8 +137,8 @@ public class SafariNetCatchEntityListener implements Listener {
     /**
      * Handle blacklisted entity hit with visual feedback.
      *
-     * @param playerName    The player name
-     * @param livingEntity  The blacklisted entity
+     * @param playerName     The player name
+     * @param livingEntity   The blacklisted entity
      * @param entityLocation The entity location
      */
     private void handleBlacklistedEntity(String playerName, LivingEntity livingEntity, Location entityLocation) {
