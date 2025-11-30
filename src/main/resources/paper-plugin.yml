@@ -2,3 +2,8 @@ name: gamingbytez-enhancements
 version: '${project.version}'
 main: de.lazybytez.gamingbytezenhancements.EnhancementsPlugin
 api-version: '1.21'
+dependencies:
+  server:
+    Multiverse-Core:
+      load: BEFORE
+      required: false
