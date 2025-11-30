@@ -2,7 +2,6 @@ package de.lazybytez.gamingbytezenhancements.feature.minecartportal.listener;
 
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.MinecartPortalFeature;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.model.MinecartPortal;
-import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -78,37 +77,29 @@ public class MinecartPortalActivationListener implements Listener {
             if (players.size() != 1) {
                 continue;
             }
-            Entity player = players.getFirst();
+            Player player = (Player) players.getFirst();
 
-            // Using teleportAsync would be way more efficient than using teleport.
-            // Especially as portals are intended for far distance travel that will require chunk loading.
-            // However, teleportAsync with passengers seems to be buggy right now.
-            // Using sync teleport is therefore our only viable option, as we cannot
-            // unmount the player and teleport the player and minecart separately due to the
-            // temporary carts feature.
-            boolean success = minecart.teleport(
+            boolean success = player.teleport(
                     portal.getDestination(),
-                    PlayerTeleportEvent.TeleportCause.PLUGIN,
-                    TeleportFlag.EntityState.RETAIN_PASSENGERS
+                    PlayerTeleportEvent.TeleportCause.PLUGIN
             );
 
-            if (success) {
+            if (!success) {
                 this.feature.getPlugin().getLogger().info("The player "
                         + player.getName()
-                        + " has used the Minecart Portal at "
+                        + " could not be teleported by the Minecart Portal at "
                         + portal.getPortal()
-                        + " and has been teleported to "
+                        + " to "
                         + portal.getDestination()
                 );
-
-                return;
+                continue;
             }
 
             this.feature.getPlugin().getLogger().info("The player "
                     + player.getName()
-                    + " could not be teleported by the Minecart Portal at "
+                    + " has used the Minecart Portal at "
                     + portal.getPortal()
-                    + " to "
+                    + " and has been teleported to "
                     + portal.getDestination()
             );
         }

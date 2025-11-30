@@ -33,7 +33,8 @@ public class TemporaryCartManager {
         }
 
         this.setOnCoolDown(p);
-        Vehicle minecart = p.getWorld().spawn(location, Minecart.class);
+        Vehicle minecart = location.getWorld().spawn(location, Minecart.class);
+
 
         this.tagMinecartAsTemporary(minecart);
 

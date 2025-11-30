@@ -27,6 +27,7 @@ public class TemporaryCartFeature extends AbstractFeature {
         this.registerEvent(new RemoveCoolDownListener(this.getTemporaryCartManager()));
         this.registerEvent(new RemoveMinecartOnLeaveListener(this.getTemporaryCartManager()));
         this.registerEvent(new MinecartDestroyListener(this.getTemporaryCartManager()));
+        this.registerEvent(new MinecartTeleportListener(this.getTemporaryCartManager(), this.getPlugin()));
     }
 
     @Override
