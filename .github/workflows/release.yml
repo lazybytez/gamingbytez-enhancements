@@ -36,3 +36,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: target/gamingbytez-enhancements-${{ steps.extract_version.outputs.VERSION }}.jar
+          tag_name: ${{ github.event.release.tag_name }}
