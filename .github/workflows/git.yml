@@ -15,7 +15,7 @@ jobs:
           allowed_prefixes: "feature,fix,hotfix,release,renovate"
           ignore: main
 
-  # Verify that the commits matches the format
+  # Verify that the commits match the format
   verify_commit_messages:
     if: (github.actor!= 'renovate[bot]') && (contains(github.head_ref, 'renovate/github_actions/') == false)
     runs-on: ubuntu-latest
