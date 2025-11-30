@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.util.Vector;
 
 /**
  * Listener that handles preserving minecarts during player teleportation.
@@ -38,15 +39,17 @@ public class MinecartTeleportListener implements Listener {
             return;
         }
 
+        double speed = minecart.getVelocity().length();
+
         if (this.temporaryCartManager.isTemporaryCart(minecart)) {
-            this.handleTemporaryCart(player, minecart, event.getTo());
+            this.handleTemporaryCart(player, minecart, event.getTo(), speed);
             return;
         }
 
-        this.handleNormalCart(player, minecart, event.getTo());
+        this.handleNormalCart(player, minecart, event.getTo(), speed);
     }
 
-    private void handleTemporaryCart(Player player, Minecart minecart, Location destination) {
+    private void handleTemporaryCart(Player player, Minecart minecart, Location destination, double speed) {
         minecart.remove();
         this.temporaryCartManager.removeCoolDown(player);
 
@@ -56,10 +59,21 @@ public class MinecartTeleportListener implements Listener {
             }
 
             this.temporaryCartManager.spawnTemporaryCart(player, destination);
+
+            Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+                Entity vehicle = player.getVehicle();
+                if (!(vehicle instanceof Minecart newCart)) {
+                    return;
+                }
+
+                Vector direction = player.getLocation().getDirection();
+                Vector velocity = direction.normalize().multiply(speed);
+                newCart.setVelocity(velocity);
+            }, 3L);
         }, 5L);
     }
 
-    private void handleNormalCart(Player player, Minecart minecart, Location destination) {
+    private void handleNormalCart(Player player, Minecart minecart, Location destination, double speed) {
         Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
             if (!minecart.isValid() || !player.isValid()) {
                 return;
@@ -67,9 +81,15 @@ public class MinecartTeleportListener implements Listener {
 
             minecart.teleport(destination);
 
-            if (minecart.isValid() && player.isValid()) {
-                minecart.addPassenger(player);
+            if (!minecart.isValid() || !player.isValid()) {
+                return;
             }
+
+            minecart.addPassenger(player);
+
+            Vector direction = player.getLocation().getDirection();
+            Vector velocity = direction.normalize().multiply(speed);
+            minecart.setVelocity(velocity);
         }, 5L);
     }
 }
