@@ -6,7 +6,7 @@
 
     <groupId>de.lazybytez</groupId>
     <artifactId>gamingbytez-enhancements</artifactId>
-    <version>1.12.1</version>
+    <version>1.12.2</version>
     <packaging>jar</packaging>
 
     <name>gamingbytez-enhancements</name>
