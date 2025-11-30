@@ -156,6 +156,10 @@ public class PortalConfiguration {
                 continue;
             }
 
+            if (location.getWorld() != currentPortal.getPortal().getWorld()) {
+                continue;
+            }
+
             if (currentPortal.getPortal().distance(location) < 1.0) {
                 portal = currentPortal;
                 break;

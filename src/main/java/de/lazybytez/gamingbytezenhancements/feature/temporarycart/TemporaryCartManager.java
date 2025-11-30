@@ -33,7 +33,7 @@ public class TemporaryCartManager {
         }
 
         this.setOnCoolDown(p);
-        Vehicle minecart = p.getWorld().spawn(location, Minecart.class);
+        Vehicle minecart = location.getWorld().spawn(location, Minecart.class);
 
         this.tagMinecartAsTemporary(minecart);
 
@@ -50,7 +50,7 @@ public class TemporaryCartManager {
     /**
      * Sets the player on cool down.
      *
-     * @param p The player to set on cool down.
+     * @param p The player to set on cooldown.
      */
     private void setOnCoolDown(Player p) {
         String uuid = p.getUniqueId().toString();
