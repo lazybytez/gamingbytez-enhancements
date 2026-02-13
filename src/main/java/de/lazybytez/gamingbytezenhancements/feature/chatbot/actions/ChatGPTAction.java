@@ -72,7 +72,7 @@ public class ChatGPTAction implements ChatBotAction {
             this.enhancementsPlugin.getLogger().info(String.format(
                     "ChatGPT action was triggered for message \"%s\". However, the action is currently on cool down for another %d seconds (%d in total).",
                     message,
-                    lastActionSeconds,
+                    OPEN_AI_RATE_LIMIT - lastActionSeconds,
                     OPEN_AI_RATE_LIMIT
             ));
 
