@@ -2,6 +2,7 @@ package de.lazybytez.gamingbytezenhancements.feature.customloot;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
+import de.lazybytez.gamingbytezenhancements.feature.customloot.listener.EndermanCustomLootListener;
 import de.lazybytez.gamingbytezenhancements.feature.customloot.listener.HuskCustomLootListener;
 
 /**
@@ -19,6 +20,7 @@ public class CustomLootFeature extends AbstractFeature {
 
     private void registerEvents() {
         this.registerEvent(new HuskCustomLootListener());
+        this.registerEvent(new EndermanCustomLootListener());
     }
 
     @Override
