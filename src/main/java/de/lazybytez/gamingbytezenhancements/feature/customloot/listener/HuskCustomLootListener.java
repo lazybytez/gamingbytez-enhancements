@@ -1,6 +1,8 @@
 package de.lazybytez.gamingbytezenhancements.feature.customloot.listener;
 
+import de.lazybytez.gamingbytezenhancements.feature.customloot.service.EnchantmentLevelOnItemDeterminer;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -12,6 +14,12 @@ import org.bukkit.inventory.ItemStack;
  * Listener for Husk deaths that modifies the dropped items.
  */
 public class HuskCustomLootListener implements Listener {
+    private final EnchantmentLevelOnItemDeterminer enchantmentLevelOnItemDeterminer;
+
+    public HuskCustomLootListener(EnchantmentLevelOnItemDeterminer enchantmentLevelOnItemDeterminer) {
+        this.enchantmentLevelOnItemDeterminer = enchantmentLevelOnItemDeterminer;
+    }
+
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
         Entity entity = event.getEntity();
@@ -27,7 +35,9 @@ public class HuskCustomLootListener implements Listener {
      * Add 1 to 5 sand to the drops of the entity.
      */
     private void addSandToDrops(EntityDeathEvent event) {
-        int sandAmount = ((int) (Math.random() * 5));
+        int lootLevel = this.enchantmentLevelOnItemDeterminer.getEnchantmentLevelOnMeleeWeapon(event, Enchantment.LOOTING);
+
+        int sandAmount = ((int) (Math.random() * 5)) + lootLevel;
 
         // Cannot create item stacks with quantity 0
         if (sandAmount == 0) {
