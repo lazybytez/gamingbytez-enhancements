@@ -42,7 +42,7 @@ public class ChanceUtil {
      * - 30.0 - 79.9 is 2
      * - 80.0 - 99.9 is 3
      *
-     * Now we go threw the map backwards and check if the random value is higher than the min number of the number-block.
+     * Now we go threw the map and check if the random value is lower than the max number of the number-block.
      * If it is the case, we can return the key.
      */
     public static Integer getRandomIntegerWithProbability(SortedMap<Integer, Double> probabilityMap) {
@@ -50,13 +50,15 @@ public class ChanceUtil {
 
         double randomValue = Math.random() * probabilitySum;
 
-        for (Map.Entry<Integer, Double> entry: probabilityMap.reversed().entrySet()) {
-            if ((probabilitySum - entry.getValue()) <= randomValue) {
+        double probabilityStack = 0.0;
+        for (Map.Entry<Integer, Double> entry: probabilityMap.entrySet()) {
+            probabilityStack += entry.getValue();
+            if (probabilityStack > randomValue) {
                 return entry.getKey();
             }
         }
 
-        return probabilityMap.firstKey();
+        return probabilityMap.lastKey();
     }
 
     /**
