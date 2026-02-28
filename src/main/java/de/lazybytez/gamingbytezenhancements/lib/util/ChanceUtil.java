@@ -1,8 +1,9 @@
 package de.lazybytez.gamingbytezenhancements.lib.util;
 
+import de.lazybytez.gamingbytezenhancements.lib.util.chance.ImplementationError;
+import de.lazybytez.gamingbytezenhancements.lib.util.chance.ProbabilityMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.SortedMap;
 
 /**
  * Utility class providing some static functions to make decisions based on chances.
@@ -45,10 +46,8 @@ public class ChanceUtil {
      * Now we go threw the map and check if the random value is lower than the max number of the number-block.
      * If it is the case, we can return the key.
      */
-    public static Integer getRandomIntegerWithProbability(SortedMap<Integer, Double> probabilityMap) {
-        double probabilitySum = ChanceUtil.sumOfProbabilities(probabilityMap);
-
-        double randomValue = Math.random() * probabilitySum;
+    public static Integer getRandomIntegerWithProbability(ProbabilityMap<Integer> probabilityMap) {
+        double randomValue = Math.random() * probabilityMap.getProbabilitySum();
 
         double probabilityStack = 0.0;
         for (Map.Entry<Integer, Double> entry: probabilityMap.entrySet()) {
@@ -58,13 +57,6 @@ public class ChanceUtil {
             }
         }
 
-        return probabilityMap.lastKey();
-    }
-
-    /**
-     * Add all probabilities together and return the sum
-     */
-    private static double sumOfProbabilities(SortedMap<Integer, Double> probabilityMap) {
-        return probabilityMap.values().stream().mapToDouble(Double::doubleValue).sum();
+        throw new ImplementationError("Random value is higher than the complete ProbabilityStack of `" + probabilityStack + "`.");
     }
 }
