@@ -22,10 +22,10 @@ import java.util.Map;
 public class SimpleAltarSchemaValidator implements AltarSchemaValidatorInterface {
     @Override
     public boolean validate(AltarStructureInterface altarStructure, Location location, World world) {
-        // First validate the pedestal as these most likely are fewer blocks to check.
+        // First, validate the pedestal as these most likely are fewer blocks to check.
         // If the pedestal is not valid, the altar is not valid anyway.
-        return this.validateStructure(altarStructure, location, world)
-                && this.validatePedestal(altarStructure, location, world);
+        return this.validatePedestal(altarStructure, location, world)
+                && this.validateStructure(altarStructure, location, world);
     }
 
     @Override
