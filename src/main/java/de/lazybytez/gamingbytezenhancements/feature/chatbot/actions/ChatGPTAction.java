@@ -3,7 +3,7 @@ package de.lazybytez.gamingbytezenhancements.feature.chatbot.actions;
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotResponse;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotTarget;
-import de.lazybytez.gamingbytezenhancements.feature.chatbot.util.ChanceUtil;
+import de.lazybytez.gamingbytezenhancements.lib.util.ChanceUtil;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.util.MessageAnalyzer;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiException;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiResponse;

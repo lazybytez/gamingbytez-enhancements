@@ -2,7 +2,7 @@ package de.lazybytez.gamingbytezenhancements.feature.chatbot.actions;
 
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotResponse;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotTarget;
-import de.lazybytez.gamingbytezenhancements.feature.chatbot.util.ChanceUtil;
+import de.lazybytez.gamingbytezenhancements.lib.util.ChanceUtil;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.util.MessageAnalyzer;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.entity.Player;
