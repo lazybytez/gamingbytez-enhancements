@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 public class ChatBotChatListener implements Listener {
     private final ChatBotFeature chatBotFeature;
     private final ExecutorService executorService;
+    private final Random random = new Random();
 
     public ChatBotChatListener(ChatBotFeature chatBotFeature) {
         this.chatBotFeature = chatBotFeature;
@@ -144,6 +145,6 @@ public class ChatBotChatListener implements Listener {
             return actions.getFirst();
         }
 
-        return actions.get(new Random().nextInt(actions.size()));
+        return actions.get(this.random.nextInt(actions.size()));
     }
 }
