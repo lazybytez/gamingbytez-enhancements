@@ -80,6 +80,6 @@ public class RandomNameUtility {
             return NAMES.get(0);
         }
 
-        return NAMES.get(new Random().nextInt(0, NAMES.size() - 1));
+        return NAMES.get(new Random().nextInt(NAMES.size()));
     }
 }

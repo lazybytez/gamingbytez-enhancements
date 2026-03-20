@@ -21,6 +21,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeatu
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.ExperienceGemManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.safarinet.SafariNetManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.HelixAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
@@ -122,12 +123,21 @@ public class SafariNetRecipe extends AbstractAltarRecipe {
         boolean hasRedstoneBlock = false;
         boolean hasPhantomMembrane = false;
 
+        ExperienceGemManager experienceGemManager = this.mythicAltarFeature
+                .getCustomItemManagerRegistry()
+                .getCustomItemManager(ExperienceGemManager.class);
+
         for (PedestalLocation location : outerPedestals) {
-            Material itemType = altar.getPedestal(location).getItem().getType();
+            ItemStack item = altar.getPedestal(location).getItem();
+            Material itemType = item.getType();
 
             switch (itemType) {
                 case GOLDEN_APPLE -> hasGoldenApple = true;
-                case DIAMOND -> hasDiamond = true;
+                case DIAMOND -> {
+                    if (!experienceGemManager.isCustomItem(item)) {
+                        hasDiamond = true;
+                    }
+                }
                 case REDSTONE_BLOCK -> hasRedstoneBlock = true;
                 case PHANTOM_MEMBRANE -> hasPhantomMembrane = true;
             }

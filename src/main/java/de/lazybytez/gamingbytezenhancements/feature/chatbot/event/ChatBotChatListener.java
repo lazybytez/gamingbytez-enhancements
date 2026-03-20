@@ -144,6 +144,6 @@ public class ChatBotChatListener implements Listener {
             return actions.getFirst();
         }
 
-        return actions.get(new Random().nextInt(0, actions.size() - 1));
+        return actions.get(new Random().nextInt(actions.size()));
     }
 }
