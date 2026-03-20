@@ -1,6 +1,6 @@
 # Mythic Altar — Safari Net
 
-The Safari Net is a craftable item that lets players capture and relocate any mob. Throw it at a mob for a 25% chance to catch it; right-click to release it at your location.
+The Safari Net is a craftable item that lets players capture and relocate any mob. Throw it at a mob for a 50% chance to catch it; right-click to release it at your location.
 
 See [overview.md](overview.md) for how to build and use the altar.
 
@@ -11,7 +11,7 @@ See [overview.md](overview.md) for how to build and use the altar.
 - **Appearance:** Snowball with enchantment glint
 - **Display name:** Safari Net (empty) / Safari Net (Entity Name) (occupied)
 - **Max stack size:** 1
-- **Lore (empty):** "A mystical net that can capture creatures." / "Throw to catch entities!" / "25% success rate"
+- **Lore (empty):** "A mystical net that can capture creatures." / "Throw to catch entities!" / "50% success rate"
 - **Lore (occupied):** Shows the name of the captured entity; "Right-click to release!"
 
 ---
@@ -38,7 +38,7 @@ Place the following items into the altar. The four outer ingredients can go in *
 
 1. Hold the Safari Net in your hand.
 2. Right-click (throw) the snowball at a mob.
-3. There is a **25% chance** per throw of successfully capturing the mob.
+3. There is a **50% chance** per throw of successfully capturing the mob.
 4. On success, the mob despawns and is stored inside the net. The item name updates to show the captured entity.
 5. On failure, the Safari Net is returned as a normal item drop.
 
