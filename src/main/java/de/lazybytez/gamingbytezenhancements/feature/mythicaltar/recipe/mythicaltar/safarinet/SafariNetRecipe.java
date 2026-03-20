@@ -103,6 +103,13 @@ public class SafariNetRecipe extends AbstractAltarRecipe {
             return false;
         }
 
+        SafariNetManager safariNetManager = this.mythicAltarFeature
+                .getCustomItemManagerRegistry()
+                .getCustomItemManager(SafariNetManager.class);
+        if (safariNetManager.isCustomItem(altar.getPedestal(PedestalLocation.CENTER).getItem())) {
+            return false;
+        }
+
         List<PedestalLocation> outerPedestals = List.of(
                 PedestalLocation.NORTH_WEST,
                 PedestalLocation.SOUTH_WEST,
