@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '21'
-          distribution: 'temurin'
+          distribution: 'corretto'
           cache: 'maven'
 
       - name: Extract version from pom.xml
