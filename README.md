@@ -12,106 +12,87 @@
 
 ## Description
 
-This project is a simple plugin for out private GamingBytez Minecraft server.
-It provides some new features and enhancements to the server.
+GamingBytez Enhancements is an open-source Paper plugin for Minecraft 1.21+. It provides a collection of gameplay features including a custom crafting altar, entity capture mechanics, a chat bot, minecart portals, and various quality-of-life improvements.
 
-> At this time the plugin just aims to cover the needs of our server 
+The plugin is built around a modular feature system — each feature is self-contained, independently managed, and follows a consistent lifecycle.
 
-## Getting started
+## Features
 
-### Requirements
+| Feature | Description |
+|---|---|
+| [Mythic Altar](docs/mythic-altar/overview.md) | Custom multiblock crafting altar with weather/time rituals and unique items |
+| [Minecart Portals](docs/minecart-portals.md) | Admin-configurable portals that teleport minecart passengers between locations |
+| [Chat Bot](docs/chatbot.md) | In-game chat bot with static responses and optional AI integration |
+| [Temporary Cart](docs/temporary-cart.md) | Spawns a temporary minecart when right-clicking a rail |
+| [Farmland Protection](docs/farmland-protection.md) | Prevents farmland from being trampled by players and mobs |
+| [Anti Mob Griefing](docs/anti-mob-griefing.md) | Prevents specific mobs from destroying blocks, items, and entities |
+| [Custom Creeper Damage](docs/custom-creeper-damage.md) | Scales creeper explosion damage based on the player's equipped armor |
+| [Custom Loot](docs/custom-loot.md) | Adds extra loot drops to Husks and Endermen |
 
-1. Git
-2. Maven
-3. Spigot 1.19
+## Requirements
 
-### Setup
+- Java 21+
+- [Paper](https://papermc.io/) 1.21.4+
+- Maven 3.x (for building)
 
-Building an artefact:
-```bash 
+## Getting Started
+
+Clone the repository and build the plugin:
+
+```bash
+git clone https://github.com/lazybytez/gamingbytez-enhancements.git
+cd gamingbytez-enhancements
 mvn clean package
 ```
+
+The compiled JAR will be in `target/`. Copy it into your Paper server's `plugins/` directory and restart the server.
+
+For full feature documentation, see the [docs/](docs/) directory.
+
+## Configuration
+
+The main configuration file (`config.yml`) is generated on first run. It currently exposes settings for the [Chat Bot](docs/chatbot.md) feature and its optional OpenAI integration.
+
 ## Contributing
 
-If you want to take part in contribution, like fixing issues and contributing directly to the code base, please visit
-the [How to Contribute][gh-contribute] document.
+Contributions are welcome. Please read the [Contributing Guide][gh-contribute] before opening a pull request.
 
-### Commit messages
+### Commit Messages
 
-Construct of a commit message:
-
-```bash
-prefix(scope): commit subject with max 50 chars
+```
+prefix(scope): subject with max 50 chars
 ```
 
-Example commit message:
+**Prefixes:** `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `perf`, `refactor`, `revert`, `style`, `test`
 
-```bash
-feat(comp): add ping slash command
+**Scopes:** `deps` (dependencies), `devops` (technical processes), or a feature-specific name.
+
+**Example:**
+```
+feat(chatbot): add conversation context tracking
 ```
 
-#### Scopes
+### Branches
 
-Project specific scopes and what to use them for.
+| Branch | Usage |
+|---|---|
+| `main` | Default branch |
+| `feature/*` | New features |
+| `fix/*` | Bug fixes |
 
-```bash
-'deps', // Changes done on anything dependency related
-'devops', // Changes done on technical processes
-```
+### Recommended IDE
 
-#### Prefixes:
+- [IntelliJ IDEA](https://www.jetbrains.com/idea/)
 
-Also see [CONTRIBUTING.md#commits](https://github.com/lazybytez/.github/blob/main/docs/CONTRIBUTING.md#commits)
-
-```bash
-'feat', // Some new feature that has been added
-'fix', // Some fixes to an existing feature
-'build', // Some change on how the project is built
-'chore', // Some change that just has to be done (like updating dependencies)
-'ci', // Some changes to the continues integration workflows
-'docs', // Some changes to documentation located in the repo (either markdown files or code DocBlocks)
-'perf', // Some performance improvements
-'refactor', // Some code changes, that neither adds functionality or fixes a bug
-'revert', // Some changes that revert already done changes
-'style', // Some fixes regarding code style
-'test', // Some automated tests that have been added
-```
-
-#### Branches:
-
-| Branch     | Usage                                  |
-|------------|----------------------------------------|
-| main       | The default branch                     |
-| feature/*  | For developing features                |
-| fix/*      | For fixing bugs                        |
-
-### Recommended IDEs
-
-- [IntelliJ](https://www.jetbrains.com/idea/) (free & paid)
-
-### Using AI Assistance (Claude Code)
-
-This repository supports the use of [Claude Code](https://claude.ai/code) for development assistance. A `CLAUDE.md` file is provided to help Claude understand the codebase structure and conventions.
-
-**Important guidelines when using AI assistance:**
-
-- **Code quality and style must remain consistent** with the existing codebase
-- **Use with caution** - AI-generated code is a tool, not a replacement for understanding
-- **All code MUST be thoroughly reviewed** before merging into main
-- **Pull requests are mandatory** for any AI-assisted changes
-- **Never merge code you don't completely understand** - if the AI generates something unclear, refactor it or ask for clarification
-- AI suggestions should follow existing architectural patterns unless you explicitly want to introduce improvements
-- Review AI-generated code for security vulnerabilities, edge cases, and maintainability
-
-## Useful links
+## Useful Links
 
 [License][gh-license] -
 [Contributing][gh-contribute] -
-[Code of conduct][gh-codeofconduct] -
+[Code of Conduct][gh-codeofconduct] -
 [Issues][gh-issues] -
-[Pull requests][gh-pulls]
+[Pull Requests][gh-pulls]
 
-<hr>  
+<hr>
 
 ###### Copyright (c) [Lazy Bytez][gh-team]. All rights reserved | Licensed under the AGPL-3.0 license.
 
