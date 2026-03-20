@@ -11,7 +11,7 @@ jobs:
       - name: Check branch name
         uses: deepakputhraya/action-branch-name@master
         with:
-          regex: '([a-zA-Z0-0-])+\/([a-zA-Z0-0-])+'
+          regex: '([a-zA-Z0-9-])+\/([a-zA-Z0-9-])+'
           allowed_prefixes: "feature,fix,hotfix,release,renovate"
           ignore: main
 
@@ -20,7 +20,7 @@ jobs:
     if: (github.actor!= 'renovate[bot]') && (contains(github.head_ref, 'renovate/github_actions/') == false)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Run commitlint
