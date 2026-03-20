@@ -19,6 +19,7 @@ package de.lazybytez.gamingbytezenhancements.feature.customloot;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
+import de.lazybytez.gamingbytezenhancements.feature.customloot.listener.ParchedCustomLootListener;
 import de.lazybytez.gamingbytezenhancements.feature.customloot.listener.EndermanCustomLootListener;
 import de.lazybytez.gamingbytezenhancements.feature.customloot.listener.HuskCustomLootListener;
 import de.lazybytez.gamingbytezenhancements.feature.customloot.service.EnchantmentLevelOnItemDeterminer;
@@ -39,6 +40,7 @@ public class CustomLootFeature extends AbstractFeature {
     private void registerEvents() {
         this.registerEvent(new HuskCustomLootListener(new EnchantmentLevelOnItemDeterminer()));
         this.registerEvent(new EndermanCustomLootListener(new EnchantmentLevelOnItemDeterminer()));
+        this.registerEvent(new ParchedCustomLootListener(new EnchantmentLevelOnItemDeterminer()));
     }
 
     @Override
