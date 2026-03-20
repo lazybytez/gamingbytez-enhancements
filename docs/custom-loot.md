@@ -1,0 +1,31 @@
+# Custom Loot
+
+Adds extra item drops to Husks and Endermen on death. Drop amounts scale with the Looting enchantment level on the killing weapon.
+
+## Husk Drops
+
+Husks have a chance to drop **Sand** when killed.
+
+| Looting Level | 1 Sand | 2 Sand | 3 Sand | 4 Sand | 5 Sand | No drop |
+|---|---|---|---|---|---|---|
+| 0 | ~22% | ~22% | ~22% | ~22% | ~11% | ~0% |
+| 1 | — | ~25% | ~25% | ~25% | ~25% | — |
+| 2 | — | — | ~33% | ~33% | ~33% | — |
+| 3 | — | — | ~25% | ~25% | ~25% | ~25% |
+
+> Exact probabilities are weighted and may vary slightly. Higher Looting levels shift the distribution toward larger drops.
+
+## Enderman Drops
+
+Endermen have a chance to drop **Chorus Fruit** when killed.
+
+| Looting Level | 1 Fruit | 2 Fruit | 3 Fruit | No drop |
+|---|---|---|---|---|
+| 0 | ~22% | ~8% | ~4% | ~66% |
+| 1 | ~33% | ~22% | ~11% | ~33% |
+| 2 | ~33% | ~33% | ~22% | ~11% |
+| 3 | ~34% | ~33% | ~33% | ~0% |
+
+## Configuration
+
+This feature has no configuration options.
