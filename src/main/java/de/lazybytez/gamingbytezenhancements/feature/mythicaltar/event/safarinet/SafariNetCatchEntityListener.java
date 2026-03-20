@@ -47,7 +47,7 @@ public class SafariNetCatchEntityListener implements Listener {
             EntityType.GIANT
     );
 
-    private static final double CAPTURE_SUCCESS_RATE = 0.25;
+    private static final double CAPTURE_SUCCESS_RATE = 0.50;
 
     private final MythicAltarFeature mythicAltarFeature;
     private final Plugin plugin;
