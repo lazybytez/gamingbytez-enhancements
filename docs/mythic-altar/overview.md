@@ -4,51 +4,51 @@ The Mythic Altar is a multiblock crafting station that unlocks powerful rituals 
 
 ## Altar Structure
 
-The altar spans a 7×7 area (from the center block) and uses two layers of blocks.
+The altar uses two block layers. All coordinates are relative to the center Diamond Block.
 
 ### Layer 1 — Surface (y = 0)
 
-This is the layer you stand on and place items into.
+Only 5 blocks make up this layer. The rest of the surface is open air.
 
 ```
-. . . . . . .
-. . . . . . .
-. . E . E . .
-. . . D . . .
-. . E . E . .
-. . . . . . .
-. . . . . . .
+     X: -2  -1   0  +1  +2
+Z=+2:    E   .   .   .   E
+Z=+1:    .   .   .   .   .
+Z= 0:    .   .   D   .   .
+Z=-1:    .   .   .   .   .
+Z=-2:    E   .   .   .   E
 ```
 
 | Symbol | Block |
 |---|---|
-| `D` | Diamond Block (center) |
-| `E` | Emerald Block (pedestal bases, offset ±2 on X and Z) |
+| `D` | Diamond Block — center of the altar |
+| `E` | Emerald Block — pedestal base at each corner (±2 on both X and Z) |
 
 ### Layer 2 — Foundation (y = −1, directly below the surface)
 
-This layer is placed one block below the surface blocks.
+This full 7×7 layer sits one block below the surface.
 
 ```
-G Q Q Q Q Q G
-Q P . P . P Q
-Q . L S L . Q
-Q P S C S P Q
-Q . L S L . Q
-Q P . P . P Q
-G Q Q Q Q Q G
+     X: -3  -2  -1   0  +1  +2  +3
+Z=+3:    G   P   Q   Q   Q   P   G
+Z=+2:    P   C   C   C   C   C   P
+Z=+1:    Q   C   S   C   S   C   Q
+Z= 0:    Q   C   C   C   C   C   Q
+Z=-1:    Q   C   S   ·   S   C   Q
+Z=-2:    P   C   C   C   C   C   P
+Z=-3:    G   P   Q   Q   Q   P   G
 ```
 
 | Symbol | Block |
 |---|---|
-| `C` | Chiseled Quartz Block (center) |
-| `S` | Sea Lantern |
-| `L` | Chiseled Quartz Block (inner ring) |
+| `G` | Gold Block |
 | `P` | Quartz Pillar |
 | `Q` | Quartz Stairs |
-| `G` | Gold Block (corners) |
+| `C` | Chiseled Quartz Block |
+| `S` | Sea Lantern |
+| `·` | Empty — no block required at this position (x=0, z=−1) |
 
-> The full foundation spans from −3 to +3 on both the X and Z axes relative to the center.
+> The structure validator checks only the defined positions. The empty cell at `·` can be any block or air.
 
 ### Pedestals
 
