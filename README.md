@@ -57,6 +57,26 @@ The main configuration file (`config.yml`) is generated on first run. It current
 
 Contributions are welcome. Please read the [Contributing Guide][gh-contribute] before opening a pull request.
 
+### Developer Certificate of Origin (DCO)
+
+All contributions must be signed off against the [Developer Certificate of Origin (DCO)][dco] to certify that you wrote the code and have the right to submit it under the project's license. Add the following to every commit:
+
+```
+Signed-off-by: Your Name <your@email.com>
+```
+
+The easiest way is to use `git commit -s`, which adds the sign-off automatically. Pull requests without a DCO sign-off on every commit will not be accepted.
+
+### License Headers
+
+Every Java source file must include the project's AGPL license header. Run the following command before submitting a PR to apply or update headers automatically:
+
+```bash
+mvn license:format
+```
+
+CI will reject any PR with missing or incorrect headers via `mvn license:check`.
+
 ### Commit Messages
 
 ```
@@ -94,7 +114,7 @@ feat(chatbot): add conversation context tracking
 
 <hr>
 
-###### Copyright (c) [Lazy Bytez][gh-team]. All rights reserved | Licensed under the AGPL-3.0 license.
+###### Copyright (C) 2026 Lazy Bytez (Pascal Zarrad, Elias Knodel) and contributors | Licensed under the [AGPL-3.0 license][gh-license].
 
 <!-- Variables -->
 
@@ -123,3 +143,5 @@ feat(chatbot): add conversation context tracking
 [gh-pulls]: https://github.com/lazybytez/gamingbytez-enhancements/pulls
 
 [gh-team]: https://github.com/lazybytez
+
+[dco]: https://github.com/lazybytez/gamingbytez-enhancements/blob/main/DCO
