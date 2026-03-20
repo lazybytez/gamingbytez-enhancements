@@ -17,6 +17,7 @@
         <junit.version>6.0.0</junit.version>
         <mockito.version>5.14.2</mockito.version>
         <maven.surefire.version>3.5.4</maven.surefire.version>
+        <license.plugin.version>5.0.0</license.plugin.version>
     </properties>
 
     <build>
@@ -68,6 +69,31 @@
                 <configuration>
                     <argLine>-javaagent:${org.mockito:mockito-core:jar} -Xshare:off</argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>${license.plugin.version}</version>
+                <configuration>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>src/license/header.txt</header>
+                            <includes>
+                                <include>src/**/*.java</include>
+                            </includes>
+                        </licenseSet>
+                    </licenseSets>
+                    <strictCheck>true</strictCheck>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-license-headers</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <resources>

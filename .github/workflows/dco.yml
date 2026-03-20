@@ -1,0 +1,40 @@
+name: DCO
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check DCO sign-offs
+        run: |
+          BASE=${{ github.event.pull_request.base.sha }}
+          HEAD=${{ github.event.pull_request.head.sha }}
+          MISSING=0
+
+          for COMMIT in $(git log --no-merges --format="%H" "$BASE".."$HEAD"); do
+            MESSAGE=$(git log -1 --format="%B" "$COMMIT")
+            AUTHOR=$(git log -1 --format="%an <%ae>" "$COMMIT")
+
+            if ! echo "$MESSAGE" | grep -qE "^Signed-off-by: .+ <.+>$"; then
+              echo "FAIL: commit $COMMIT by $AUTHOR is missing a Signed-off-by line."
+              MISSING=$((MISSING + 1))
+            fi
+          done
+
+          if [ "$MISSING" -gt 0 ]; then
+            echo ""
+            echo "$MISSING commit(s) are missing a DCO sign-off."
+            echo "Use 'git commit -s' to sign off commits, or amend existing ones with 'git commit --amend -s'."
+            exit 1
+          fi
+
+          echo "All commits are signed off."
