@@ -4,7 +4,9 @@ import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.actions.*;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.event.ChatBotChatListener;
+import org.bukkit.configuration.InvalidConfigurationException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -20,21 +22,28 @@ public class ChatBotFeature extends AbstractFeature {
 
     @Override
     public void onEnable() {
-        this.registerChatBotActions();
+        this.registerStaticResponseActions();
+        this.registerLLMAction();
         this.registerEvents();
     }
 
-    private void registerChatBotActions() {
-        // Add common responses
-        this.chatBotActions.add(new BuntstifteAction());
-        this.chatBotActions.add(new EgalAction());
-        this.chatBotActions.add(new GlaubenAction());
-        this.chatBotActions.add(new HalloAction());
-        this.chatBotActions.add(new KannstAction());
-        this.chatBotActions.add(new KlaerenAction());
-        this.chatBotActions.add(new LolAction());
-        this.chatBotActions.add(new MeinungAction());
+    /**
+     * Register configured static-response actions
+     */
+    private void registerStaticResponseActions() {
+        try {
+            StaticResponseConfiguration configuration = new StaticResponseConfiguration(this.getPlugin());
+            configuration.load();
+            this.chatBotActions.addAll(configuration.getActions());
+        } catch (IOException | InvalidConfigurationException e) {
+            this.getPlugin().getLogger().warning("Error while registering Static-Response Chat Bot Actions: " + e.getMessage());
+        }
+    }
 
+    /**
+     * Register LLM Action
+     */
+    private void registerLLMAction() {
         // Add AI responses - only when enabled
         if (this.getPlugin().getConfig().getBoolean(ChatBotFeature.CONFIG_ENABLE_AI_BOT, false)) {
             String prompt = this.getPlugin().getConfig().getString(ChatBotFeature.CONFIG_AI_BOT_PROMPT);
