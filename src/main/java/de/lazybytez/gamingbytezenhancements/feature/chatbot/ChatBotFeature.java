@@ -81,6 +81,10 @@ public class ChatBotFeature extends AbstractFeature {
 
     @Override
     public void onDisable() {
+        if (this.chatBotChatListener == null) {
+            return;
+        }
+
         this.chatBotChatListener.shutdown();
     }
 
