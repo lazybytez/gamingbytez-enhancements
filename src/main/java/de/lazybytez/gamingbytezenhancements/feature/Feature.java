@@ -18,26 +18,62 @@
 package de.lazybytez.gamingbytezenhancements.feature;
 
 /**
- * Interface that provides the entry point for all features.
+ * Contract for all plugin features.
+ * <p>
+ * Implementations follow the lifecycle {@code onLoad → onEnable → onDisable} driven by
+ * {@link de.lazybytez.gamingbytezenhancements.EnhancementsPlugin}. Features can be toggled
+ * on or off via the {@code features} section in {@code config.yml}; disabled features are
+ * skipped in every lifecycle phase.
+ * </p>
+ * <p>
+ * Prefer extending {@link AbstractFeature} over implementing this interface directly,
+ * as it provides default no-op implementations and the config-backed {@link #isEnabled()} logic.
+ * </p>
  */
 public interface Feature {
     /**
      * Called when the plugin is loaded.
+     * <p>
+     * Runs before the server has fully started. Only invoked when {@link #isEnabled()} returns {@code true}.
+     * </p>
      */
     void onLoad();
 
     /**
      * Called when the plugin is enabled.
+     * <p>
+     * Primary setup hook: register event listeners, commands, and schedulers here.
+     * Only invoked when {@link #isEnabled()} returns {@code true}.
+     * </p>
      */
     void onEnable();
 
     /**
      * Called when the plugin is disabled.
+     * <p>
+     * Clean up resources (tasks, handles, open files) here.
+     * Only invoked when {@link #isEnabled()} returns {@code true}.
+     * </p>
      */
     void onDisable();
 
     /**
-     * Returns the name of the feature.
+     * Returns the human-readable name of this feature.
+     * <p>
+     * Also used to derive the config toggle key via {@link AbstractFeature#getFeatureConfigKey()}:
+     * spaces are stripped and the result is looked up under {@code features.<key>} in {@code config.yml}
+     * (e.g. "Farmland Protection" → {@code features.FarmlandProtection}).
+     * </p>
      */
     String getName();
+
+    /**
+     * Returns whether this feature is enabled.
+     * <p>
+     * The config key used is derived from {@link #getName()} with spaces removed,
+     * under the {@code features} section (e.g. {@code features.MythicAltar}).
+     * Defaults to {@code true} when the key is absent.
+     * </p>
+     */
+    boolean isEnabled();
 }

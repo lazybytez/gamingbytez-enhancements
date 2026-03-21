@@ -1,3 +1,15 @@
+# Feature toggles — set a feature to false to disable it entirely.
+# Keys are derived from the feature name with spaces removed.
+features:
+  TemporaryCart: true
+  ChatBot: true
+  FarmlandProtection: true
+  AntiMobGriefing: true
+  CustomCreeperDamage: true
+  MythicAltar: true
+  CustomLoot: true
+  MinecartPortal: true
+
 chatbot:
   enable_ai_answers: false
   prompt: |

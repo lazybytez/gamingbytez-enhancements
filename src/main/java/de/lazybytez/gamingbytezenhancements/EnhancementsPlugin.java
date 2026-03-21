@@ -46,9 +46,18 @@ public final class EnhancementsPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        this.getLogger().info("Preparing plugin configuration...");
+        this.saveDefaultConfig();
+        this.getLogger().info("Finished preparing plugin configuration.");
+
         this.getLogger().info(String.format("Loading %d features...", this.getFeatures().length));
 
         for (Feature feature : this.getFeatures()) {
+            if (!feature.isEnabled()) {
+                this.getLogger().info(String.format("Skipping disabled feature %s.", feature.getName()));
+                continue;
+            }
+
             this.getLogger().info(String.format("Loading feature %s...", feature.getName()));
             feature.onLoad();
             this.getLogger().info(String.format("Loaded feature %s!", feature.getName()));
@@ -59,15 +68,16 @@ public final class EnhancementsPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.getLogger().info("Preparing plugin configuration...");
-        this.saveDefaultConfig();
-        this.getLogger().info("Finished preparing plugin configuration...");
-
         this.initializeChatGptClient();
 
         this.getLogger().info(String.format("Enabling %d features...", this.getFeatures().length));
 
         for (Feature feature : this.getFeatures()) {
+            if (!feature.isEnabled()) {
+                this.getLogger().info(String.format("Feature %s is disabled and will not be enabled.", feature.getName()));
+                continue;
+            }
+
             this.getLogger().info(String.format("Enabling feature %s...", feature.getName()));
             feature.onEnable();
             this.getLogger().info(String.format("Enabled feature %s!", feature.getName()));
@@ -99,6 +109,11 @@ public final class EnhancementsPlugin extends JavaPlugin {
         this.getLogger().info(String.format("Disabling %d features...", this.getFeatures().length));
 
         for (Feature feature : this.getFeatures()) {
+            if (!feature.isEnabled()) {
+                this.getLogger().info(String.format("Skipping disabled feature %s.", feature.getName()));
+                continue;
+            }
+
             this.getLogger().info(String.format("Disabling feature %s...", feature.getName()));
             feature.onDisable();
             this.getLogger().info(String.format("Disabled feature %s!", feature.getName()));

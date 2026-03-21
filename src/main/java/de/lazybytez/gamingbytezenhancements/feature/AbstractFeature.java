@@ -21,16 +21,25 @@ import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import org.bukkit.event.Listener;
 
 /**
- * Abstract class that all features extend.
+ * Base class for all features.
  * <p>
- * It provides a reference to the plugin instance.
- * It also provides empty implementations of onLoad() and onDisable(),
- * as they are not required for most features.
+ * Provides a plugin reference, no-op defaults for {@link #onLoad()} and {@link #onDisable()},
+ * and a config-backed {@link #isEnabled()} implementation that reads
+ * {@code features.<configKey>} from {@code config.yml}, defaulting to {@code true}.
+ * </p>
+ * <p>
+ * Subclasses must implement {@link #onEnable()} and {@link #getName()} at minimum.
+ * Override {@link #getConfigKey()} only when the derived key (spaces stripped from the name)
+ * does not match the desired config entry.
  * </p>
  */
 public abstract class AbstractFeature implements Feature {
     protected final EnhancementsPlugin plugin;
+    private Boolean enabled;
 
+    /**
+     * @param plugin the owning plugin instance, used for config access and event registration
+     */
     public AbstractFeature(EnhancementsPlugin plugin) {
         this.plugin = plugin;
     }
@@ -41,6 +50,36 @@ public abstract class AbstractFeature implements Feature {
 
     @Override
     public void onDisable() {
+    }
+
+    /**
+     * Returns the configuration key used to toggle this feature under the {@code features} section.
+     * <p>
+     * Derived from {@link #getName()} with spaces removed (e.g. "Farmland Protection" → "FarmlandProtection").
+     * Override if a feature requires a custom key.
+     * </p>
+     */
+    protected String getFeatureConfigKey() {
+        return this.getName().replace(" ", "");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The result is read from config on the first call and cached for the lifetime of the feature,
+     * since toggling features at runtime is not supported.
+     * </p>
+     */
+    @Override
+    public boolean isEnabled() {
+        if (this.enabled == null) {
+            this.enabled = this.plugin.getConfig().getBoolean(
+                    String.format("features.%s", this.getFeatureConfigKey()),
+                    true
+            );
+        }
+
+        return this.enabled;
     }
 
     /**
@@ -55,6 +94,9 @@ public abstract class AbstractFeature implements Feature {
         );
     }
 
+    /**
+     * @return the owning plugin instance
+     */
     public EnhancementsPlugin getPlugin() {
         return plugin;
     }
