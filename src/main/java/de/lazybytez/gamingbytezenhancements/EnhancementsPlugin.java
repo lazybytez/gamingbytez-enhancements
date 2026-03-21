@@ -97,11 +97,10 @@ public final class EnhancementsPlugin extends JavaPlugin {
                     OpenAiApiConfig.getStringConfigValue(this, OpenAiApiConfig.OPENAI_MODEL),
                     OpenAiApiConfig.getDoubleConfigValue(this, OpenAiApiConfig.OPENAI_TEMPERATURE)
             );
+            this.getLogger().info("Successfully prepared OpenAI client.");
         } catch (InvalidConfigurationException e) {
             this.getLogger().severe("Failed to initialize OpenAI client: " + e.getMessage());
         }
-
-        this.getLogger().info("Successfully prepared OpenAI client...");
     }
 
     @Override
