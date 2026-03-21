@@ -26,6 +26,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Utility that provides some random names.
  */
 public class RandomNameUtility {
+    private static final Random RANDOM = new Random();
     private static final CopyOnWriteArrayList<String> NAMES;
 
     static {
@@ -80,6 +81,6 @@ public class RandomNameUtility {
             return NAMES.get(0);
         }
 
-        return NAMES.get(new Random().nextInt(0, NAMES.size() - 1));
+        return NAMES.get(RANDOM.nextInt(NAMES.size()));
     }
 }
