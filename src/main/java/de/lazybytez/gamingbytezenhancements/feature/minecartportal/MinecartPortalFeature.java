@@ -102,6 +102,19 @@ public class MinecartPortalFeature extends AbstractFeature {
     }
 
     @Override
+    public void onDisable() {
+        if (this.portalConfig == null) {
+            return;
+        }
+
+        try {
+            this.portalConfig.saveSync();
+        } catch (IOException e) {
+            this.plugin.getLogger().severe("Failed to save Minecart Portals on shutdown: " + e.getMessage());
+        }
+    }
+
+    @Override
     public String getName() {
         return "Minecart Portal";
     }
