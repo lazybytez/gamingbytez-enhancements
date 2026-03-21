@@ -32,7 +32,7 @@ The plugin is built around a modular feature system — each feature is self-con
 ## Requirements
 
 - Java 21+
-- [Paper](https://papermc.io/) 1.21.4+
+- [Paper](https://papermc.io/) 1.21.11+
 - Maven 3.x (for building)
 
 ## Getting Started

@@ -52,6 +52,17 @@ public class ChatBotChatListener implements Listener {
     }
 
     /**
+     * Shuts down the executor service, dropping any pending chat tasks.
+     * <p>
+     * Called during feature disable. In-flight tasks are interrupted immediately
+     * since delivering a chat bot response after server shutdown is meaningless.
+     * </p>
+     */
+    public void shutdown() {
+        this.executorService.shutdownNow();
+    }
+
+    /**
      * Handle if our chatbot should answer to an incoming message.
      * <p>
      * ATTENTION!

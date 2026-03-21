@@ -46,9 +46,18 @@ public final class EnhancementsPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        this.getLogger().info("Preparing plugin configuration...");
+        this.saveDefaultConfig();
+        this.getLogger().info("Finished preparing plugin configuration.");
+
         this.getLogger().info(String.format("Loading %d features...", this.getFeatures().length));
 
         for (Feature feature : this.getFeatures()) {
+            if (!feature.isEnabled()) {
+                this.getLogger().info(String.format("Skipping disabled feature %s.", feature.getName()));
+                continue;
+            }
+
             this.getLogger().info(String.format("Loading feature %s...", feature.getName()));
             feature.onLoad();
             this.getLogger().info(String.format("Loaded feature %s!", feature.getName()));
@@ -59,15 +68,16 @@ public final class EnhancementsPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.getLogger().info("Preparing plugin configuration...");
-        this.saveDefaultConfig();
-        this.getLogger().info("Finished preparing plugin configuration...");
-
-        this.initializeChatGptClient();
+        this.initializeOpenAiClient();
 
         this.getLogger().info(String.format("Enabling %d features...", this.getFeatures().length));
 
         for (Feature feature : this.getFeatures()) {
+            if (!feature.isEnabled()) {
+                this.getLogger().info(String.format("Feature %s is disabled and will not be enabled.", feature.getName()));
+                continue;
+            }
+
             this.getLogger().info(String.format("Enabling feature %s...", feature.getName()));
             feature.onEnable();
             this.getLogger().info(String.format("Enabled feature %s!", feature.getName()));
@@ -76,7 +86,7 @@ public final class EnhancementsPlugin extends JavaPlugin {
         this.getLogger().info("All features have been enabled!");
     }
 
-    private void initializeChatGptClient() {
+    private void initializeOpenAiClient() {
         this.getLogger().info("Preparing OpenAI client...");
 
         try {
@@ -87,11 +97,10 @@ public final class EnhancementsPlugin extends JavaPlugin {
                     OpenAiApiConfig.getStringConfigValue(this, OpenAiApiConfig.OPENAI_MODEL),
                     OpenAiApiConfig.getDoubleConfigValue(this, OpenAiApiConfig.OPENAI_TEMPERATURE)
             );
+            this.getLogger().info("Successfully prepared OpenAI client.");
         } catch (InvalidConfigurationException e) {
             this.getLogger().severe("Failed to initialize OpenAI client: " + e.getMessage());
         }
-
-        this.getLogger().info("Successfully prepared OpenAI client...");
     }
 
     @Override
@@ -99,6 +108,11 @@ public final class EnhancementsPlugin extends JavaPlugin {
         this.getLogger().info(String.format("Disabling %d features...", this.getFeatures().length));
 
         for (Feature feature : this.getFeatures()) {
+            if (!feature.isEnabled()) {
+                this.getLogger().info(String.format("Skipping disabled feature %s.", feature.getName()));
+                continue;
+            }
+
             this.getLogger().info(String.format("Disabling feature %s...", feature.getName()));
             feature.onDisable();
             this.getLogger().info(String.format("Disabled feature %s!", feature.getName()));
