@@ -32,6 +32,7 @@ public class ChatBotFeature extends AbstractFeature {
     public static final String CONFIG_AI_BOT_PROMPT = "chatbot.prompt";
 
     private final List<ChatBotAction> chatBotActions = new CopyOnWriteArrayList<>();
+    private ChatBotChatListener chatBotChatListener;
 
     public ChatBotFeature(EnhancementsPlugin plugin) {
         super(plugin);
@@ -74,7 +75,13 @@ public class ChatBotFeature extends AbstractFeature {
     }
 
     private void registerEvents() {
-        this.registerEvent(new ChatBotChatListener(this));
+        this.chatBotChatListener = new ChatBotChatListener(this);
+        this.registerEvent(this.chatBotChatListener);
+    }
+
+    @Override
+    public void onDisable() {
+        this.chatBotChatListener.shutdown();
     }
 
     public List<ChatBotAction> getChatBotActions() {
