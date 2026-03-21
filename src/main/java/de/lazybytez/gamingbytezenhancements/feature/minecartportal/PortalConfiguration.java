@@ -26,6 +26,7 @@ import org.bukkit.plugin.Plugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -211,7 +212,7 @@ public class PortalConfiguration {
      * @return all currently registered portals
      */
     public List<MinecartPortal> getPortals() {
-        return List.copyOf(this.portals);
+        return Collections.unmodifiableList(this.portals);
     }
 
     /**
