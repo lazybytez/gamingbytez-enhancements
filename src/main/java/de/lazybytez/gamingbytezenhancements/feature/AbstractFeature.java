@@ -29,7 +29,7 @@ import org.bukkit.event.Listener;
  * </p>
  * <p>
  * Subclasses must implement {@link #onEnable()} and {@link #getName()} at minimum.
- * Override {@link #getConfigKey()} only when the derived key (spaces stripped from the name)
+ * Override {@link #getFeatureConfigKey()} only when the derived key (spaces stripped from the name)
  * does not match the desired config entry.
  * </p>
  */

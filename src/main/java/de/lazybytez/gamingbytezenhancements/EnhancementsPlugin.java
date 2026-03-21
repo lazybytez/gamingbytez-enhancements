@@ -68,7 +68,7 @@ public final class EnhancementsPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.initializeChatGptClient();
+        this.initializeOpenAiClient();
 
         this.getLogger().info(String.format("Enabling %d features...", this.getFeatures().length));
 
@@ -86,7 +86,7 @@ public final class EnhancementsPlugin extends JavaPlugin {
         this.getLogger().info("All features have been enabled!");
     }
 
-    private void initializeChatGptClient() {
+    private void initializeOpenAiClient() {
         this.getLogger().info("Preparing OpenAI client...");
 
         try {
