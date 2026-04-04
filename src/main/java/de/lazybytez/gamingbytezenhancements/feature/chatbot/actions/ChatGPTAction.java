@@ -59,14 +59,29 @@ public class ChatGPTAction implements ChatBotAction {
     private final EnhancementsPlugin enhancementsPlugin;
 
     private final String promptTemplate;
+    private final String systemPrompt;
+    private final boolean disableThinking;
 
     private final AtomicLong lastAction = new AtomicLong(0L);
 
     private final AtomicLong totalTokensUsed = new AtomicLong(0L);
 
-    public ChatGPTAction(EnhancementsPlugin enhancementsPlugin, String promptTemplate) {
+    /**
+     * @param enhancementsPlugin the plugin instance
+     * @param promptTemplate     user prompt template with {@code %s} placeholder for the message
+     * @param systemPrompt       optional system prompt; {@code null} to omit from requests
+     * @param disableThinking    when {@code true}, sends {@code chat_template_kwargs} to disable model thinking
+     */
+    public ChatGPTAction(
+            EnhancementsPlugin enhancementsPlugin,
+            String promptTemplate,
+            String systemPrompt,
+            boolean disableThinking
+    ) {
         this.enhancementsPlugin = enhancementsPlugin;
         this.promptTemplate = promptTemplate;
+        this.systemPrompt = systemPrompt;
+        this.disableThinking = disableThinking;
     }
 
     @Override
@@ -101,7 +116,11 @@ public class ChatGPTAction implements ChatBotAction {
             this.lastAction.set(System.currentTimeMillis());
             OpenAiResponse response = this.enhancementsPlugin
                     .getOpenAiClient()
-                    .completion(String.format(promptTemplate, message));
+                    .completion(
+                            String.format(this.promptTemplate, message),
+                            this.systemPrompt,
+                            this.disableThinking
+                    );
 
             if (response.content() == null || response.content().isEmpty()) {
                 this.enhancementsPlugin.getLogger().info(String.format(

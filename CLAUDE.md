@@ -149,14 +149,16 @@ Common subdirectory structure within feature packages:
 
 Contains chatbot settings and OpenAI credentials:
 ```yaml
+chatbot:
+  enable_ai_answers: false
+  system_prompt: ""       # Optional; when non-empty, sent as system-role message in API requests
+  disable_thinking: false  # When true, sends chat_template_kwargs to disable model thinking
 openai:
   apiUrl: "https://api.openai.com/v1/chat/completions"
   apiKey: ""
   organizationId: ""
   model: "gpt-3.5-turbo"
   temperature: 1.0
-chatbot:
-  enable_ai_answers: false
 ```
 
 ### Feature-Specific Configs

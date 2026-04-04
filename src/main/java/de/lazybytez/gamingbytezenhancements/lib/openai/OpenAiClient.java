@@ -46,9 +46,12 @@ public class OpenAiClient {
     public static final String BODY_MESSAGES = "messages";
 
     public static final String BODY_TEMPERATURE = "temperature";
+    public static final String BODY_CHAT_TEMPLATE_KWARGS = "chat_template_kwargs";
+    public static final String BODY_ENABLE_THINKING = "enable_thinking";
 
     public static final String MESSAGE_ROLE = "role";
     public static final String MESSAGE_ROLE_USER = "user";
+    public static final String MESSAGE_ROLE_SYSTEM = "system";
 
     public static final String MESSAGE_CONTENT = "content";
 
@@ -59,6 +62,15 @@ public class OpenAiClient {
 
     private final String model;
 
+    /**
+     * Creates a new OpenAI client.
+     *
+     * @param apiUrl       the API endpoint URL
+     * @param apiKey       the API key for authentication
+     * @param organization the organization ID
+     * @param model        the model identifier to use
+     * @param temperature  the sampling temperature
+     */
     public OpenAiClient(String apiUrl, String apiKey, String organization, String model, double temperature) {
         this.apiUrl = apiUrl;
         this.apiKey = apiKey;
@@ -94,8 +106,22 @@ public class OpenAiClient {
         return stringBuilder.toString();
     }
 
-    public OpenAiResponse completion(String inputMessage) throws IOException, OpenAiException {
-        String body = this.getRequestJsonWithSingleMessage(inputMessage);
+    /**
+     * Sends a chat completion request.
+     *
+     * @param inputMessage    the user message content
+     * @param systemPrompt    optional system prompt; {@code null} to omit from the request
+     * @param disableThinking when {@code true}, adds {@code chat_template_kwargs} to disable model thinking
+     * @return the parsed API response
+     * @throws IOException     on network errors
+     * @throws OpenAiException on API errors
+     */
+    public OpenAiResponse completion(
+            String inputMessage,
+            String systemPrompt,
+            boolean disableThinking
+    ) throws IOException, OpenAiException {
+        String body = this.getRequestJsonWithSingleMessage(inputMessage, systemPrompt, disableThinking);
         byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 
         HttpURLConnection httpURLConnection = getHttpURLConnection(bodyBytes);
@@ -149,23 +175,38 @@ public class OpenAiClient {
         return httpURLConnection;
     }
 
-    private String getRequestJsonWithSingleMessage(String message) {
+    String getRequestJsonWithSingleMessage(
+            String message,
+            String systemPrompt,
+            boolean disableThinking
+    ) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(BODY_MODEL, this.model);
-        jsonObject.add(BODY_MESSAGES, getMessageElement(message));
+        jsonObject.add(BODY_MESSAGES, this.getMessageElement(message, systemPrompt));
         jsonObject.addProperty(BODY_TEMPERATURE, this.temperature);
 
+        if (disableThinking) {
+            JsonObject chatTemplateKwargs = new JsonObject();
+            chatTemplateKwargs.addProperty(BODY_ENABLE_THINKING, false);
+            jsonObject.add(BODY_CHAT_TEMPLATE_KWARGS, chatTemplateKwargs);
+        }
 
         return jsonObject.toString();
     }
 
-    private JsonArray getMessageElement(String message) {
+    private JsonArray getMessageElement(String message, String systemPrompt) {
         JsonArray jsonArray = new JsonArray();
+
+        if (systemPrompt != null) {
+            JsonObject systemMessage = new JsonObject();
+            systemMessage.addProperty(MESSAGE_ROLE, MESSAGE_ROLE_SYSTEM);
+            systemMessage.addProperty(MESSAGE_CONTENT, systemPrompt);
+            jsonArray.add(systemMessage);
+        }
 
         JsonObject messageObject = new JsonObject();
         messageObject.addProperty(MESSAGE_ROLE, MESSAGE_ROLE_USER);
         messageObject.addProperty(MESSAGE_CONTENT, message);
-
         jsonArray.add(messageObject);
 
         return jsonArray;

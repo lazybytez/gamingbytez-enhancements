@@ -29,6 +29,22 @@ public class OpenAiApiConfig {
 
     private static final String DEFAULT_ERROR = "The configuration for OpenAI is missing property: ";
 
+    /**
+     * Reads an optional string config value, returning {@code null} if the key is absent or empty.
+     *
+     * @param plugin the plugin instance
+     * @param path   the config path
+     * @return the value, or {@code null} if absent/blank
+     */
+    public static String getOptionalStringConfigValue(Plugin plugin, String path) {
+        String value = plugin.getConfig().getString(path);
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return value;
+    }
+
     public static String getStringConfigValue(Plugin plugin, String path) throws InvalidConfigurationException {
         String value = plugin.getConfig().getString(path);
 

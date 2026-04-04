@@ -51,8 +51,10 @@ Edit `config.yml` in the plugin data folder:
 ```yaml
 chatbot:
   enable_ai_answers: false
+  system_prompt: ""
+  disable_thinking: false
   prompt: |
-    Your system prompt here.
+    Your user prompt template here.
     Use %s as a placeholder for the player's message.
 
 openai:
@@ -68,7 +70,9 @@ The `prompt` field supports `%s` as a placeholder that will be replaced with the
 | Field | Description |
 |---|---|
 | `enable_ai_answers` | Set to `true` to enable AI responses |
-| `prompt` | System prompt sent to the API. Must contain `%s` |
+| `system_prompt` | Optional system prompt sent as a system-role message. Leave empty to omit |
+| `disable_thinking` | When `true`, sends `chat_template_kwargs` with `enable_thinking=false` in API requests. Useful for llama.cpp with models like Gemma 4 |
+| `prompt` | User prompt template sent to the API. Must contain `%s` |
 | `apiUrl` | API endpoint (default: OpenAI) |
 | `apiKey` | Your API key |
 | `organizationId` | Optional organization ID |
