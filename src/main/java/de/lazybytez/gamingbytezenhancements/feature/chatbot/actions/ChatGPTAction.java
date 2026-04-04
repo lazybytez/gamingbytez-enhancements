@@ -116,8 +116,11 @@ public class ChatGPTAction implements ChatBotAction {
             this.lastAction.set(System.currentTimeMillis());
             OpenAiResponse response = this.enhancementsPlugin
                     .getOpenAiClient()
-                    .completion(String.format(this.promptTemplate, message), this.systemPrompt,
-                            this.disableThinking);
+                    .completion(
+                            String.format(this.promptTemplate, message),
+                            this.systemPrompt,
+                            this.disableThinking
+                    );
 
             if (response.content() == null || response.content().isEmpty()) {
                 this.enhancementsPlugin.getLogger().info(String.format(
