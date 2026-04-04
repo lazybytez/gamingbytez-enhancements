@@ -72,8 +72,12 @@ public class ChatGPTAction implements ChatBotAction {
      * @param systemPrompt       optional system prompt; {@code null} to omit from requests
      * @param disableThinking    when {@code true}, sends {@code chat_template_kwargs} to disable model thinking
      */
-    public ChatGPTAction(EnhancementsPlugin enhancementsPlugin, String promptTemplate, String systemPrompt,
-                         boolean disableThinking) {
+    public ChatGPTAction(
+            EnhancementsPlugin enhancementsPlugin,
+            String promptTemplate,
+            String systemPrompt,
+            boolean disableThinking
+    ) {
         this.enhancementsPlugin = enhancementsPlugin;
         this.promptTemplate = promptTemplate;
         this.systemPrompt = systemPrompt;
