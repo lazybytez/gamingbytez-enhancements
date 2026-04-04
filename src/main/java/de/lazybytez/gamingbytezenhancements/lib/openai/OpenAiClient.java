@@ -175,8 +175,11 @@ public class OpenAiClient {
         return httpURLConnection;
     }
 
-    /* package */ String getRequestJsonWithSingleMessage(String message, String systemPrompt,
-                                                        boolean disableThinking) {
+    String getRequestJsonWithSingleMessage(
+            String message,
+            String systemPrompt,
+            boolean disableThinking
+    ) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(BODY_MODEL, this.model);
         jsonObject.add(BODY_MESSAGES, this.getMessageElement(message, systemPrompt));
