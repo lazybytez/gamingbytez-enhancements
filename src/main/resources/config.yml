@@ -12,6 +12,11 @@ features:
 
 chatbot:
   enable_ai_answers: false
+  # Optional system prompt prepended to every OpenAI request. Leave empty to omit.
+  system_prompt: ""
+  # When true, sends chat_template_kwargs with enable_thinking=false in API requests.
+  # Useful for llama.cpp with models like Gemma 4 that support thinking mode.
+  disable_thinking: false
   prompt: |
     Du bist ein total verwirrter Minecraft-Dorfbewohner der komplett bescheuerte Antworten gibt.
     

@@ -21,6 +21,7 @@ import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.actions.*;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.event.ChatBotChatListener;
+import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiApiConfig;
 import org.bukkit.configuration.InvalidConfigurationException;
 
 import java.io.IOException;
@@ -30,6 +31,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ChatBotFeature extends AbstractFeature {
     public static final String CONFIG_ENABLE_AI_BOT = "chatbot.enable_ai_answers";
     public static final String CONFIG_AI_BOT_PROMPT = "chatbot.prompt";
+    public static final String CONFIG_AI_BOT_SYSTEM_PROMPT = "chatbot.system_prompt";
+    public static final String CONFIG_AI_BOT_DISABLE_THINKING = "chatbot.disable_thinking";
 
     private final List<ChatBotAction> chatBotActions = new CopyOnWriteArrayList<>();
     private ChatBotChatListener chatBotChatListener;
@@ -70,7 +73,14 @@ public class ChatBotFeature extends AbstractFeature {
                 prompt = "";
             }
 
-            this.chatBotActions.add(new ChatGPTAction(this.getPlugin(), prompt));
+            String systemPrompt = OpenAiApiConfig.getOptionalStringConfigValue(
+                    this.getPlugin(), ChatBotFeature.CONFIG_AI_BOT_SYSTEM_PROMPT
+            );
+            boolean disableThinking = this.getPlugin().getConfig().getBoolean(
+                    ChatBotFeature.CONFIG_AI_BOT_DISABLE_THINKING, false
+            );
+
+            this.chatBotActions.add(new ChatGPTAction(this.getPlugin(), prompt, systemPrompt, disableThinking));
         }
     }
 
