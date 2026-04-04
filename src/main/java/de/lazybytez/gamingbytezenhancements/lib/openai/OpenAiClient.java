@@ -116,8 +116,11 @@ public class OpenAiClient {
      * @throws IOException     on network errors
      * @throws OpenAiException on API errors
      */
-    public OpenAiResponse completion(String inputMessage, String systemPrompt,
-                                     boolean disableThinking) throws IOException, OpenAiException {
+    public OpenAiResponse completion(
+            String inputMessage,
+            String systemPrompt,
+            boolean disableThinking
+    ) throws IOException, OpenAiException {
         String body = this.getRequestJsonWithSingleMessage(inputMessage, systemPrompt, disableThinking);
         byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 
