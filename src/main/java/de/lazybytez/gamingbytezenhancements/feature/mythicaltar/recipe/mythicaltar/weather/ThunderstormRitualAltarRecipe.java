@@ -23,9 +23,9 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAlta
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.LinesToCenterAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
+import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -43,11 +43,17 @@ import java.util.Map;
  * to thunderstorm using the {@link MythicAltar}.
  */
 public class ThunderstormRitualAltarRecipe extends AbstractAltarRecipe {
+    private final MythicAltarFeature mythicAltarFeature;
+
     /**
      * Constructs a new thunderstorm ritual recipe.
+     *
+     * @param mythicAltarFeature the feature owning the messenger this recipe sends through
      */
-    public ThunderstormRitualAltarRecipe() {
+    public ThunderstormRitualAltarRecipe(MythicAltarFeature mythicAltarFeature) {
         super(MythicAltar.class, true);
+
+        this.mythicAltarFeature = mythicAltarFeature;
     }
 
     /**
@@ -69,10 +75,7 @@ public class ThunderstormRitualAltarRecipe extends AbstractAltarRecipe {
         World world = player.getWorld();
 
         if (world.isThundering() && world.hasStorm()) {
-            player.sendMessage(Component.textOfChildren(
-                    MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                    Component.text("The weather is already thunderstorm!", NamedTextColor.RED)
-            ));
+            this.mythicAltarFeature.getMessenger().error(player, "The weather is already thunderstorm!");
 
             for (ItemFrame pedestal : altar.getPedestals().values()) {
                 world.dropItem(pedestal.getLocation(), pedestal.getItem());
@@ -103,10 +106,10 @@ public class ThunderstormRitualAltarRecipe extends AbstractAltarRecipe {
                         );
                     }
 
-                    Bukkit.broadcast(Component.textOfChildren(
-                            MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                            Component.text("The weather has been changed to thunderstorm by " + event.getPlayer().getName() + " using the thunderstorm ritual!", NamedTextColor.GOLD)
-                    ));
+                    Component body = Component.text("The weather has been changed to thunderstorm by ", MessagePalette.EMPHASIS)
+                            .append(Component.text(event.getPlayer().getName(), MessagePalette.SUBJECT))
+                            .append(Component.text(" using the thunderstorm ritual!", MessagePalette.EMPHASIS));
+                    Bukkit.broadcast(this.mythicAltarFeature.getMessenger().prefixed(body));
                     removeLock.run();
                 });
     }

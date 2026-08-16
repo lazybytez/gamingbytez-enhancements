@@ -17,7 +17,6 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event;
 
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
@@ -25,9 +24,8 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.Completab
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeRegistryInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.structure.MythicAltarStructure;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.validator.AltarSchemaValidatorInterface;
+import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -59,6 +57,7 @@ public class AltarCraftingListener implements Listener {
     private final Logger logger;
     private final AltarSchemaValidatorInterface validator;
     private final CompletableRecipeRegistryInterface recipeRegistry;
+    private final Messenger messenger;
     private final Map<UUID, Long> altarLock = new ConcurrentHashMap<>();
 
     // Right now we only support this one
@@ -67,12 +66,14 @@ public class AltarCraftingListener implements Listener {
     public AltarCraftingListener(
             Plugin plugin,
             AltarSchemaValidatorInterface validator,
-            CompletableRecipeRegistryInterface recipeRegistry
+            CompletableRecipeRegistryInterface recipeRegistry,
+            Messenger messenger
     ) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
         this.validator = validator;
         this.recipeRegistry = recipeRegistry;
+        this.messenger = messenger;
     }
 
     /**
@@ -91,10 +92,7 @@ public class AltarCraftingListener implements Listener {
             long lastTrigger = this.altarLock.get(centerFrame.getUniqueId());
             if (System.currentTimeMillis() - lastTrigger < ALTAR_LOCK_TIMEOUT) {
                 this.logger.info("Player " + event.getPlayer().getName() + " tried to trigger the altar at " + centerBlockLocation + " too soon.");
-                event.getPlayer().sendMessage(Component.textOfChildren(
-                        MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                        Component.text("This altar is currently in use.", NamedTextColor.RED)
-                ));
+                this.messenger.error(event.getPlayer(), "This altar is currently in use.");
                 event.setCancelled(true);
 
                 return;
@@ -143,10 +141,7 @@ public class AltarCraftingListener implements Listener {
 
         CompletableRecipeInterface recipe = this.recipeRegistry.findMatchingRecipe(altar);
         if (recipe == null) {
-            event.getPlayer().sendMessage(Component.textOfChildren(
-                    MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                    Component.text("No recipe found for the items on the altar.", NamedTextColor.RED)
-            ));
+            this.messenger.error(event.getPlayer(), "No recipe found for the items on the altar.");
             this.logger.info("No recipe found for the items on the altar at " + centerBlockLocation + ".");
             removeLock.run();
 

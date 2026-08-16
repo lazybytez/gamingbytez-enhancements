@@ -23,9 +23,9 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAlta
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.LinesToCenterAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
+import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -42,11 +42,17 @@ import java.util.Map;
  * The weather rain recipe allows players to change the weather to rain using the {@link MythicAltar}.
  */
 public class RainRitualAltarRecipe extends AbstractAltarRecipe {
+    private final MythicAltarFeature mythicAltarFeature;
+
     /**
      * Constructs a new rain ritual recipe.
+     *
+     * @param mythicAltarFeature the feature owning the messenger this recipe sends through
      */
-    public RainRitualAltarRecipe() {
+    public RainRitualAltarRecipe(MythicAltarFeature mythicAltarFeature) {
         super(MythicAltar.class, true);
+
+        this.mythicAltarFeature = mythicAltarFeature;
     }
 
     /**
@@ -68,10 +74,7 @@ public class RainRitualAltarRecipe extends AbstractAltarRecipe {
         World world = player.getWorld();
 
         if (world.hasStorm() && !world.isThundering()) {
-            player.sendMessage(Component.textOfChildren(
-                    MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                    Component.text("The weather is already stormy!", NamedTextColor.RED)
-            ));
+            this.mythicAltarFeature.getMessenger().error(player, "The weather is already stormy!");
 
             for (ItemFrame pedestal : altar.getPedestals().values()) {
                 world.dropItem(pedestal.getLocation(), pedestal.getItem());
@@ -99,10 +102,10 @@ public class RainRitualAltarRecipe extends AbstractAltarRecipe {
                         );
                     }
 
-                    Bukkit.broadcast(Component.textOfChildren(
-                            MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                            Component.text("The weather has been set to rain by " + event.getPlayer().getName() + " using the rain ritual!", NamedTextColor.GOLD)
-                    ));
+                    Component body = Component.text("The weather has been set to rain by ", MessagePalette.EMPHASIS)
+                            .append(Component.text(event.getPlayer().getName(), MessagePalette.SUBJECT))
+                            .append(Component.text(" using the rain ritual!", MessagePalette.EMPHASIS));
+                    Bukkit.broadcast(this.mythicAltarFeature.getMessenger().prefixed(body));
                     removeLock.run();
                 });
     }

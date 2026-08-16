@@ -52,13 +52,13 @@ public final class MythicAltar extends AbstractAltar {
     public static List<CompletableRecipeInterface> getDefaultRecipes(MythicAltarFeature mythicAltarFeature) {
         return List.of(
                 // Weather recipes
-                new SunRitualAltarRecipe(),
-                new RainRitualAltarRecipe(),
-                new ThunderstormRitualAltarRecipe(),
+                new SunRitualAltarRecipe(mythicAltarFeature),
+                new RainRitualAltarRecipe(mythicAltarFeature),
+                new ThunderstormRitualAltarRecipe(mythicAltarFeature),
 
                 // Time recipes
-                new TimeDayAltarRecipe(),
-                new TimeNightAltarRecipe(),
+                new TimeDayAltarRecipe(mythicAltarFeature),
+                new TimeNightAltarRecipe(mythicAltarFeature),
 
                 // Magic XP Bottle
                 new CraftExperienceGemRecipe(mythicAltarFeature),

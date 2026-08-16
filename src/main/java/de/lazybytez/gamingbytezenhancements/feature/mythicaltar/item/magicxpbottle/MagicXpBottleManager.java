@@ -18,6 +18,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.AbstractCustomItemManager;
+import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -114,11 +115,11 @@ public class MagicXpBottleManager extends AbstractCustomItemManager {
      */
     private List<Component> computeLore(int experience) {
         return List.of(
-                text("A magic bottle that somehow manages to store huge amounts of experience.", NamedTextColor.GOLD),
+                text("A magic bottle that somehow manages to store huge amounts of experience.", MessagePalette.EMPHASIS),
                 text(""),
-                text("Current Experience: ", NamedTextColor.GRAY).append(text(experience, TextColor.color(255, 170, 0))),
+                text("Current Experience: ", MessagePalette.BODY).append(text(experience, TextColor.color(255, 170, 0))),
                 text(""),
-                text("Right click to consume up to 450 experience.", NamedTextColor.GRAY),
+                text("Right click to consume up to 450 experience.", MessagePalette.BODY),
                 text("Recharge the bottle at the Mythic Altar.")
         );
     }

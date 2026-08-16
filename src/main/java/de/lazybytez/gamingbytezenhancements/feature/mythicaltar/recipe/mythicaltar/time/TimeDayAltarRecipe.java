@@ -23,9 +23,9 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAlta
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.LinesToCenterAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
+import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -42,11 +42,17 @@ import java.util.Map;
  * The time day recipe allows players to change the time to day using the {@link MythicAltar}.
  */
 public class TimeDayAltarRecipe extends AbstractAltarRecipe {
+    private final MythicAltarFeature mythicAltarFeature;
+
     /**
      * Constructs a new time day ritual recipe.
+     *
+     * @param mythicAltarFeature the feature owning the messenger this recipe sends through
      */
-    public TimeDayAltarRecipe() {
+    public TimeDayAltarRecipe(MythicAltarFeature mythicAltarFeature) {
         super(MythicAltar.class, true);
+
+        this.mythicAltarFeature = mythicAltarFeature;
     }
 
     /**
@@ -68,10 +74,7 @@ public class TimeDayAltarRecipe extends AbstractAltarRecipe {
         World world = player.getWorld();
 
         if (world.isDayTime()) {
-            player.sendMessage(Component.textOfChildren(
-                    MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                    Component.text("It is already day!", NamedTextColor.RED)
-            ));
+            this.mythicAltarFeature.getMessenger().error(player, "It is already day!");
 
             for (ItemFrame pedestal : altar.getPedestals().values()) {
                 world.dropItem(pedestal.getLocation(), pedestal.getItem());
@@ -88,10 +91,10 @@ public class TimeDayAltarRecipe extends AbstractAltarRecipe {
                 (effectPlugin, effectAltar, effectEvent) -> {
                     effectAltar.getLocation().getWorld().setTime(0L);
 
-                    Bukkit.broadcast(Component.textOfChildren(
-                            MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                            Component.text("The time has been changed to day by " + event.getPlayer().getName() + " using a time ritual!", NamedTextColor.GOLD)
-                    ));
+                    Component body = Component.text("The time has been changed to day by ", MessagePalette.EMPHASIS)
+                            .append(Component.text(event.getPlayer().getName(), MessagePalette.SUBJECT))
+                            .append(Component.text(" using a time ritual!", MessagePalette.EMPHASIS));
+                    Bukkit.broadcast(this.mythicAltarFeature.getMessenger().prefixed(body));
                     removeLock.run();
                 });
     }
