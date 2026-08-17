@@ -51,7 +51,7 @@ public final class LocationFormat {
             return Component.text("not set", MessagePalette.BODY).decorate(TextDecoration.ITALIC);
         }
 
-        World world = location.getWorld();
+        World world = resolveWorld(location);
 
         if (world == null) {
             return appendCoordinates(OPEN_WITHOUT_WORLD, location);
@@ -60,6 +60,25 @@ public final class LocationFormat {
         Component head = Component.text(world.getKey().asMinimalString(), MessagePalette.VALUE).append(OPEN);
 
         return appendCoordinates(head, location);
+    }
+
+    /**
+     * Resolve the world of a location, treating an absent one as no world at all.
+     *
+     * {@link Location#getWorld()} returns null when no world was ever set, but throws once a world
+     * that was set has been unloaded. Both mean the same thing here, so both yield null. The
+     * non-throwing alternative, {@link Location#isWorldLoaded()}, resolves the world through the
+     * running server, which this formatter has no reason to require.
+     *
+     * @param location the location to resolve
+     * @return the world, or null when there is none to render
+     */
+    private static World resolveWorld(Location location) {
+        try {
+            return location.getWorld();
+        } catch (IllegalArgumentException unloaded) {
+            return null;
+        }
     }
 
     private static Component appendCoordinates(Component head, Location location) {

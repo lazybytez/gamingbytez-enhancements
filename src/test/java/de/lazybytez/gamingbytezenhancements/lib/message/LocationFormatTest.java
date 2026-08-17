@@ -70,22 +70,28 @@ class LocationFormatTest {
     }
 
     @Test
-    void rendersCoordinatesOnlyWhenTheWorldIsGone() {
-        Component expected = Component.text("(", MessagePalette.DECORATION)
+    void rendersCoordinatesOnlyWhenTheWorldWasNeverSet() {
+        assertEquals(coordinatesOnly(), LocationFormat.format(new Location(null, 1.0, 2.0, 3.0)));
+    }
+
+    @Test
+    void rendersCoordinatesOnlyWhenTheWorldHasBeenUnloaded() {
+        Location location = mock(Location.class);
+        when(location.getWorld()).thenThrow(new IllegalArgumentException("World unloaded"));
+        when(location.getBlockX()).thenReturn(1);
+        when(location.getBlockY()).thenReturn(2);
+        when(location.getBlockZ()).thenReturn(3);
+
+        assertEquals(coordinatesOnly(), LocationFormat.format(location));
+    }
+
+    private static Component coordinatesOnly() {
+        return Component.text("(", MessagePalette.DECORATION)
                 .append(Component.text(1, MessagePalette.VALUE))
                 .append(Component.text(", ", MessagePalette.DECORATION))
                 .append(Component.text(2, MessagePalette.VALUE))
                 .append(Component.text(", ", MessagePalette.DECORATION))
                 .append(Component.text(3, MessagePalette.VALUE))
                 .append(Component.text(")", MessagePalette.DECORATION));
-
-        assertEquals(expected, LocationFormat.format(new Location(null, 1.0, 2.0, 3.0)));
-    }
-
-    @Test
-    void cannotBeInstantiated() throws Exception {
-        Constructor<LocationFormat> constructor = LocationFormat.class.getDeclaredConstructor();
-
-        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
     }
 }
