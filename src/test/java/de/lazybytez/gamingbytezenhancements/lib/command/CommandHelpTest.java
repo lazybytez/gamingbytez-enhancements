@@ -53,7 +53,10 @@ class CommandHelpTest {
 
         this.sendHelp(root);
 
-        assertEquals(List.of("/minecartportals list", "/minecartportals reload"), this.renderedLines(2));
+        assertEquals(
+                List.of("[Test] /minecartportals", "/minecartportals list", "/minecartportals reload"),
+                this.renderedLines(3)
+        );
     }
 
     @Test
@@ -66,7 +69,10 @@ class CommandHelpTest {
 
         this.sendHelp(root);
 
-        assertEquals(List.of("/minecartportals add <name>"), this.renderedLines(1));
+        assertEquals(
+                List.of("[Test] /minecartportals", "/minecartportals add <name>"),
+                this.renderedLines(2)
+        );
     }
 
     @Test
@@ -78,7 +84,7 @@ class CommandHelpTest {
 
         this.sendHelp(alias);
 
-        assertEquals(List.of("/gbmcp list"), this.renderedLines(1));
+        assertEquals(List.of("[Test] /gbmcp", "/gbmcp list"), this.renderedLines(2));
     }
 
     @Test
@@ -92,7 +98,10 @@ class CommandHelpTest {
 
         this.sendHelp(root);
 
-        assertEquals(List.of("/minecartportals list"), this.renderedLines(1));
+        assertEquals(
+                List.of("[Test] /minecartportals", "/minecartportals list"),
+                this.renderedLines(2)
+        );
     }
 
     @Test
