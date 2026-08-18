@@ -23,25 +23,38 @@ import de.lazybytez.gamingbytezenhancements.feature.minecartportal.command.Minec
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.listener.MinecartPortalActivationListener;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.listener.MinecartPortalDestructionListener;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.model.MinecartPortal;
-import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import de.lazybytez.gamingbytezenhancements.lib.command.CommandRegistrar;
+import de.lazybytez.gamingbytezenhancements.lib.message.MessagePrefix;
+import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Feature that allows to create portals using Minecarts.
  */
 public class MinecartPortalFeature extends AbstractFeature {
+    private static final String FEATURE_NAME = "MinecartPortals";
+    private static final NamedTextColor BRAND_COLOR = NamedTextColor.LIGHT_PURPLE;
+
     /**
      * The configuration that holds the Minecart Portals
      */
     private PortalConfiguration portalConfig;
 
+    /**
+     * The messenger carrying the Minecart Portals prefix, shared by every
+     * player facing component this feature sends.
+     */
+    private final Messenger messenger;
+
     public MinecartPortalFeature(EnhancementsPlugin plugin) {
         super(plugin);
+
+        this.messenger = new Messenger(MessagePrefix.of(
+                MinecartPortalFeature.FEATURE_NAME, MinecartPortalFeature.BRAND_COLOR));
     }
 
     @Override
@@ -66,15 +79,8 @@ public class MinecartPortalFeature extends AbstractFeature {
      * Register commands of the feature
      */
     private void registerCommands() {
-        this.plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
-            final Commands commands = event.registrar();
-            commands.register(
-                    "minecartportals",
-                    "Manage the Minecart Portals of the GamingBytez Enhancements plugin",
-                    List.of("gbmcp"),
-                    new MinecartPortalCommand(this)
-            );
-        });
+        new CommandRegistrar(this.plugin)
+                .register(new MinecartPortalCommand(this.plugin, this.portalConfig, this.messenger));
     }
 
     /**
@@ -82,7 +88,7 @@ public class MinecartPortalFeature extends AbstractFeature {
      */
     private void registerEvents() {
         this.registerEvent(new MinecartPortalActivationListener(this));
-        this.registerEvent(new MinecartPortalDestructionListener(this.portalConfig));
+        this.registerEvent(new MinecartPortalDestructionListener(this.portalConfig, this.messenger));
     }
 
     /**
