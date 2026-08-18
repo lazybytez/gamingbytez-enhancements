@@ -18,7 +18,9 @@
 package de.lazybytez.gamingbytezenhancements.feature.minecartportal.listener;
 
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.PortalConfiguration;
+import de.lazybytez.gamingbytezenhancements.feature.minecartportal.messages.MinecartPortalMessages;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.model.MinecartPortal;
+import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -45,9 +47,17 @@ public class MinecartPortalDestructionListener implements Listener {
     private static final double LOCATION_SIMILARITY_DISTANCE = 1.0;
 
     private final PortalConfiguration config;
+    private final Messenger messenger;
 
-    public MinecartPortalDestructionListener(PortalConfiguration config) {
+    /**
+     * Bind the listener to the portal registry and the feature's messenger.
+     *
+     * @param config    the configuration holding the registered portals
+     * @param messenger the messenger carrying the Minecart Portals prefix
+     */
+    public MinecartPortalDestructionListener(PortalConfiguration config, Messenger messenger) {
         this.config = config;
+        this.messenger = messenger;
     }
 
     @EventHandler
@@ -92,7 +102,7 @@ public class MinecartPortalDestructionListener implements Listener {
 
         for (MinecartPortal portal : this.config.getPortals()) {
             if (this.handleSingleBlockEvent(event, block, portal)) {
-                player.sendMessage("Please remove the Minecart Portal first before breaking this block!");
+                this.messenger.error(player, MinecartPortalMessages.blockedDestruction());
             }
         }
     }

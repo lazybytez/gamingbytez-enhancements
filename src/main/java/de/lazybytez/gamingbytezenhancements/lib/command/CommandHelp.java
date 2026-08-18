@@ -43,7 +43,13 @@ public final class CommandHelp {
     }
 
     /**
-     * Send one line per usable executable branch below the invoked node.
+     * Send a heading naming the invoked command, then one line per usable
+     * executable branch below it. A command without a single usable branch
+     * sends nothing, because a heading over an empty list reads as a glitch.
+     * <p>
+     * The heading carries the label the operator actually typed, so an alias
+     * reads back as itself. It is the label rather than prose, because this
+     * class lives in the lib and the lib carries no wording.
      *
      * @param source      the source the command was invoked from
      * @param messenger   the vocabulary the lines are rendered in
@@ -60,6 +66,12 @@ public final class CommandHelp {
 
         List<String> branches = new ArrayList<>();
         collectBranches(source, followRedirects(invokedNode), "/" + invokedNode.getName(), branches, newNodeSet());
+
+        if (branches.isEmpty()) {
+            return;
+        }
+
+        messenger.heading(source.getSender(), "/" + invokedNode.getName());
 
         for (String branch : branches) {
             messenger.detail(source.getSender(), Component.text(branch));

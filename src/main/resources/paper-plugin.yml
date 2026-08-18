@@ -2,6 +2,10 @@ name: gamingbytez-enhancements
 version: '${project.version}'
 main: de.lazybytez.gamingbytezenhancements.EnhancementsPlugin
 api-version: '1.21'
+permissions:
+  gamingbytez.minecartportals.admin:
+    description: Allows management of Minecart Portals
+    default: op
 dependencies:
   server:
     Multiverse-Core:
