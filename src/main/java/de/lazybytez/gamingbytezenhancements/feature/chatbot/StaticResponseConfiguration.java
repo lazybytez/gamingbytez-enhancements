@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 /**
@@ -101,7 +102,8 @@ public class StaticResponseConfiguration {
         boolean staticResponsesConfigured = config.isSet(StaticResponseConfiguration.STATIC_RESPONSE_CONFIG_KEY);
 
         if (!staticResponsesConfigured) {
-            this.plugin.getLogger().info("Static Response storage is missing!");
+            this.plugin.getLogger().info("Static Response storage is missing, keeping no static responses!");
+            this.actions = List.of();
             this.wasLoaded = true;
             return;
         }
@@ -110,6 +112,32 @@ public class StaticResponseConfiguration {
         this.actions = this.getStaticResponseActionsFromConfig(config);
         this.plugin.getLogger().info("Finished parsing static-response-action instances from configuration!");
         this.wasLoaded = true;
+    }
+
+    /**
+     * Load the configuration from disk asynchronously.
+     * <p>
+     * The file is read on a scheduler thread and the fresh action list is swapped in as one
+     * immutable snapshot, so readers never block and never observe a half loaded state. The
+     * callback runs on the scheduler thread; a caller that talks to the Bukkit API afterwards
+     * dispatches back to the server thread itself.
+     *
+     * @param callback called with whether the load succeeded
+     */
+    public void loadAsync(Consumer<Boolean> callback) {
+        this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, () -> {
+            try {
+                this.load();
+                callback.accept(true);
+            } catch (IOException | InvalidConfigurationException e) {
+                this.plugin.getLogger().log(
+                        Level.SEVERE,
+                        "Failed to load static-response-chat-bot file asynchronously!",
+                        e
+                );
+                callback.accept(false);
+            }
+        });
     }
 
     /**
