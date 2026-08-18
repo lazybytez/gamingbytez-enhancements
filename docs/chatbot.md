@@ -15,22 +15,24 @@ Static responses are loaded from `static_response_chat_bot.yaml` (created in the
 | Field | Description |
 |---|---|
 | `buzzwords` | List of words that trigger this action (case-insensitive) |
-| `message` | The response text |
+| `responseMessage` | The response text |
 | `numerator` | Numerator of the chance fraction (e.g. `1` for 1-in-N) |
 | `denominator` | Denominator of the chance fraction |
-| `weight` | Priority weight for weighted random selection (default: `1`) |
 
 **Example entry:**
 ```yaml
-actions:
+static_response:
   - buzzwords:
       - "hello"
       - "hi"
-    message: "Greetings, traveller!"
+    responseMessage: "Greetings, traveller!"
     numerator: 1
     denominator: 3
-    weight: 1
 ```
+
+Every static response takes part in the weighted random selection with a weight of `1`. An entry
+that misses a field or carries a wrong type is skipped with a warning, the valid entries around it
+still load.
 
 ## AI Responses (Optional)
 
