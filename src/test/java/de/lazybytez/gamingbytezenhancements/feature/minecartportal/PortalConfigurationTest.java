@@ -19,14 +19,30 @@ package de.lazybytez.gamingbytezenhancements.feature.minecartportal;
 
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.model.MinecartPortal;
 import org.bukkit.Location;
+import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -209,5 +225,123 @@ class PortalConfigurationTest {
         assertThrows(UnsupportedOperationException.class, () -> portals.add(
                 new MinecartPortal("new", this.testLocation, this.testDestination)
         ));
+    }
+
+    @Test
+    void saveAsync_persistsTheStatePresentWhenTheWriteRuns() throws IOException {
+        Path dataFolder = Files.createTempDirectory("portal-configuration-test");
+        Server server = mock(Server.class);
+        BukkitScheduler scheduler = mock(BukkitScheduler.class);
+        AtomicReference<Runnable> scheduledSave = new AtomicReference<>();
+
+        when(this.mockPlugin.getDataFolder()).thenReturn(dataFolder.toFile());
+        when(this.mockPlugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
+        when(this.mockPlugin.getServer()).thenReturn(server);
+        when(server.getScheduler()).thenReturn(scheduler);
+        doAnswer(invocation -> {
+            scheduledSave.set(invocation.getArgument(1));
+            return null;
+        }).when(scheduler).runTaskAsynchronously(eq(this.mockPlugin), any(Runnable.class));
+
+        this.configuration.addPortal(this.serializablePortal("test-portal"));
+        this.configuration.saveAsync(success -> { });
+        this.configuration.addPortal(this.serializablePortal("later"));
+
+        scheduledSave.get().run();
+
+        File configurationFile = dataFolder.resolve(PortalConfiguration.PORTAL_CONFIG_FILE).toFile();
+        String persistedConfiguration = Files.readString(configurationFile.toPath());
+
+        assertTrue(persistedConfiguration.contains("test-portal"));
+        assertTrue(persistedConfiguration.contains("later"));
+    }
+
+    @Test
+    void saveAsync_writesTheStatePresentWhenTheWriteRuns() throws IOException {
+        Path dataFolder = Files.createTempDirectory("portal-configuration-test");
+        Server server = mock(Server.class);
+        BukkitScheduler scheduler = mock(BukkitScheduler.class);
+        List<Runnable> scheduledSaves = new ArrayList<>();
+        List<Boolean> callbackOutcomes = new ArrayList<>();
+
+        when(this.mockPlugin.getDataFolder()).thenReturn(dataFolder.toFile());
+        when(this.mockPlugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
+        when(this.mockPlugin.getServer()).thenReturn(server);
+        when(server.getScheduler()).thenReturn(scheduler);
+        doAnswer(invocation -> {
+            scheduledSaves.add(invocation.getArgument(1));
+            return null;
+        }).when(scheduler).runTaskAsynchronously(eq(this.mockPlugin), any(Runnable.class));
+
+        this.configuration.addPortal(this.serializablePortal("first"));
+        this.configuration.saveAsync(callbackOutcomes::add);
+        this.configuration.addPortal(this.serializablePortal("newest"));
+        this.configuration.saveAsync(callbackOutcomes::add);
+
+        for (Runnable scheduledSave : scheduledSaves) {
+            scheduledSave.run();
+        }
+
+        File configurationFile = dataFolder.resolve(PortalConfiguration.PORTAL_CONFIG_FILE).toFile();
+        String persistedConfiguration = Files.readString(configurationFile.toPath());
+
+        assertTrue(persistedConfiguration.contains("first"));
+        assertTrue(persistedConfiguration.contains("newest"));
+        assertEquals(List.of(true, true), callbackOutcomes);
+    }
+
+    @Test
+    void loadSync_withStorageKeyMissing_keepsCachedPortalsAndWritesThem() throws Exception {
+        Path dataFolder = Files.createTempDirectory("portal-configuration-test");
+        File configurationFile = dataFolder.resolve(PortalConfiguration.PORTAL_CONFIG_FILE).toFile();
+
+        when(this.mockPlugin.getDataFolder()).thenReturn(dataFolder.toFile());
+        when(this.mockPlugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
+        Files.writeString(configurationFile.toPath(), "");
+        this.configuration.addPortal(this.serializablePortal("survivor"));
+
+        this.configuration.loadSync();
+
+        assertNotNull(this.configuration.getPortalByName("survivor"));
+        assertTrue(Files.readString(configurationFile.toPath()).contains("survivor"));
+    }
+
+    @Test
+    void loadSync_skipsAPortalWithoutAName() throws Exception {
+        ConfigurationSerialization.registerClass(MinecartPortal.class);
+        Path dataFolder = Files.createTempDirectory("portal-configuration-test");
+        File configurationFile = dataFolder.resolve(PortalConfiguration.PORTAL_CONFIG_FILE).toFile();
+
+        when(this.mockPlugin.getDataFolder()).thenReturn(dataFolder.toFile());
+        when(this.mockPlugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
+        Files.writeString(configurationFile.toPath(), "portals:\n- ==: " + MinecartPortal.class.getName() + "\n");
+
+        this.configuration.loadSync();
+
+        assertTrue(this.configuration.getPortals().isEmpty());
+    }
+
+    @Test
+    void loadSync_withMalformedFile_preservesCachedPortals() throws IOException {
+        Path dataFolder = Files.createTempDirectory("portal-configuration-test");
+        File configurationFile = dataFolder.resolve(PortalConfiguration.PORTAL_CONFIG_FILE).toFile();
+
+        when(this.mockPlugin.getDataFolder()).thenReturn(dataFolder.toFile());
+        when(this.mockPlugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
+        Files.writeString(configurationFile.toPath(), "portals: [");
+        this.configuration.addPortal(this.testPortal);
+
+        assertThrows(InvalidConfigurationException.class, () -> this.configuration.loadSync());
+
+        assertSame(this.testPortal, this.configuration.getPortalByName("test-portal"));
+    }
+
+    private MinecartPortal serializablePortal(String name) {
+        Location portalLocation = mock(Location.class);
+        Location destinationLocation = mock(Location.class);
+        when(portalLocation.serialize()).thenReturn(Map.of());
+        when(destinationLocation.serialize()).thenReturn(Map.of());
+
+        return new MinecartPortal(name, portalLocation, destinationLocation);
     }
 }

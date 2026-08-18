@@ -139,7 +139,24 @@ class MinecartPortalTest {
     }
 
     @Test
-    void registerClass_succeedsForMinecartPortal() {
-        assertDoesNotThrow(() -> ConfigurationSerialization.registerClass(MinecartPortal.class));
+    void serialize_handsOutCopiesSoCallersCannotMutateStoredState() {
+        MinecartPortal portal = new MinecartPortal("spawn", this.portalLocation, this.destinationLocation);
+
+        Location serializedPortal = (Location) portal.serialize().get("portal");
+        serializedPortal.setX(999.0);
+
+        assertEquals(this.portalLocation.getX(), portal.getPortal().getX());
+    }
+
+    @Test
+    void registeredClassSurvivesASerializationRoundTrip() {
+        ConfigurationSerialization.registerClass(MinecartPortal.class);
+        MinecartPortal portal = new MinecartPortal("spawn", this.portalLocation, this.destinationLocation);
+
+        MinecartPortal restored = MinecartPortal.deserialize(portal.serialize());
+
+        assertEquals("spawn", restored.getName());
+        assertEquals(this.portalLocation.getBlockX(), restored.getPortal().getBlockX());
+        assertEquals(this.destinationLocation.getBlockZ(), restored.getDestination().getBlockZ());
     }
 }
