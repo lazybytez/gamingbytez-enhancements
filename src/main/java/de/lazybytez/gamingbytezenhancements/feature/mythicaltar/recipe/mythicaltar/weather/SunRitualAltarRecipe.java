@@ -23,9 +23,9 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAlta
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.LinesToCenterAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;
+import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -42,11 +42,17 @@ import java.util.Map;
  * The weather clear recipe allows players to clear the weather using the {@link MythicAltar}.
  */
 public class SunRitualAltarRecipe extends AbstractAltarRecipe {
+    private final MythicAltarFeature mythicAltarFeature;
+
     /**
      * Constructs a new sun ritual recipe.
+     *
+     * @param mythicAltarFeature the feature owning the messenger this recipe sends through
      */
-    public SunRitualAltarRecipe() {
+    public SunRitualAltarRecipe(MythicAltarFeature mythicAltarFeature) {
         super(MythicAltar.class, true);
+
+        this.mythicAltarFeature = mythicAltarFeature;
     }
 
     /**
@@ -68,10 +74,7 @@ public class SunRitualAltarRecipe extends AbstractAltarRecipe {
         World world = player.getWorld();
 
         if (world.isClearWeather()) {
-            player.sendMessage(Component.textOfChildren(
-                    MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                    Component.text("The weather is already clear!", NamedTextColor.RED)
-            ));
+            this.mythicAltarFeature.getMessenger().error(player, "The weather is already clear!");
 
             for (ItemFrame pedestal : altar.getPedestals().values()) {
                 world.dropItem(pedestal.getLocation(), pedestal.getItem());
@@ -103,10 +106,10 @@ public class SunRitualAltarRecipe extends AbstractAltarRecipe {
                         );
                     }
 
-                    Bukkit.broadcast(Component.textOfChildren(
-                            MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                            Component.text("The weather has been cleared by " + event.getPlayer().getName() + " using the sun ritual!", NamedTextColor.GOLD)
-                    ));
+                    Component body = Component.text("The weather has been cleared by ", MessagePalette.EMPHASIS)
+                            .append(Component.text(event.getPlayer().getName(), MessagePalette.SUBJECT))
+                            .append(Component.text(" using the sun ritual!", MessagePalette.EMPHASIS));
+                    Bukkit.broadcast(this.mythicAltarFeature.getMessenger().prefixed(body));
                     removeLock.run();
                 });
     }

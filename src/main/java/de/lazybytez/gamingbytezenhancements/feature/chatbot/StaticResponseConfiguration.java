@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
 /**
@@ -52,24 +51,17 @@ public class StaticResponseConfiguration {
     private final Plugin plugin;
 
     /**
-     * The config instance that was last loaded.
+     * The list of available static-response actions. Immutable once assigned.
      */
-    private final YamlConfiguration config;
-
-    /**
-     * The list of available static-response.
-     */
-    private volatile CopyOnWriteArrayList<StaticResponseAction> actions;
+    private volatile List<StaticResponseAction> actions = List.of();
 
     /**
      * The value if the actions were loaded.
      */
-    private boolean wasLoaded = false;
+    private volatile boolean wasLoaded = false;
 
     public StaticResponseConfiguration(Plugin plugin) {
         this.plugin = plugin;
-        this.config = new YamlConfiguration();
-        this.actions = new CopyOnWriteArrayList<>();
     }
 
     /**
@@ -83,6 +75,8 @@ public class StaticResponseConfiguration {
      * @throws InvalidConfigurationException when the configuration format is invalid
      */
     public synchronized void load() throws IOException, InvalidConfigurationException {
+        YamlConfiguration config = new YamlConfiguration();
+
         // Load config in a thread safe manner
         try {
             this.plugin.getLogger().info("Loading static-response-chat-bot file...");
@@ -90,9 +84,7 @@ public class StaticResponseConfiguration {
             File file = this.getConfigurationFile();
             this.ensureFileExists(file);
 
-            // We do not use YamlConfiguration.loadConfiguration as we want to handle
-            // exceptions our own. this.config is initialized in constructor
-            this.config.load(file);
+            config.load(file);
 
             this.plugin.getLogger().info("Loaded static-response-chat-bot file!");
         } catch (IOException | InvalidConfigurationException e) {
@@ -110,6 +102,7 @@ public class StaticResponseConfiguration {
 
         if (!staticResponsesConfigured) {
             this.plugin.getLogger().info("Static Response storage is missing!");
+            this.wasLoaded = true;
             return;
         }
 
@@ -120,13 +113,13 @@ public class StaticResponseConfiguration {
     }
 
     /**
-     * Get the list of actions
+     * Get the list of actions.
      *
-     * @return the configured static-response actions
+     * @return an immutable list of the configured static-response actions
      */
-    public CopyOnWriteArrayList<StaticResponseAction> getActions() {
-        if (!wasLoaded) {
-            this.plugin.getLogger().warning("Static Response Configuration wasn't loaded before. Please use the `loadSync` function before.");
+    public List<StaticResponseAction> getActions() {
+        if (!this.wasLoaded) {
+            this.plugin.getLogger().warning("Static Response Configuration wasn't loaded before. Please use the `load` function before.");
         }
         return this.actions;
     }
@@ -135,22 +128,22 @@ public class StaticResponseConfiguration {
      * Get portals from the configuration in a type safe manner.
      *
      * @param config the config to load the portals from
-     * @return a list of minecart portal instances
+     * @return an immutable list of minecart portal instances
      */
-    private CopyOnWriteArrayList<StaticResponseAction> getStaticResponseActionsFromConfig(YamlConfiguration config) {
+    private List<StaticResponseAction> getStaticResponseActionsFromConfig(YamlConfiguration config) {
         List<?> rawActions = config.getList(StaticResponseConfiguration.STATIC_RESPONSE_CONFIG_KEY, new ArrayList<>());
 
-        CopyOnWriteArrayList<StaticResponseAction> loadedActions = new CopyOnWriteArrayList<>();
+        List<StaticResponseAction> loadedActions = new ArrayList<>();
         for (Object o : rawActions) {
             if (o instanceof LinkedHashMap<? ,?>) {
                 StaticResponseAction current = this.getStaticResponseActionFromConfig((LinkedHashMap<?, ?>) o);
                 if (current != null) {
-                    loadedActions.add(this.getStaticResponseActionFromConfig((LinkedHashMap<?, ?>) o));
+                    loadedActions.add(current);
                 }
             }
         }
 
-        return loadedActions;
+        return List.copyOf(loadedActions);
     }
 
     /**

@@ -34,25 +34,33 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.safarinet.S
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeRegistry;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeRegistryInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.schema.validator.SimpleAltarSchemaValidator;
-import net.kyori.adventure.text.Component;
+import de.lazybytez.gamingbytezenhancements.lib.message.MessagePrefix;
+import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 /**
  * Feature that provides a new crafting altar to do some special stuff.
  */
 public class MythicAltarFeature extends AbstractFeature {
-    public static final Component CHAT_MESSAGE_PREFIX = Component.text("[", NamedTextColor.DARK_GRAY)
-            .append(Component.text("MythicAltar", NamedTextColor.GOLD))
-            .append(Component.text("] ", NamedTextColor.DARK_GRAY));
+    private static final String FEATURE_NAME = "MythicAltar";
+    private static final NamedTextColor BRAND_COLOR = NamedTextColor.GOLD;
 
     private final CompletableRecipeRegistryInterface recipeRegistry;
     private final CustomItemManagerRegistry customItemManagerRegistry;
+
+    /**
+     * The messenger carrying the Mythic Altar prefix, shared by every
+     * player facing component this feature sends.
+     */
+    private final Messenger messenger;
 
     public MythicAltarFeature(EnhancementsPlugin plugin) {
         super(plugin);
 
         this.recipeRegistry = new CompletableRecipeRegistry();
         this.customItemManagerRegistry = new CustomItemManagerRegistry();
+        this.messenger = new Messenger(MessagePrefix.of(
+                MythicAltarFeature.FEATURE_NAME, MythicAltarFeature.BRAND_COLOR));
     }
 
     @Override
@@ -81,21 +89,31 @@ public class MythicAltarFeature extends AbstractFeature {
         this.registerEvent(new AltarCraftingListener(
                 this.plugin,
                 new SimpleAltarSchemaValidator(),
-                this.recipeRegistry
+                this.recipeRegistry,
+                this.messenger
         ));
 
         // Magic XP Bottle
         this.registerEvent(new DropEssenceOfSpawnerOnSpawnerBreakListener(this));
-        this.registerEvent(new UseMagicXpBottleOnClickListener(this));
+        this.registerEvent(new UseMagicXpBottleOnClickListener(this, this.messenger));
 
         // Safari Net
         this.registerEvent(new SafariNetCatchEntityListener(this, this.plugin));
-        this.registerEvent(new SafariNetReleaseEntityListener(this));
+        this.registerEvent(new SafariNetReleaseEntityListener(this, this.messenger));
         this.registerEvent(new SafariNetPickupListener(this));
     }
 
     public CustomItemManagerRegistry getCustomItemManagerRegistry() {
         return customItemManagerRegistry;
+    }
+
+    /**
+     * Get the messenger every player facing part of this feature sends through.
+     *
+     * @return the messenger bound to the Mythic Altar prefix
+     */
+    public Messenger getMessenger() {
+        return this.messenger;
     }
 
     @Override

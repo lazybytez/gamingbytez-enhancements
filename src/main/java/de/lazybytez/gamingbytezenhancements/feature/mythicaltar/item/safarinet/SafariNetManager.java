@@ -18,6 +18,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.safarinet;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.AbstractCustomItemManager;
+import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -224,9 +225,9 @@ public class SafariNetManager extends AbstractCustomItemManager {
         String entityName = this.extractEntityName(entityType, entity);
 
         return text("Safari Net ", NamedTextColor.AQUA, TextDecoration.BOLD)
-                .append(text("(", NamedTextColor.GRAY))
-                .append(text(entityName, NamedTextColor.YELLOW))
-                .append(text(")", NamedTextColor.GRAY));
+                .append(text("(", MessagePalette.BODY))
+                .append(text(entityName, MessagePalette.SUBJECT))
+                .append(text(")", MessagePalette.BODY));
     }
 
     /**
@@ -240,18 +241,18 @@ public class SafariNetManager extends AbstractCustomItemManager {
         List<Component> lore = new ArrayList<>();
 
         if (entityType == null) {
-            lore.add(text("A mystical net that can capture creatures.", NamedTextColor.GRAY));
+            lore.add(text("A mystical net that can capture creatures.", MessagePalette.BODY));
             lore.add(text(""));
-            lore.add(text("Throw to catch entities!", NamedTextColor.GOLD));
-            lore.add(text("50% success rate", NamedTextColor.GRAY));
+            lore.add(text("Throw to catch entities!", MessagePalette.EMPHASIS));
+            lore.add(text("50% success rate", MessagePalette.BODY));
             return lore;
         }
 
         String entityName = this.extractEntityName(entityType, entity);
 
-        lore.add(text("Contains: ", NamedTextColor.GRAY).append(text(entityName, NamedTextColor.YELLOW)));
+        lore.add(text("Contains: ", MessagePalette.BODY).append(text(entityName, MessagePalette.SUBJECT)));
         lore.add(text(""));
-        lore.add(text("Right-click to release!", NamedTextColor.GOLD));
+        lore.add(text("Right-click to release!", MessagePalette.EMPHASIS));
 
         return lore;
     }

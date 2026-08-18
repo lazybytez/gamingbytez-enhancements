@@ -19,8 +19,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.safarinet.SafariNetManager;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -39,9 +38,11 @@ import org.bukkit.inventory.ItemStack;
 public class SafariNetReleaseEntityListener implements Listener {
 
     private final MythicAltarFeature mythicAltarFeature;
+    private final Messenger messenger;
 
-    public SafariNetReleaseEntityListener(MythicAltarFeature mythicAltarFeature) {
+    public SafariNetReleaseEntityListener(MythicAltarFeature mythicAltarFeature, Messenger messenger) {
         this.mythicAltarFeature = mythicAltarFeature;
+        this.messenger = messenger;
     }
 
     /**
@@ -150,7 +151,7 @@ public class SafariNetReleaseEntityListener implements Listener {
                 + " from Safari Net at "
                 + spawnLocation);
 
-        player.sendMessage(Component.text("Failed to release entity from Safari Net!", NamedTextColor.RED));
+        this.messenger.error(player, "Failed to release entity from Safari Net!");
     }
 
     /**

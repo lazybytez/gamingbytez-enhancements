@@ -19,7 +19,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbo
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.MagicXpBottleManager;
-import net.kyori.adventure.text.format.NamedTextColor;
+import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
@@ -36,9 +36,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.Component.textOfChildren;
-
 /**
  * Listener that implements that the magic xp bottle can be used to spawn experience orbs.
  */
@@ -48,11 +45,13 @@ public class UseMagicXpBottleOnClickListener implements Listener {
     public static final int MAGIC_BOTTLE_XP_COOLDOWN = 500;
 
     private final MythicAltarFeature mythicAltarFeature;
+    private final Messenger messenger;
 
     private final Map<UUID, Long> playerLastMagicXpBottleUse;
 
-    public UseMagicXpBottleOnClickListener(MythicAltarFeature mythicAltarFeature) {
+    public UseMagicXpBottleOnClickListener(MythicAltarFeature mythicAltarFeature, Messenger messenger) {
         this.mythicAltarFeature = mythicAltarFeature;
+        this.messenger = messenger;
         this.playerLastMagicXpBottleUse = new ConcurrentHashMap<>();
     }
 
@@ -94,9 +93,7 @@ public class UseMagicXpBottleOnClickListener implements Listener {
 
         int currentXp = magicXpBottleManager.getExperience(item);
         if (currentXp == 0) {
-            player.sendMessage(textOfChildren(
-                    MythicAltarFeature.CHAT_MESSAGE_PREFIX,
-                    text("You have no XP left in your magic XP bottle!", NamedTextColor.RED)));
+            this.messenger.error(player, "You have no XP left in your magic XP bottle!");
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
 
             this.playerLastMagicXpBottleUse.put(player.getUniqueId(), System.currentTimeMillis());
