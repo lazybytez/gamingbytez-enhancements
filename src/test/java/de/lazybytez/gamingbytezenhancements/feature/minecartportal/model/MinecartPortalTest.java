@@ -19,6 +19,7 @@ package de.lazybytez.gamingbytezenhancements.feature.minecartportal.model;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -88,9 +89,74 @@ class MinecartPortalTest {
     }
 
     @Test
-    void defaultConstructor_createsEmptyPortal() {
-        MinecartPortal portal = new MinecartPortal();
+    void constructor_copiesPortalLocationArgument() {
+        MinecartPortal portal = new MinecartPortal("test-portal", this.portalLocation, this.destinationLocation);
 
-        assertNotNull(portal);
+        this.portalLocation.setX(999);
+
+        assertEquals(100, portal.getPortal().getX());
+    }
+
+    @Test
+    void constructor_copiesDestinationLocationArgument() {
+        MinecartPortal portal = new MinecartPortal("test-portal", this.portalLocation, this.destinationLocation);
+
+        this.destinationLocation.setX(999);
+
+        assertEquals(200, portal.getDestination().getX());
+    }
+
+    @Test
+    void getPortal_returnsCopyNotOriginalReference() {
+        MinecartPortal portal = new MinecartPortal("test-portal", this.portalLocation, this.destinationLocation);
+
+        portal.getPortal().setX(999);
+
+        assertEquals(100, portal.getPortal().getX());
+    }
+
+    @Test
+    void getDestination_returnsCopyNotOriginalReference() {
+        MinecartPortal portal = new MinecartPortal("test-portal", this.portalLocation, this.destinationLocation);
+
+        portal.getDestination().setX(999);
+
+        assertEquals(200, portal.getDestination().getX());
+    }
+
+    @Test
+    void getPortal_returnsNullWhenUnset() {
+        MinecartPortal portal = new MinecartPortal("test-portal", null, this.destinationLocation);
+
+        assertNull(portal.getPortal());
+    }
+
+    @Test
+    void getDestination_returnsNullWhenUnset() {
+        MinecartPortal portal = new MinecartPortal("test-portal", this.portalLocation, null);
+
+        assertNull(portal.getDestination());
+    }
+
+    @Test
+    void serialize_handsOutCopiesSoCallersCannotMutateStoredState() {
+        MinecartPortal portal = new MinecartPortal("spawn", this.portalLocation, this.destinationLocation);
+
+        Location serializedPortal = (Location) portal.serialize().get("portal");
+        serializedPortal.setX(999.0);
+
+        assertEquals(this.portalLocation.getX(), portal.getPortal().getX());
+    }
+
+    @Test
+    void registeredClassSurvivesASerializationRoundTrip() {
+        ConfigurationSerialization.registerClass(MinecartPortal.class);
+        MinecartPortal portal = new MinecartPortal("spawn", this.portalLocation, this.destinationLocation);
+
+        MinecartPortal restored = MinecartPortal.deserialize(portal.serialize());
+
+        assertEquals("spawn", restored.getName());
+        assertEquals(this.portalLocation.getBlockX(), restored.getPortal().getBlockX());
+        assertEquals(this.destinationLocation.getBlockZ(), restored.getDestination().getBlockZ());
     }
 }

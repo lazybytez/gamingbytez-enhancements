@@ -59,9 +59,14 @@ public class PortalConfiguration {
     private final Plugin plugin;
 
     /**
-     * The config instance that was last loaded.
+     * Guards writes to the configuration file.
+     * <p>
+     * Disk writes are held off the object monitor so a write running on an
+     * asynchronous task cannot block a portal mutation on the server thread.
+     * Whoever holds this lock takes its own snapshot of the portals, so the
+     * write that finishes last is always the one carrying the newest state.
      */
-    private final YamlConfiguration config;
+    private final Object saveLock;
 
     /**
      * The list of available portals.
@@ -70,7 +75,7 @@ public class PortalConfiguration {
 
     public PortalConfiguration(Plugin plugin) {
         this.plugin = plugin;
-        this.config = new YamlConfiguration();
+        this.saveLock = new Object();
         this.portals = new CopyOnWriteArrayList<>();
     }
 
@@ -228,17 +233,22 @@ public class PortalConfiguration {
      * @throws IOException                   if any file operation fails
      * @throws InvalidConfigurationException when the configuration format is invalid
      */
-    public synchronized void loadSync() throws IOException, InvalidConfigurationException {
-        // Load config ion a thread safe manner
+    public void loadSync() throws IOException, InvalidConfigurationException {
+        YamlConfiguration loadedConfig = new YamlConfiguration();
+
         try {
             this.plugin.getLogger().info("Loading minecart portals file...");
 
             File file = this.getConfigurationFile();
             this.ensureFileExists(file);
 
-            // We do not use YamlConfiguration.loadConfiguration as we want to handle
-            // exceptions our own. this.config is initialized in constructor
-            this.config.load(file);
+            // A save truncates the file in place, so a read that ran beside one would
+            // parse a partial document.
+            synchronized (this.saveLock) {
+                // We do not use YamlConfiguration.loadConfiguration as we want to handle
+                // exceptions our own.
+                loadedConfig.load(file);
+            }
 
             this.plugin.getLogger().info("Loaded minecart portals file!");
         } catch (IOException | InvalidConfigurationException e) {
@@ -253,18 +263,26 @@ public class PortalConfiguration {
 
 
         // Handle fresh configuration that is still empty
-        boolean portalsConfigured = config.isSet(PortalConfiguration.PORTAL_CONFIG_KEY);
+        boolean portalsConfigured = loadedConfig.isSet(PortalConfiguration.PORTAL_CONFIG_KEY);
 
         if (!portalsConfigured) {
             this.plugin.getLogger().info("Minecart Portal storage is missing, adding it...");
-            // In this case, we want to save the configuration
-            // Constructor of class ensures we have an empty list just in case
+            // The file carries no portals, so the cache is what the storage is rebuilt from.
             this.saveSync();
             this.plugin.getLogger().info("Added portal storage to Minecart Portal storage file!");
+
+            return;
         }
 
         this.plugin.getLogger().info("Parsing portal instances from portal storage...");
-        this.portals = this.getPortalsFromConfig(config);
+        CopyOnWriteArrayList<MinecartPortal> loadedPortals = this.getPortalsFromConfig(loadedConfig);
+
+        // Only the swap needs the monitor the mutators hold, so a mutation cannot be
+        // applied to the list this call is about to replace.
+        synchronized (this) {
+            this.portals = loadedPortals;
+        }
+
         this.plugin.getLogger().info("Finished parsing portal instances from portal storage!");
     }
 
@@ -307,10 +325,23 @@ public class PortalConfiguration {
         List<?> rawPortals = config.getList(PortalConfiguration.PORTAL_CONFIG_KEY, new ArrayList<>());
 
         CopyOnWriteArrayList<MinecartPortal> loadedPortals = new CopyOnWriteArrayList<>();
-        for (Object o : rawPortals) {
-            if (o instanceof MinecartPortal) {
-                loadedPortals.add((MinecartPortal) o);
+        for (Object rawPortal : rawPortals) {
+            if (!(rawPortal instanceof MinecartPortal portal)) {
+                continue;
             }
+
+            if (portal.getName() == null) {
+                this.plugin.getLogger().warning("Skipped a Minecart Portal without a name in the portal storage.");
+
+                continue;
+            }
+
+            if (!MinecartPortal.isAddressableName(portal.getName())) {
+                this.plugin.getLogger().warning("Minecart Portal \"" + portal.getName()
+                        + "\" carries a name no command can read. Rename it in the portal storage file.");
+            }
+
+            loadedPortals.add(portal);
         }
 
         return loadedPortals;
@@ -326,38 +357,44 @@ public class PortalConfiguration {
      * As this function is synchronous, it should only be used during
      * plugin initialization. Please use asynchronous functions
      * during normal operation.
+     * <p>
+     * The snapshot of the portals is taken while the save lock is held, so
+     * concurrent writers cannot persist state older than the one that ran last.
      *
      * @throws IOException when the configuration could not be saved
      */
-    public synchronized void saveSync() throws IOException {
+    public void saveSync() throws IOException {
         File file = this.getConfigurationFile();
 
-        // Update config value with cache
-        try {
-            this.plugin.getLogger().info("Saving Minecart Portals to file...");
+        synchronized (this.saveLock) {
+            try {
+                this.plugin.getLogger().info("Saving Minecart Portals to file...");
 
-            this.config.set(PortalConfiguration.PORTAL_CONFIG_KEY, this.portals);
-            int portalCount = this.portals.size();
+                List<MinecartPortal> portalSnapshot = List.copyOf(this.portals);
+                YamlConfiguration snapshotConfig = new YamlConfiguration();
+                snapshotConfig.set(PortalConfiguration.PORTAL_CONFIG_KEY, portalSnapshot);
 
-            // Save
-            this.config.save(file);
+                snapshotConfig.save(file);
 
-            this.plugin.getLogger().info("Saved " + portalCount + " Minecart Portals in the configuration file!");
-        } catch (IOException e) {
-            this.plugin.getLogger().log(
-                    Level.SEVERE,
-                    "Failed to save minecart portals file!",
-                    e
-            );
+                this.plugin.getLogger().info(
+                        "Saved " + portalSnapshot.size() + " Minecart Portals in the configuration file!"
+                );
+            } catch (IOException e) {
+                this.plugin.getLogger().log(
+                        Level.SEVERE,
+                        "Failed to save minecart portals file!",
+                        e
+                );
 
-            throw e;
+                throw e;
+            }
         }
     }
 
     /**
      * Try to save the configuration asynchronously.
      * <p>
-     * This method tries to sae the configuration asynchronously using the
+     * This method tries to save the configuration asynchronously using the
      * Bukkit scheduler. If saving the configuration fails, the issue will
      * be logged to the console.
      *

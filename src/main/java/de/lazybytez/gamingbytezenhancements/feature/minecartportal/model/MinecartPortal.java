@@ -20,9 +20,11 @@ package de.lazybytez.gamingbytezenhancements.feature.minecartportal.model;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Simple model that represents a Minecart Portal with all its attributes.
@@ -31,31 +33,56 @@ import java.util.Map;
  * The portal location is where a player sitting in a minecart triggers the portal.
  * The destination location is where the player will be teleported to.
  * <p>
- * Note that MinecartPortals are immutable to prevent concurrency issues.
+ * Instances are immutable: all fields are final, the constructor clones the
+ * {@link Location} arguments it receives, and the accessors clone the stored
+ * locations before returning them. No caller can observe or mutate the internal
+ * state, which makes instances safe to share across threads, e.g. when held in a
+ * {@link java.util.concurrent.CopyOnWriteArrayList}.
  */
-public class MinecartPortal implements ConfigurationSerializable {
+public final class MinecartPortal implements ConfigurationSerializable {
+    /**
+     * The longest name a portal may carry.
+     */
+    public static final int MAX_NAME_LENGTH = 16;
+
+    private static final Pattern NAME_PATTERN = Pattern.compile("[A-Za-z0-9]+");
+
+    /**
+     * The characters Brigadier's single-word argument reads, which is what decides whether
+     * a stored name can be named in a command at all.
+     */
+    private static final Pattern COMMAND_ARGUMENT_PATTERN = Pattern.compile("[0-9A-Za-z_.+\\-]+");
+
     /**
      * Name of the portal
      */
-    private String name;
+    private final String name;
 
     /**
      * Location where the portal can be triggered.
      */
-    private Location portal;
+    private final Location portal;
 
     /**
      * Location where the player (+ his cart) will be teleported to.
      */
-    private Location destination;
+    private final Location destination;
 
-    public MinecartPortal() {
-    }
-
-    public MinecartPortal(String name, Location portal, Location destination) {
+    /**
+     * Creates a new immutable MinecartPortal.
+     * <p>
+     * The given locations are cloned so that later mutation of the arguments by the
+     * caller cannot affect this instance. Both locations may be {@code null} to
+     * represent a portal that has not been fully configured yet.
+     *
+     * @param name        the name of the portal
+     * @param portal      the location where the portal can be triggered, or {@code null}
+     * @param destination the location the portal teleports to, or {@code null}
+     */
+    public MinecartPortal(String name, @Nullable Location portal, @Nullable Location destination) {
         this.name = name;
-        this.portal = portal;
-        this.destination = destination;
+        this.portal = MinecartPortal.cloneLocation(portal);
+        this.destination = MinecartPortal.cloneLocation(destination);
     }
 
     /**
@@ -74,6 +101,40 @@ public class MinecartPortal implements ConfigurationSerializable {
     }
 
     /**
+     * Check whether a name exceeds the length a portal may carry.
+     *
+     * @param name the name a sender typed
+     * @return whether the name is too long to register
+     */
+    public static boolean isNameTooLong(String name) {
+        return name.length() > MinecartPortal.MAX_NAME_LENGTH;
+    }
+
+    /**
+     * Check a name against the accepted character set.
+     *
+     * @param name the name a sender typed
+     * @return whether the name consists of letters and digits only
+     */
+    public static boolean hasValidNameCharacters(String name) {
+        return MinecartPortal.NAME_PATTERN.matcher(name).matches();
+    }
+
+    /**
+     * Check whether a sender can name this portal in a command argument.
+     * <p>
+     * The accepted set is the one Brigadier's single-word argument reads, which is wider
+     * than the set {@code add} enforces. A name outside it cannot be addressed at all,
+     * because the argument stops reading at the first character it does not accept.
+     *
+     * @param name the name to check
+     * @return whether a sender can address a portal carrying this name
+     */
+    public static boolean isAddressableName(String name) {
+        return MinecartPortal.COMMAND_ARGUMENT_PATTERN.matcher(name).matches();
+    }
+
+    /**
      * Serialize function to store the object in a config file.
      *
      * @return the serialized MinecartPortal object
@@ -83,21 +144,51 @@ public class MinecartPortal implements ConfigurationSerializable {
         HashMap<String, Object> serialized = new HashMap<>();
 
         serialized.put("name", this.name);
-        serialized.put("portal", this.portal);
-        serialized.put("destination", this.destination);
+        serialized.put("portal", MinecartPortal.cloneLocation(this.portal));
+        serialized.put("destination", MinecartPortal.cloneLocation(this.destination));
 
         return serialized;
     }
 
+    /**
+     * Returns the name of the portal.
+     *
+     * @return the portal name
+     */
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public Location getPortal() {
-        return portal;
+    /**
+     * Returns a clone of the location where the portal can be triggered.
+     *
+     * @return a clone of the portal location, or {@code null} if it has not been set
+     */
+    public @Nullable Location getPortal() {
+        return MinecartPortal.cloneLocation(this.portal);
     }
 
-    public Location getDestination() {
-        return destination;
+    /**
+     * Returns a clone of the location the portal teleports to.
+     *
+     * @return a clone of the destination location, or {@code null} if it has not been set
+     */
+    public @Nullable Location getDestination() {
+        return MinecartPortal.cloneLocation(this.destination);
+    }
+
+    /**
+     * Null-safe clone helper used to defensively copy locations on the way in and out
+     * of this class.
+     *
+     * @param location the location to clone, may be {@code null}
+     * @return a clone of the given location, or {@code null} if the argument was {@code null}
+     */
+    private static @Nullable Location cloneLocation(@Nullable Location location) {
+        if (location == null) {
+            return null;
+        }
+
+        return location.clone();
     }
 }
