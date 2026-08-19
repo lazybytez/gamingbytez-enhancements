@@ -179,6 +179,9 @@ public class ExcavationChargeManager extends AbstractCustomItemManager {
         lore.add(text("Size: ", MessagePalette.BODY).append(text(blastLevel.getSize() + " blocks", MessagePalette.VALUE)));
         lore.add(text("Damage: ", MessagePalette.BODY).append(text(blastLevel.getCentreDamage(), MessagePalette.VALUE)));
         lore.add(text("Chain Reach: ", MessagePalette.BODY).append(text(blastLevel.getChainReach() + " blocks", MessagePalette.VALUE)));
+        lore.add(text(""));
+        lore.add(text("Sneak + right click to change the shape.", MessagePalette.EMPHASIS));
+        lore.add(text("Place it, then hit or power it to set it off.", MessagePalette.EMPHASIS));
 
         return lore;
     }

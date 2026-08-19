@@ -113,7 +113,14 @@ public final class BlastScheduler {
      * @return true when the blast fits under the queued block ceiling.
      */
     public boolean canAccept(int blockCount) {
-        return this.queuedBlocks() + blockCount <= BlastScheduler.MAX_QUEUED_BLOCKS;
+        if (this.queuedBlocks() + blockCount > BlastScheduler.MAX_QUEUED_BLOCKS) {
+            this.plugin.getLogger().warning(
+                    "Refused an Excavation Charge blast because too much carving is already queued.");
+
+            return false;
+        }
+
+        return true;
     }
 
     private int queuedBlocks() {

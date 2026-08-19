@@ -146,7 +146,7 @@ public class MythicAltarFeature extends AbstractFeature {
                 new DetonateExcavationChargeListener(this, this.blastScheduler, this.messenger);
         this.registerEvent(new CycleExcavationChargeShapeListener(this, this.messenger));
         this.registerEvent(new PlaceExcavationChargeListener(this));
-        this.registerEvent(new CollectExcavationChargeListener(this));
+        this.registerEvent(new CollectExcavationChargeListener(this, detonation));
         this.registerEvent(detonation);
         this.registerEvent(new RedstoneIgniteExcavationChargeListener(detonation));
     }

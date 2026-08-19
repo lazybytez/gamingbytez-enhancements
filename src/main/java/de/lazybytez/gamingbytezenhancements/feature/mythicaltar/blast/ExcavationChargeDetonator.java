@@ -70,6 +70,8 @@ public final class ExcavationChargeDetonator {
     private static final String BLAST_SOUND = "entity.generic.explode";
     private static final String BLAST_BOOM_SOUND = "entity.dragon_fireball.explode";
     private static final String BLAST_RUMBLE_SOUND = "entity.lightning_bolt.thunder";
+    private static final String FIZZLE_SOUND = "block.fire.extinguish";
+    private static final int FIZZLE_PARTICLE_COUNT = 30;
 
     private static final float MIN_BLAST_VOLUME = 4.0f;
     private static final float MAX_BLAST_VOLUME = 10.0f;
@@ -153,6 +155,8 @@ public final class ExcavationChargeDetonator {
         List<Block> plan = this.blastPlanner.plan(geometry, detonationPoint);
 
         if (!this.blastScheduler.canAccept(plan.size())) {
+            ExcavationChargeDetonator.fizzle(detonationPoint);
+
             return List.of();
         }
 
@@ -175,6 +179,28 @@ public final class ExcavationChargeDetonator {
         charge.remove();
 
         return woken;
+    }
+
+    /**
+     * Shows a refused blast fizzling out instead of failing silently.
+     * <p>
+     * A refusal happens when the queued carving ceiling is reached, so after a full countdown the
+     * charge would otherwise just sit there looking broken. The hiss and the smoke say the charge
+     * gave up on purpose and can be set off again once the queue has drained.
+     *
+     * @param detonationPoint The place the charge tried to go off.
+     */
+    private static void fizzle(Location detonationPoint) {
+        World world = detonationPoint.getWorld();
+
+        world.playSound(detonationPoint, ExcavationChargeDetonator.FIZZLE_SOUND, 2.0f, 0.8f);
+        world.spawnParticle(
+                Particle.LARGE_SMOKE,
+                detonationPoint,
+                ExcavationChargeDetonator.FIZZLE_PARTICLE_COUNT,
+                0.4, 0.4, 0.4,
+                0.02
+        );
     }
 
     /**

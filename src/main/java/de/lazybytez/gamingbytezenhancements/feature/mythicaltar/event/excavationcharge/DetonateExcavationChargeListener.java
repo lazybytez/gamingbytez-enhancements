@@ -113,6 +113,16 @@ public class DetonateExcavationChargeListener implements Listener {
     }
 
     /**
+     * Tell whether the given crystal is a charge currently counting down.
+     *
+     * @param crystal The end crystal to check
+     * @return True when a fuse is burning on it
+     */
+    public boolean isBurning(EnderCrystal crystal) {
+        return this.fuse.isBurning(crystal);
+    }
+
+    /**
      * Tell the player who hit the charge that its countdown is running.
      *
      * @param event The entity damage event that started the countdown
