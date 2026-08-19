@@ -57,7 +57,7 @@ public class RedstoneIgniteExcavationChargeListener implements Listener {
      *
      * @param event The redstone current change
      */
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onRedstoneRise(BlockRedstoneEvent event) {
         if (event.getOldCurrent() > 0 || event.getNewCurrent() <= 0) {
             return;

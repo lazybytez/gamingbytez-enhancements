@@ -20,8 +20,10 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.PlaceExcavationChargeListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -93,15 +95,30 @@ public final class ExcavationChargeGravity {
     }
 
     private void tick() {
+        Set<UUID> loadedCharges = new HashSet<>();
+
         for (World world : this.plugin.getServer().getWorlds()) {
             for (EnderCrystal crystal : world.getEntitiesByClass(EnderCrystal.class)) {
                 if (!PlaceExcavationChargeListener.isPlacedCharge(this.plugin, crystal)) {
                     continue;
                 }
 
+                loadedCharges.add(crystal.getUniqueId());
                 this.applyGravity(crystal);
             }
         }
+
+        // A charge removed mid fall never reaches land(), so its speed entry is swept here.
+        this.fallSpeeds.keySet().retainAll(loadedCharges);
+    }
+
+    /**
+     * Returns how many charges are currently tracked as falling.
+     *
+     * @return The number of tracked fall speeds.
+     */
+    int trackedFallingCharges() {
+        return this.fallSpeeds.size();
     }
 
     private void applyGravity(EnderCrystal crystal) {
