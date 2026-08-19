@@ -6,6 +6,9 @@ permissions:
   gamingbytez.minecartportals.admin:
     description: Allows management of Minecart Portals
     default: op
+  gamingbytez.chatbot.admin:
+    description: Allows management of the Chat Bot
+    default: op
 dependencies:
   server:
     Multiverse-Core:

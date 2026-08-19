@@ -18,6 +18,7 @@
 package de.lazybytez.gamingbytezenhancements.lib.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.util.List;
@@ -88,6 +89,16 @@ class CommandRegistrarTest {
             @Override
             public List<String> aliases() {
                 return aliases;
+            }
+
+            @Override
+            public String permission() {
+                return "gamingbytez.test.admin";
+            }
+
+            @Override
+            public Messenger messenger() {
+                return mock(Messenger.class);
             }
         };
     }

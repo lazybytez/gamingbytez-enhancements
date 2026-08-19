@@ -10,27 +10,29 @@ The bot can respond to the entire server (`BROADCAST`), only the message's origi
 
 ## Static Responses
 
-Static responses are loaded from `chatbot_responses.yaml` (created in the plugin data folder). Each entry defines:
+Static responses are loaded from `static_response_chat_bot.yaml` (created in the plugin data folder). Each entry defines:
 
 | Field | Description |
 |---|---|
 | `buzzwords` | List of words that trigger this action (case-insensitive) |
-| `message` | The response text |
+| `responseMessage` | The response text |
 | `numerator` | Numerator of the chance fraction (e.g. `1` for 1-in-N) |
 | `denominator` | Denominator of the chance fraction |
-| `weight` | Priority weight for weighted random selection (default: `1`) |
 
 **Example entry:**
 ```yaml
-actions:
+static_response:
   - buzzwords:
       - "hello"
       - "hi"
-    message: "Greetings, traveller!"
+    responseMessage: "Greetings, traveller!"
     numerator: 1
     denominator: 3
-    weight: 1
 ```
+
+Every static response takes part in the weighted random selection with a weight of `1`. An entry
+that misses a field or carries a wrong type is skipped with a warning, the valid entries around it
+still load.
 
 ## AI Responses (Optional)
 
@@ -77,8 +79,48 @@ The `prompt` field supports `%s` as a placeholder that will be replaced with the
 | `apiKey` | Your API key |
 | `organizationId` | Optional organization ID |
 | `model` | Model to use |
-| `temperature` | Sampling temperature (`0.0`–`2.0`) |
+| `temperature` | Sampling temperature (`0.0` to `2.0`) |
+
+## Commands
+
+**Aliases:** `/chatbot`, `/gbcb`
+
+**Permission:** `gamingbytez.chatbot.admin`, granted to operators by default. A sender without it
+does not see the command at all.
+
+Running the command without a subcommand prints the help listing under a heading naming the
+invoked command.
+
+### `reload`
+
+Reloads the static responses and the chat bot settings in one go.
+
+```
+/gbcb reload
+```
+
+### `reload responses`
+
+Re-reads `static_response_chat_bot.yaml` and swaps the active static responses. The file is read
+off the server thread and the bot keeps answering with the previous responses until the fresh ones
+are in place. If the file cannot be read, the previous responses stay active and the operator is
+told so.
+
+```
+/gbcb reload responses
+```
+
+### `reload settings`
+
+Re-reads the `chatbot` and `openai` sections of `config.yml` and replaces the AI action with one
+built from the fresh settings. Turning `enable_ai_answers` off removes AI answers without a
+restart. Replacing the action resets its rate limit window and its token usage counter.
+
+```
+/gbcb reload settings
+```
 
 ## Permissions
 
-No permissions are required. The bot responds based on message content alone.
+Responding to chat requires no permission, the bot reacts to message content alone. Managing the
+bot requires `gamingbytez.chatbot.admin`, see Commands above.

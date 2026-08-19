@@ -128,7 +128,7 @@ public final class MyFeatureCommand implements PluginCommand {
     @Override
     public LiteralArgumentBuilder<CommandSourceStack> createNode() {
         return Commands.literal(MyFeatureCommand.LABEL)
-                .requires(MyFeatureCommand::canUse)
+                .requires(this::canUse)
                 .executes(this::sendHelp)
                 .then(Commands.literal("here").executes(this::showPosition));
     }
@@ -143,14 +143,14 @@ public final class MyFeatureCommand implements PluginCommand {
         return List.of("gbmf");
     }
 
-    private static boolean canUse(CommandSourceStack source) {
-        return source.getSender().hasPermission(MyFeatureCommand.ADMIN_PERMISSION);
+    @Override
+    public String permission() {
+        return MyFeatureCommand.ADMIN_PERMISSION;
     }
 
-    private int sendHelp(CommandContext<CommandSourceStack> context) {
-        CommandHelp.send(context.getSource(), this.messenger, context.getNodes().getFirst().getNode());
-
-        return CommandResults.SUCCESS;
+    @Override
+    public Messenger messenger() {
+        return this.messenger;
     }
 
     private int showPosition(CommandContext<CommandSourceStack> context) {
@@ -188,11 +188,13 @@ Rules that hold for every command:
 - Build live suggestions with `CommandSuggestions.fromSupplier(...)`. The supplier is asked again on
   every invocation and the candidates are filtered case-insensitively against what the sender typed,
   so a suggestion list never goes stale.
-- Render help with `CommandHelp.send(...)` from the invoked node, never from a hardcoded string.
-  Help read from the live tree cannot drift from the grammar, and it prints the label the operator
-  actually typed, so an alias renders as `/gbmcp ...`.
-- Declare the permission node in `src/main/resources/paper-plugin.yml` and check it in `requires(...)`
-  on the root literal, so an unpermitted sender never sees the branch.
+- Render help through the inherited `sendHelp` default, never from a hardcoded string. Help read
+  from the live tree cannot drift from the grammar, and it prints the label the operator actually
+  typed, so an alias renders as `/gbmcp ...`.
+- Return the permission node from `permission()`, declare it in `src/main/resources/paper-plugin.yml`
+  and gate the root literal with `requires(this::canUse)`, so an unpermitted sender never sees the
+  branch. Both `canUse` and `sendHelp` are interface defaults, a command overrides them only when
+  it deliberately deviates.
 - Keep the wording out of the handlers. A feature holds it in a `messages` package beside the
   packages that speak it, as `feature/minecartportal/messages/MinecartPortalMessages.java` does
   with its `Component` factories. Messages word and never validate: a rule like a name pattern

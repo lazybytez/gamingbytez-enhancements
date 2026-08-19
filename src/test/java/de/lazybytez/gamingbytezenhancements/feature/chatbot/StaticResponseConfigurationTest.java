@@ -18,8 +18,10 @@
 package de.lazybytez.gamingbytezenhancements.feature.chatbot;
 
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.actions.StaticResponseAction;
+import org.bukkit.Server;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -42,6 +45,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -187,6 +193,57 @@ class StaticResponseConfigurationTest {
             assertNotEquals(CopyOnWriteArrayList.class, field.getType());
             assertNotEquals(org.bukkit.configuration.file.YamlConfiguration.class, field.getType());
         }
+    }
+
+    @Test
+    void load_afterTheKeyWasRemoved_clearsThePreviousActions() throws IOException, InvalidConfigurationException {
+        this.writeConfigFile(VALID_ENTRY_YAML);
+        this.configuration.load();
+        assertEquals(1, this.configuration.getActions().size());
+
+        this.writeConfigFile("unrelated: true\n");
+        this.configuration.load();
+
+        assertEquals(List.of(), this.configuration.getActions());
+    }
+
+    @Test
+    void loadAsync_withReadableFile_swapsTheActionsAndReportsSuccess() throws IOException {
+        this.givenAnInlineScheduler();
+        this.writeConfigFile(VALID_ENTRY_YAML);
+        AtomicReference<Boolean> reported = new AtomicReference<>();
+
+        this.configuration.loadAsync(reported::set);
+
+        assertEquals(Boolean.TRUE, reported.get());
+        assertEquals(1, this.configuration.getActions().size());
+    }
+
+    @Test
+    void loadAsync_withUnreadableFile_keepsThePreviousActionsAndReportsFailure()
+            throws IOException, InvalidConfigurationException {
+        this.writeConfigFile(VALID_ENTRY_YAML);
+        this.configuration.load();
+        this.givenAnInlineScheduler();
+        this.writeConfigFile("static_response: \"not\n  a list");
+        AtomicReference<Boolean> reported = new AtomicReference<>();
+
+        this.configuration.loadAsync(reported::set);
+
+        assertEquals(Boolean.FALSE, reported.get());
+        assertEquals(1, this.configuration.getActions().size());
+    }
+
+    private void givenAnInlineScheduler() {
+        Server server = mock(Server.class);
+        BukkitScheduler scheduler = mock(BukkitScheduler.class);
+        when(this.mockPlugin.getServer()).thenReturn(server);
+        when(server.getScheduler()).thenReturn(scheduler);
+        doAnswer(invocation -> {
+            invocation.getArgument(1, Runnable.class).run();
+
+            return null;
+        }).when(scheduler).runTaskAsynchronously(eq(this.mockPlugin), any(Runnable.class));
     }
 
     private void writeConfigFile(String yaml) throws IOException {

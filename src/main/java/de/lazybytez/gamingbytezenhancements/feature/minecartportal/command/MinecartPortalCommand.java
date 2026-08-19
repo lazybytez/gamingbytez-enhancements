@@ -18,10 +18,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.minecartportal.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import de.lazybytez.gamingbytezenhancements.feature.minecartportal.PortalConfiguration;
-import de.lazybytez.gamingbytezenhancements.lib.command.CommandHelp;
-import de.lazybytez.gamingbytezenhancements.lib.command.CommandResults;
 import de.lazybytez.gamingbytezenhancements.lib.command.PluginCommand;
 import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -79,7 +76,7 @@ public final class MinecartPortalCommand implements PluginCommand {
     @Override
     public LiteralArgumentBuilder<CommandSourceStack> createNode() {
         return Commands.literal(MinecartPortalCommand.LABEL)
-                .requires(MinecartPortalCommand::canUse)
+                .requires(this::canUse)
                 .executes(this::sendHelp)
                 .then(this.lifecycleCommands.add())
                 .then(this.locationCommands.entry())
@@ -100,13 +97,13 @@ public final class MinecartPortalCommand implements PluginCommand {
         return List.of("gbmcp");
     }
 
-    private static boolean canUse(CommandSourceStack source) {
-        return source.getSender().hasPermission(MinecartPortalCommand.ADMIN_PERMISSION);
+    @Override
+    public String permission() {
+        return MinecartPortalCommand.ADMIN_PERMISSION;
     }
 
-    private int sendHelp(CommandContext<CommandSourceStack> context) {
-        CommandHelp.send(context.getSource(), this.messenger, context.getNodes().getFirst().getNode());
-
-        return CommandResults.SUCCESS;
+    @Override
+    public Messenger messenger() {
+        return this.messenger;
     }
 }
