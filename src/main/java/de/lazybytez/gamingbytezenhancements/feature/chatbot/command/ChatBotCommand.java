@@ -20,7 +20,6 @@ package de.lazybytez.gamingbytezenhancements.feature.chatbot.command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotFeature;
-import de.lazybytez.gamingbytezenhancements.lib.command.CommandHelp;
 import de.lazybytez.gamingbytezenhancements.lib.command.CommandResults;
 import de.lazybytez.gamingbytezenhancements.lib.command.PluginCommand;
 import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
@@ -57,7 +56,7 @@ public final class ChatBotCommand implements PluginCommand {
     @Override
     public LiteralArgumentBuilder<CommandSourceStack> createNode() {
         return Commands.literal(ChatBotCommand.LABEL)
-                .requires(ChatBotCommand::canUse)
+                .requires(this::canUse)
                 .executes(this::sendHelp)
                 .then(Commands.literal("reload")
                         .executes(this::reloadEverything)
@@ -75,14 +74,14 @@ public final class ChatBotCommand implements PluginCommand {
         return List.of("gbcb");
     }
 
-    private static boolean canUse(CommandSourceStack source) {
-        return source.getSender().hasPermission(ChatBotCommand.ADMIN_PERMISSION);
+    @Override
+    public String permission() {
+        return ChatBotCommand.ADMIN_PERMISSION;
     }
 
-    private int sendHelp(CommandContext<CommandSourceStack> context) {
-        CommandHelp.send(context.getSource(), this.messenger, context.getNodes().getFirst().getNode());
-
-        return CommandResults.SUCCESS;
+    @Override
+    public Messenger messenger() {
+        return this.messenger;
     }
 
     private int reloadEverything(CommandContext<CommandSourceStack> context) {

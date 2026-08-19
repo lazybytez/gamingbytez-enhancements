@@ -18,6 +18,8 @@
 package de.lazybytez.gamingbytezenhancements.lib.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import java.util.List;
 
@@ -26,6 +28,11 @@ import java.util.List;
  *
  * There is no label accessor on purpose: the label lives in the returned
  * builder and is read back from it, so it cannot be declared twice and drift.
+ *
+ * The permission gate and the help executor are default methods rather than
+ * per command copies, because both carry a subtle correctness rule a copy can
+ * quietly get wrong: the permission is checked on the sender, and help renders
+ * from the invoked node so an alias reads back as itself.
  */
 public interface PluginCommand {
     /**
@@ -43,11 +50,50 @@ public interface PluginCommand {
     String description();
 
     /**
+     * Get the permission node guarding this command.
+     *
+     * The node must be declared in {@code paper-plugin.yml} with its default,
+     * so an operator can see and grant it.
+     *
+     * @return the permission node
+     */
+    String permission();
+
+    /**
+     * Get the messenger this command reports through.
+     *
+     * @return the messenger carrying the owning feature's prefix
+     */
+    Messenger messenger();
+
+    /**
      * Get the alternative labels the command answers to.
      *
      * @return the aliases, empty when the command has none
      */
     default List<String> aliases() {
         return List.of();
+    }
+
+    /**
+     * Tell whether the given source may see and use this command.
+     *
+     * @param source the source of the command
+     * @return whether the sender carries {@link #permission()}
+     */
+    default boolean canUse(CommandSourceStack source) {
+        return source.getSender().hasPermission(this.permission());
+    }
+
+    /**
+     * Send the help listing for the invoked command tree.
+     *
+     * @param context the context of the executed command
+     * @return the command status code
+     */
+    default int sendHelp(CommandContext<CommandSourceStack> context) {
+        CommandHelp.send(context.getSource(), this.messenger(), context.getNodes().getFirst().getNode());
+
+        return CommandResults.SUCCESS;
     }
 }
