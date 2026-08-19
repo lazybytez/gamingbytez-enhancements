@@ -78,3 +78,4 @@ Five Glow Item Frames must be placed on top of the surface blocks, one block abo
 | [Time Rituals](time-recipes.md) | Set time to day, set time to night |
 | [XP Bottle System](xp-bottle-recipes.md) | Craft Experience Gem, craft Magic XP Bottle, fill Magic XP Bottle |
 | [Safari Net](safari-net.md) | Craft a Safari Net to capture and transport entities |
+| [Excavation Charge](excavation-charge.md) | Craft and upgrade an Excavation Charge to carve controlled blast shapes |

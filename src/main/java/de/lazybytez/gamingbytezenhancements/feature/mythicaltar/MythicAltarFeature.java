@@ -20,13 +20,21 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar;
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastBlockFilter;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastBudget;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastScheduler;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.AltarCraftingListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.CollectExcavationChargeListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.CycleExcavationChargeShapeListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.DetonateExcavationChargeListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.PlaceExcavationChargeListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.DropEssenceOfSpawnerOnSpawnerBreakListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.UseMagicXpBottleOnClickListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetCatchEntityListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetPickupListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetReleaseEntityListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.CustomItemManagerRegistry;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.ExcavationChargeManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.EssenceOfSpawnerManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.ExperienceGemManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle.MagicXpBottleManager;
@@ -54,6 +62,8 @@ public class MythicAltarFeature extends AbstractFeature {
      */
     private final Messenger messenger;
 
+    private BlastScheduler blastScheduler;
+
     public MythicAltarFeature(EnhancementsPlugin plugin) {
         super(plugin);
 
@@ -65,9 +75,26 @@ public class MythicAltarFeature extends AbstractFeature {
 
     @Override
     public void onEnable() {
+        this.blastScheduler = new BlastScheduler(this.plugin, BlastBlockFilter.production(), new BlastBudget());
+
         this.registerRecipes();
         this.registerCustomItemManagers();
         this.registerEvents();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Carves every Excavation Charge blast still in flight synchronously, so a server stop never
+     * leaves a half carved crater in the world.
+     */
+    @Override
+    public void onDisable() {
+        if (this.blastScheduler == null) {
+            return;
+        }
+
+        this.blastScheduler.shutdown();
     }
 
     private void registerRecipes() {
@@ -82,6 +109,9 @@ public class MythicAltarFeature extends AbstractFeature {
 
         // Safari Net
         this.customItemManagerRegistry.registerCustomItemManager(new SafariNetManager(this.plugin));
+
+        // Excavation Charge
+        this.customItemManagerRegistry.registerCustomItemManager(new ExcavationChargeManager(this.plugin));
     }
 
     private void registerEvents() {
@@ -101,6 +131,12 @@ public class MythicAltarFeature extends AbstractFeature {
         this.registerEvent(new SafariNetCatchEntityListener(this, this.plugin));
         this.registerEvent(new SafariNetReleaseEntityListener(this, this.messenger));
         this.registerEvent(new SafariNetPickupListener(this));
+
+        // Excavation Charge
+        this.registerEvent(new CycleExcavationChargeShapeListener(this, this.messenger));
+        this.registerEvent(new PlaceExcavationChargeListener(this));
+        this.registerEvent(new CollectExcavationChargeListener(this));
+        this.registerEvent(new DetonateExcavationChargeListener(this, this.blastScheduler, this.messenger));
     }
 
     public CustomItemManagerRegistry getCustomItemManagerRegistry() {

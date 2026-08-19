@@ -19,6 +19,8 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.CompletableRecipeInterface;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.excavationcharge.CraftExcavationChargeRecipe;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.excavationcharge.UpgradeExcavationChargeRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle.CraftExperienceGemRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle.CraftMagicXpBottleRecipe;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.mythicaltar.magicxpbottle.FillMagicXpBottleRecipe;
@@ -66,7 +68,11 @@ public final class MythicAltar extends AbstractAltar {
                 new FillMagicXpBottleRecipe(mythicAltarFeature),
 
                 // Safari Net
-                new SafariNetRecipe(mythicAltarFeature)
+                new SafariNetRecipe(mythicAltarFeature),
+
+                // Excavation Charge
+                new CraftExcavationChargeRecipe(mythicAltarFeature),
+                new UpgradeExcavationChargeRecipe(mythicAltarFeature)
         );
     }
 
