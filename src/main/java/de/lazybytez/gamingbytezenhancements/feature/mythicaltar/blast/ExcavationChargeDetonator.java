@@ -69,11 +69,21 @@ public final class ExcavationChargeDetonator {
      */
     private static final String BLAST_SOUND = "entity.generic.explode";
     private static final String BLAST_BOOM_SOUND = "entity.dragon_fireball.explode";
+    private static final String BLAST_RUMBLE_SOUND = "entity.lightning_bolt.thunder";
 
-    private static final float MIN_BLAST_VOLUME = 2.0f;
-    private static final float MAX_BLAST_VOLUME = 6.0f;
-    private static final float MIN_BLAST_PITCH = 0.5f;
-    private static final float MAX_BLAST_PITCH = 1.2f;
+    private static final float MIN_BLAST_VOLUME = 4.0f;
+    private static final float MAX_BLAST_VOLUME = 10.0f;
+    private static final float MIN_BLAST_PITCH = 0.4f;
+    private static final float MAX_BLAST_PITCH = 1.0f;
+
+    /**
+     * The level from which a detonation carries the low thunder layer.
+     * <p>
+     * Down pitched thunder under the explosion is what makes a big blast land as an event rather
+     * than a pop; the small levels stay a clean explosion without it.
+     */
+    private static final int RUMBLE_LEVEL = 3;
+    private static final float RUMBLE_PITCH = 0.55f;
     private static final int BURST_PARTICLE_COUNT = 40;
     private static final double BURST_SPREAD = 2.0;
     private static final float BURST_DUST_SIZE = 2.0f;
@@ -189,6 +199,15 @@ public final class ExcavationChargeDetonator {
 
         world.playSound(detonationPoint, ExcavationChargeDetonator.BLAST_SOUND, volume, pitch);
         world.playSound(detonationPoint, ExcavationChargeDetonator.BLAST_BOOM_SOUND, volume, pitch);
+
+        if (level.getLevel() >= ExcavationChargeDetonator.RUMBLE_LEVEL) {
+            world.playSound(
+                    detonationPoint,
+                    ExcavationChargeDetonator.BLAST_RUMBLE_SOUND,
+                    volume,
+                    ExcavationChargeDetonator.RUMBLE_PITCH
+            );
+        }
 
         world.spawnParticle(Particle.EXPLOSION_EMITTER, detonationPoint, level.getLevel());
         world.spawnParticle(

@@ -53,9 +53,11 @@ public final class ExcavationChargeFuse {
     static final long CHAIN_FUSE_TICKS = 10L;
 
     private static final long OUTLINE_TICKS = 100L;
-    private static final long OUTLINE_INTERVAL_TICKS = 4L;
-    private static final float OUTLINE_DUST_SIZE = 1.4f;
-    private static final int MAX_OUTLINE_SAMPLES = 120;
+    private static final long OUTLINE_INTERVAL_TICKS = 2L;
+    private static final float OUTLINE_DUST_SIZE = 1.1f;
+    private static final float EDGE_DUST_SIZE = 2.0f;
+    private static final int MAX_OUTLINE_SAMPLES = 450;
+    private static final int MAX_EDGE_SAMPLES = 500;
     private static final long TICK_DELAY = 1L;
     private static final long TICK_PERIOD = 1L;
     private static final long COLUMN_CYCLE_TICKS = 20L;
@@ -169,23 +171,51 @@ public final class ExcavationChargeFuse {
         }
 
         List<BlastVector> surface = geometry.offsets()
-                .filter(offset -> ExcavationChargeFuse.isOnSurface(geometry, offset))
+                .filter(offset -> ExcavationChargeFuse.exposedAxes(geometry, offset) >= 1)
                 .toList();
 
         return ExcavationChargeFuse.thinDown(surface, maxSamples);
     }
 
-    private static boolean isOnSurface(BlastGeometry geometry, BlastVector offset) {
+    /**
+     * Returns the offsets on the edges of the volume, thinned down to the given sample count.
+     * <p>
+     * An offset belongs to an edge when at least two of its six axis neighbours lie outside the
+     * volume: the rims of a cuboid, the mouth of a tunnel, the curvature bands of a ball. Drawing
+     * these on top of the sampled surface is what makes the boundary of the blast readable at a
+     * glance instead of a loose cloud.
+     *
+     * @param geometry   The volume to trace
+     * @param maxSamples The largest number of offsets to return
+     * @return The sampled edge offsets, empty when no sample is allowed
+     */
+    static List<BlastVector> edgeOffsets(BlastGeometry geometry, int maxSamples) {
+        Objects.requireNonNull(geometry, "geometry must not be null");
+
+        if (maxSamples <= 0) {
+            return List.of();
+        }
+
+        List<BlastVector> edges = geometry.offsets()
+                .filter(offset -> ExcavationChargeFuse.exposedAxes(geometry, offset) >= 2)
+                .toList();
+
+        return ExcavationChargeFuse.thinDown(edges, maxSamples);
+    }
+
+    private static int exposedAxes(BlastGeometry geometry, BlastVector offset) {
+        int exposed = 0;
+
         for (BlastVector step : ExcavationChargeFuse.NEIGHBOUR_STEPS) {
             BlastVector neighbour = new BlastVector(
                     offset.x() + step.x(), offset.y() + step.y(), offset.z() + step.z());
 
             if (!geometry.contains(neighbour)) {
-                return true;
+                exposed++;
             }
         }
 
-        return false;
+        return exposed;
     }
 
     private static List<BlastVector> thinDown(List<BlastVector> surface, int maxSamples) {
@@ -214,6 +244,9 @@ public final class ExcavationChargeFuse {
 
         private long elapsed;
         private List<BlastVector> outline;
+        private List<BlastVector> edges;
+        private Particle.DustOptions fillDust;
+        private Particle.DustOptions edgeDust;
 
         private FuseTask(EnderCrystal charge, long fuseTicks, ChainSession session) {
             this.charge = charge;
@@ -264,14 +297,27 @@ public final class ExcavationChargeFuse {
                     this.charge.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1.0f, pitch);
         }
 
+        /**
+         * Draws the rising column above the charge in the colour of its level.
+         * <p>
+         * The colour is the same one the outline and the detonation burst carry, so everything a
+         * player sees of one charge speaks the same severity from green to red.
+         */
         private void drawColumn() {
             double height = ExcavationChargeFuse.COLUMN_HEIGHT
                     * (this.elapsed % ExcavationChargeFuse.COLUMN_CYCLE_TICKS) / ExcavationChargeFuse.COLUMN_CYCLE_TICKS;
             Location column = this.charge.getLocation().add(0.0, height, 0.0);
 
-            this.charge.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, column, 2, 0.15, 0.0, 0.15, 0.0);
+            this.charge.getWorld().spawnParticle(Particle.DUST, column, 3, 0.15, 0.05, 0.15, 0.0, this.fillDust());
+            this.charge.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, column, 1, 0.1, 0.0, 0.1, 0.0);
         }
 
+        /**
+         * Draws the volume about to be carved: a dense sampled fill of the surface, and the edges
+         * on top in larger dust so the boundary reads as a line rather than a cloud.
+         *
+         * @param remaining The ticks left on the fuse.
+         */
         private void drawOutline(long remaining) {
             if (remaining > ExcavationChargeFuse.OUTLINE_TICKS) {
                 return;
@@ -281,11 +327,15 @@ public final class ExcavationChargeFuse {
                 return;
             }
 
+            this.drawOffsets(this.outline(), this.fillDust());
+            this.drawOffsets(this.edges(), this.edgeDust());
+        }
+
+        private void drawOffsets(List<BlastVector> offsets, Particle.DustOptions dust) {
             Location centre = this.charge.getLocation();
             World world = this.charge.getWorld();
-            Particle.DustOptions dust = this.armingDust();
 
-            for (BlastVector offset : this.outline()) {
+            for (BlastVector offset : offsets) {
                 world.spawnParticle(
                         Particle.DUST,
                         new Location(
@@ -297,11 +347,27 @@ public final class ExcavationChargeFuse {
             }
         }
 
-        private Particle.DustOptions armingDust() {
-            BlastLevel level = ExcavationChargeFuse.this.detonator.levelOf(this.charge);
+        private Particle.DustOptions fillDust() {
+            if (this.fillDust == null) {
+                this.fillDust = new Particle.DustOptions(
+                        this.armingColour(), ExcavationChargeFuse.OUTLINE_DUST_SIZE);
+            }
 
-            return new Particle.DustOptions(
-                    Color.fromRGB(level.getArmingColour()), ExcavationChargeFuse.OUTLINE_DUST_SIZE);
+            return this.fillDust;
+        }
+
+        private Particle.DustOptions edgeDust() {
+            if (this.edgeDust == null) {
+                this.edgeDust = new Particle.DustOptions(
+                        this.armingColour(), ExcavationChargeFuse.EDGE_DUST_SIZE);
+            }
+
+            return this.edgeDust;
+        }
+
+        private Color armingColour() {
+            return Color.fromRGB(
+                    ExcavationChargeFuse.this.detonator.levelOf(this.charge).getArmingColour());
         }
 
         private List<BlastVector> outline() {
@@ -312,6 +378,16 @@ public final class ExcavationChargeFuse {
             }
 
             return this.outline;
+        }
+
+        private List<BlastVector> edges() {
+            if (this.edges == null) {
+                this.edges = ExcavationChargeFuse.edgeOffsets(
+                        ExcavationChargeFuse.this.detonator.geometryOf(this.charge),
+                        ExcavationChargeFuse.MAX_EDGE_SAMPLES);
+            }
+
+            return this.edges;
         }
     }
 }
