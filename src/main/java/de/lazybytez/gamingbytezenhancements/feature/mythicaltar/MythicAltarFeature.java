@@ -23,11 +23,13 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAlta
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastBlockFilter;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastBudget;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastScheduler;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeGravity;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.AltarCraftingListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.CollectExcavationChargeListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.CycleExcavationChargeShapeListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.DetonateExcavationChargeListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.PlaceExcavationChargeListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.RedstoneIgniteExcavationChargeListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.DropEssenceOfSpawnerOnSpawnerBreakListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.magicxpbottle.UseMagicXpBottleOnClickListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.safarinet.SafariNetCatchEntityListener;
@@ -63,6 +65,7 @@ public class MythicAltarFeature extends AbstractFeature {
     private final Messenger messenger;
 
     private BlastScheduler blastScheduler;
+    private ExcavationChargeGravity chargeGravity;
 
     public MythicAltarFeature(EnhancementsPlugin plugin) {
         super(plugin);
@@ -76,6 +79,8 @@ public class MythicAltarFeature extends AbstractFeature {
     @Override
     public void onEnable() {
         this.blastScheduler = new BlastScheduler(this.plugin, BlastBlockFilter.production(), new BlastBudget());
+        this.chargeGravity = new ExcavationChargeGravity(this.plugin);
+        this.chargeGravity.start();
 
         this.registerRecipes();
         this.registerCustomItemManagers();
@@ -90,6 +95,10 @@ public class MythicAltarFeature extends AbstractFeature {
      */
     @Override
     public void onDisable() {
+        if (this.chargeGravity != null) {
+            this.chargeGravity.stop();
+        }
+
         if (this.blastScheduler == null) {
             return;
         }
@@ -133,10 +142,13 @@ public class MythicAltarFeature extends AbstractFeature {
         this.registerEvent(new SafariNetPickupListener(this));
 
         // Excavation Charge
+        DetonateExcavationChargeListener detonation =
+                new DetonateExcavationChargeListener(this, this.blastScheduler, this.messenger);
         this.registerEvent(new CycleExcavationChargeShapeListener(this, this.messenger));
         this.registerEvent(new PlaceExcavationChargeListener(this));
         this.registerEvent(new CollectExcavationChargeListener(this));
-        this.registerEvent(new DetonateExcavationChargeListener(this, this.blastScheduler, this.messenger));
+        this.registerEvent(detonation);
+        this.registerEvent(new RedstoneIgniteExcavationChargeListener(detonation));
     }
 
     public CustomItemManagerRegistry getCustomItemManagerRegistry() {
