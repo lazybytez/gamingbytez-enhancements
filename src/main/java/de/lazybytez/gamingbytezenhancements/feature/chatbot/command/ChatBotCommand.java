@@ -20,6 +20,7 @@ package de.lazybytez.gamingbytezenhancements.feature.chatbot.command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.ChatBotFeature;
+import de.lazybytez.gamingbytezenhancements.feature.chatbot.messages.ChatBotMessages;
 import de.lazybytez.gamingbytezenhancements.lib.command.CommandResults;
 import de.lazybytez.gamingbytezenhancements.lib.command.PluginCommand;
 import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
@@ -27,6 +28,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.util.List;
 import java.util.Objects;
+import org.bukkit.command.CommandSender;
 
 /**
  * The command managing the Chat Bot feature.
@@ -91,13 +93,34 @@ public final class ChatBotCommand implements PluginCommand {
     }
 
     private int reloadResponses(CommandContext<CommandSourceStack> context) {
-        this.feature.reloadStaticResponses(context.getSource().getSender());
+        CommandSender sender = context.getSource().getSender();
+
+        this.feature.reloadStaticResponses(loaded -> {
+            if (!loaded) {
+                this.messenger.error(sender, ChatBotMessages.responsesReloadFailed());
+
+                return;
+            }
+
+            this.messenger.success(
+                    sender,
+                    ChatBotMessages.responsesReloaded(this.feature.staticResponseCount())
+            );
+        });
 
         return CommandResults.SUCCESS;
     }
 
     private int reloadSettings(CommandContext<CommandSourceStack> context) {
-        this.feature.reloadAiSettings(context.getSource().getSender());
+        CommandSender sender = context.getSource().getSender();
+
+        if (this.feature.reloadAiSettings()) {
+            this.messenger.success(sender, ChatBotMessages.settingsReloadedAiEnabled());
+
+            return CommandResults.SUCCESS;
+        }
+
+        this.messenger.success(sender, ChatBotMessages.settingsReloadedAiDisabled());
 
         return CommandResults.SUCCESS;
     }

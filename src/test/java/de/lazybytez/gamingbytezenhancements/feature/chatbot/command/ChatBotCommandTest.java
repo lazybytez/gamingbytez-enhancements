@@ -29,14 +29,19 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -84,8 +89,8 @@ class ChatBotCommandTest {
 
         this.dispatcher().execute("chatbot reload responses", this.source);
 
-        verify(this.feature).reloadStaticResponses(this.sender);
-        verify(this.feature, never()).reloadAiSettings(this.sender);
+        verify(this.feature).reloadStaticResponses(any());
+        verify(this.feature, never()).reloadAiSettings();
     }
 
     @Test
@@ -94,8 +99,8 @@ class ChatBotCommandTest {
 
         this.dispatcher().execute("chatbot reload settings", this.source);
 
-        verify(this.feature).reloadAiSettings(this.sender);
-        verify(this.feature, never()).reloadStaticResponses(this.sender);
+        verify(this.feature).reloadAiSettings();
+        verify(this.feature, never()).reloadStaticResponses(any());
     }
 
     @Test
@@ -104,8 +109,24 @@ class ChatBotCommandTest {
 
         this.dispatcher().execute("chatbot reload", this.source);
 
-        verify(this.feature).reloadStaticResponses(this.sender);
-        verify(this.feature).reloadAiSettings(this.sender);
+        verify(this.feature).reloadStaticResponses(any());
+        verify(this.feature).reloadAiSettings();
+    }
+
+    @Test
+    void wordsTheResponsesOutcomeToTheSenderWhoAsked() throws Exception {
+        this.givenPermission(true);
+        when(this.feature.staticResponseCount()).thenReturn(4);
+        this.dispatcher().execute("chatbot reload responses", this.source);
+
+        ArgumentCaptor<Consumer<Boolean>> callback = ArgumentCaptor.forClass(Consumer.class);
+        verify(this.feature).reloadStaticResponses(callback.capture());
+        callback.getValue().accept(true);
+
+        ArgumentCaptor<Component> line = ArgumentCaptor.forClass(Component.class);
+        verify(this.sender).sendMessage(line.capture());
+        assertTrue(PlainTextComponentSerializer.plainText().serialize(line.getValue())
+                .contains("Reloaded 4 static responses."));
     }
 
     @Test

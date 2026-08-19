@@ -22,18 +22,17 @@ import de.lazybytez.gamingbytezenhancements.feature.AbstractFeature;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.actions.*;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.command.ChatBotCommand;
 import de.lazybytez.gamingbytezenhancements.feature.chatbot.event.ChatBotChatListener;
-import de.lazybytez.gamingbytezenhancements.feature.chatbot.messages.ChatBotMessages;
 import de.lazybytez.gamingbytezenhancements.lib.command.CommandRegistrar;
 import de.lazybytez.gamingbytezenhancements.lib.message.MessagePrefix;
 import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiApiConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 public class ChatBotFeature extends AbstractFeature {
     public static final String CONFIG_ENABLE_AI_BOT = "chatbot.enable_ai_answers";
@@ -89,14 +88,18 @@ public class ChatBotFeature extends AbstractFeature {
      * The file is read off the server thread. Only after a successful read is the static subset
      * of the action list replaced, back on the server thread, so a broken file keeps the previous
      * responses answering and a reload never leaves the bot without its actions.
+     * <p>
+     * The method carries no notion of who asked: a command words the outcome to its sender, an
+     * event driven caller may just log or ignore it. The callback runs on the server thread,
+     * after the swap has happened.
      *
-     * @param sender the sender the outcome is reported to
+     * @param onFinished called with whether the reload succeeded
      */
-    public void reloadStaticResponses(CommandSender sender) {
+    public void reloadStaticResponses(Consumer<Boolean> onFinished) {
         this.staticResponseConfiguration.loadAsync(loaded ->
                 this.getPlugin().getServer().getScheduler().runTask(this.getPlugin(), () -> {
                     if (!loaded) {
-                        this.messenger.error(sender, ChatBotMessages.responsesReloadFailed());
+                        onFinished.accept(false);
 
                         return;
                     }
@@ -105,8 +108,25 @@ public class ChatBotFeature extends AbstractFeature {
                     this.chatBotActions.removeIf(action -> action instanceof StaticResponseAction);
                     this.chatBotActions.addAll(freshActions);
 
-                    this.messenger.success(sender, ChatBotMessages.responsesReloaded(freshActions.size()));
+                    onFinished.accept(true);
                 }));
+    }
+
+    /**
+     * Get the number of static responses currently answering.
+     *
+     * @return the count of active static response actions
+     */
+    public int staticResponseCount() {
+        int count = 0;
+
+        for (ChatBotAction action : this.chatBotActions) {
+            if (action instanceof StaticResponseAction) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     /**
@@ -115,22 +135,19 @@ public class ChatBotFeature extends AbstractFeature {
      * The AI action is replaced rather than mutated: the next request builds from the fresh
      * settings, and disabling AI answers removes the action entirely. Replacing the action also
      * resets its rate limit window and its token usage counter.
+     * <p>
+     * The method carries no notion of who asked, so it is callable from a command and from
+     * plugin internal code alike. Server thread only.
      *
-     * @param sender the sender the outcome is reported to
+     * @return whether AI answers are enabled after the reload
      */
-    public void reloadAiSettings(CommandSender sender) {
+    public boolean reloadAiSettings() {
         this.getPlugin().reloadConfig();
 
         this.chatBotActions.removeIf(action -> action instanceof ChatGPTAction);
         this.registerLLMAction();
 
-        if (this.getPlugin().getConfig().getBoolean(ChatBotFeature.CONFIG_ENABLE_AI_BOT, false)) {
-            this.messenger.success(sender, ChatBotMessages.settingsReloadedAiEnabled());
-
-            return;
-        }
-
-        this.messenger.success(sender, ChatBotMessages.settingsReloadedAiDisabled());
+        return this.getPlugin().getConfig().getBoolean(ChatBotFeature.CONFIG_ENABLE_AI_BOT, false);
     }
 
     /**
