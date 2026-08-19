@@ -168,18 +168,24 @@ A block is destroyed only if all of the following hold:
 
 ## Why a Large Blast Is Not Instant
 
-Carving is spread across ticks rather than performed in a single instant, which is what keeps a
-level 4 blast from freezing the server for the tick it goes off in. One repeating, one tick task
-serves every Excavation Charge blast currently in flight and spends a single shared allowance of 500
-blocks per tick across all of them, round robin, so a chain of several charges costs a tick exactly
-as much as a single blast does.
+Carving is paced as a shock wave: a wavefront starts at the charge and travels outwards at a
+fixed speed per level, and each tick removes exactly the blocks the wave has reached. The inner
+shells fall in quick succession and the wide outer shells go in single sweeps, so the blast reads
+as one expanding explosion rather than a crawl. The wavefront is slightly faster on higher levels,
+so a big blast reads as a stronger shock while its greater size still makes the whole carve last
+longer.
 
-For a single level 4 cuboid, the largest single shape at 32,768 blocks, that allowance carves the
-whole volume in about 66 ticks, a little over three seconds, slow enough to watch the wave travel
-outwards. The safety property shows up once charges
-chain: because the 500 block allowance is shared rather than duplicated per blast, a full 5
-member cascade of level 4 charges can stretch a detonation across several seconds instead of
-demanding tens of thousands of block updates from a single tick.
+| Level | Wave speed | Full carve takes about |
+|---|---|---|
+| 1 | 0.9 blocks per tick | half a second |
+| 2 | 1.0 blocks per tick | one second |
+| 3 | 1.1 blocks per tick | one and a third seconds |
+| 4 | 1.25 blocks per tick | one and a half seconds |
+
+A single shared per tick ceiling sits above the pacing as a safety net. One blast never touches
+it, but when several large blasts land their widest shells in the same tick, the ceiling bounds
+the total work so a chain of level 4 charges cannot pile tens of thousands of block updates into
+a single tick. Under that load the waves slow down instead of the server.
 
 If the server stops while blasts are still in flight, the scheduler carves every remaining block of
 every queued blast synchronously right away rather than leaving a half carved volume behind, since

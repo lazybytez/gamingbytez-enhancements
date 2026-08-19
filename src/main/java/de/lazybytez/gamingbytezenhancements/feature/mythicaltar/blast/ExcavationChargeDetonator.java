@@ -154,7 +154,12 @@ public final class ExcavationChargeDetonator {
 
         ExcavationChargeDetonator.announceToSenses(level, detonationPoint);
         this.damageCaughtEntities(geometry, level, detonationPoint);
-        this.blastScheduler.submit(new ActiveBlast(carved, BlastDropTally.create(), detonationPoint));
+        this.blastScheduler.submit(new ActiveBlast(
+                carved,
+                BlastDropTally.create(),
+                detonationPoint,
+                level.getWaveSpeed()
+        ));
 
         List<EnderCrystal> woken = this.resolveChain(charge, level, detonationPoint, session);
         charge.remove();

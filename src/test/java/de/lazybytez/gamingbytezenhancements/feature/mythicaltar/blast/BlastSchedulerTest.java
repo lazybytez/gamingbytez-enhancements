@@ -53,6 +53,12 @@ import static org.mockito.Mockito.when;
 class BlastSchedulerTest {
     private static final int MAX_QUEUED_BLOCKS = 200_000;
 
+    /**
+     * Fast enough that every mock block at the origin is reached on the first tick, so the
+     * scheduler tests stay about the scheduler rather than about pacing.
+     */
+    private static final double TEST_WAVE_SPEED = 1_000.0;
+
     private MockedStatic<Bukkit> bukkit;
     private EnhancementsPlugin plugin;
     private Logger logger;
@@ -150,7 +156,8 @@ class BlastSchedulerTest {
         blastScheduler.submit(new ActiveBlast(
                 Collections.nCopies(BlastSchedulerTest.MAX_QUEUED_BLOCKS, queued),
                 this.tally(),
-                this.detonationPoint()));
+                this.detonationPoint(),
+                BlastSchedulerTest.TEST_WAVE_SPEED));
         blastScheduler.submit(this.blastOf(refused));
 
         this.tick();
@@ -164,7 +171,12 @@ class BlastSchedulerTest {
     }
 
     private ActiveBlast blastOf(Block... blocks) {
-        return new ActiveBlast(List.of(blocks), this.tally(), this.detonationPoint());
+        return new ActiveBlast(
+                List.of(blocks),
+                this.tally(),
+                this.detonationPoint(),
+                BlastSchedulerTest.TEST_WAVE_SPEED
+        );
     }
 
     private BlastDropTally tally() {

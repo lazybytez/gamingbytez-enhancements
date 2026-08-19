@@ -35,7 +35,15 @@ import java.util.Objects;
  * testable.
  */
 public final class BlastBudget {
-    private static final int DEFAULT_BLOCKS_PER_TICK = 500;
+    /**
+     * The per tick ceiling across every blast in flight.
+     * <p>
+     * The pace of a blast comes from its wavefront, not from this figure: it sits above the
+     * widest single shell a level four blast can request, so one blast never feels it. It bites
+     * only when several large blasts land their widest shells in the same tick, which is exactly
+     * the load it exists to bound.
+     */
+    private static final int DEFAULT_BLOCKS_PER_TICK = 4000;
 
     private final int blocksPerTick;
 
