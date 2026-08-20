@@ -52,7 +52,9 @@ public class RedstoneIgniteExcavationChargeListener implements Listener {
      * @param auditLog   The audit trail redstone ignitions are recorded on
      */
     public RedstoneIgniteExcavationChargeListener(
-            DetonateExcavationChargeListener detonation, ExcavationChargeAuditLog auditLog) {
+            DetonateExcavationChargeListener detonation,
+            ExcavationChargeAuditLog auditLog
+    ) {
         this.detonation = Objects.requireNonNull(detonation, "detonation must not be null");
         this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
     }

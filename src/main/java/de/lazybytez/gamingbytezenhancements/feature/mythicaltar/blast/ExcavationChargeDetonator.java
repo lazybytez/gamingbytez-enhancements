@@ -56,8 +56,8 @@ public final class ExcavationChargeDetonator {
     /**
      * The detonation sounds, named rather than taken from {@code Sound}.
      * <p>
-     * The sound registry is only populated on a running server, so referring to a constant of it
-     * from a class a unit test exercises fails before the test body runs.
+     * The sound registry is only populated on a running server, so the class names its sounds and
+     * binds to no constant of that registry.
      */
     private static final String BLAST_SOUND = "entity.generic.explode";
     private static final String BLAST_BOOM_SOUND = "entity.dragon_fireball.explode";
@@ -100,7 +100,7 @@ public final class ExcavationChargeDetonator {
             PlacedExcavationCharge.Keys keys
     ) {
         this.blastScheduler = Objects.requireNonNull(blastScheduler, "blastScheduler must not be null");
-        this.blastPlanner = new BlastPlanner(BlastBlockFilter.production());
+        this.blastPlanner = new BlastPlanner(BlastBlockFilter.create());
         this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
         this.keys = Objects.requireNonNull(keys, "keys must not be null");
     }
@@ -292,7 +292,8 @@ public final class ExcavationChargeDetonator {
             Location detonationPoint,
             BlastLevel level,
             double maxExtent,
-            DamageSource damageSource) {
+            DamageSource damageSource
+    ) {
         Location victimLocation = victim.getLocation();
 
         if (!geometry.contains(ExcavationChargeDetonator.offsetBetween(detonationPoint, victimLocation))) {
@@ -344,7 +345,8 @@ public final class ExcavationChargeDetonator {
             BlastLevel level,
             BlastGeometry geometry,
             Location detonationPoint,
-            ChainSession session) {
+            ChainSession session
+    ) {
         // The scan radius only bounds the entity search; the exact wake decision is the
         // geometry's containment check. The largest offset any shape reaches is its size along
         // one axis plus half of it on the others, so twice the size covers every shape.

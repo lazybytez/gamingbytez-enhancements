@@ -57,14 +57,16 @@ public class CycleExcavationChargeShapeListener implements Listener {
      * <p>
      * The event is cancelled so the click neither places the charge nor triggers any vanilla use
      * of the end crystal.
+     * <p>
+     * The handler deliberately does not set {@code ignoreCancelled}: a right click into the air
+     * arrives as a cancelled event by definition, because the interact event's cancelled state is
+     * its use-block result and there is no block. Cycling changes only the held item, so a
+     * cancelled event is still worth handling.
      *
      * @param event The player interact event
      */
     @EventHandler
     public void onCycleExcavationChargeShape(PlayerInteractEvent event) {
-        // Not ignoreCancelled: a right click into the air arrives as a cancelled event by
-        // definition, because the interact event's cancelled state is its use-block result and
-        // there is no block. Cycling changes only the held item, so cancelled events are fine.
         if (event.getHand() != EquipmentSlot.HAND) {
             return;
         }
@@ -106,8 +108,6 @@ public class CycleExcavationChargeShapeListener implements Listener {
      * @param nextShape The shape the charge was advanced to
      */
     private void announceShape(Player player, BlastShape nextShape) {
-        // Deliberately unprefixed: the action bar is a single transient line above the hotbar,
-        // and the owner decided the bracket prefix is noise there rather than attribution.
         player.sendActionBar(
                 Component.text("Shape: ", MessagePalette.BODY)
                         .append(Component.text(nextShape.getDisplayName(), MessagePalette.VALUE))

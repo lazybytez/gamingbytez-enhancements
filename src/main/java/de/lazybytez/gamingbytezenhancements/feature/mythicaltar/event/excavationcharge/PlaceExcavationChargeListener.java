@@ -67,7 +67,9 @@ public class PlaceExcavationChargeListener implements Listener {
     private final ExcavationChargeAuditLog auditLog;
 
     public PlaceExcavationChargeListener(
-            MythicAltarFeature mythicAltarFeature, ExcavationChargeAuditLog auditLog) {
+            MythicAltarFeature mythicAltarFeature,
+            ExcavationChargeAuditLog auditLog
+    ) {
         this.mythicAltarFeature = Objects.requireNonNull(
                 mythicAltarFeature, "mythicAltarFeature must not be null");
         this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");

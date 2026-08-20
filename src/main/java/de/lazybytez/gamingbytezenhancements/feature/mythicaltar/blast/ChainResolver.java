@@ -47,7 +47,8 @@ public final class ChainResolver {
             ChainCandidate detonating,
             BlastGeometry geometry,
             List<ChainCandidate> placed,
-            ChainSession session) {
+            ChainSession session
+    ) {
         Objects.requireNonNull(detonating, "detonating must not be null");
         Objects.requireNonNull(geometry, "geometry must not be null");
         Objects.requireNonNull(placed, "placed must not be null");
@@ -81,7 +82,8 @@ public final class ChainResolver {
             ChainCandidate detonating,
             BlastGeometry geometry,
             ChainCandidate candidate,
-            ChainSession session) {
+            ChainSession session
+    ) {
         if (candidate.id().equals(detonating.id())) {
             return false;
         }

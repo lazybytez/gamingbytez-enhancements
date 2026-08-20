@@ -40,8 +40,8 @@ public class RisingRingsAltarParticleEffect implements AltarParticleEffectInterf
     /**
      * The sounds of the animation, named rather than taken from {@code Sound}.
      * <p>
-     * The sound registry is only populated on a running server, so referring to a constant of it
-     * from a class a unit test exercises fails before the test body runs.
+     * The sound registry is only populated on a running server, so the class names its sounds and
+     * binds to no constant of that registry.
      */
     private static final String CHIME_SOUND = "block.note_block.bell";
     private static final String COMPLETE_SOUND = "block.beacon.power_select";

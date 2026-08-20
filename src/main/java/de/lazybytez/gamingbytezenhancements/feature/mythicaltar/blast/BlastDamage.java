@@ -22,8 +22,9 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
  * <p>
  * Damage is linear in distance from the centre: it equals the centre damage at distance zero,
  * zero at the volume's maximum extent, and stays zero beyond it. The arithmetic takes plain
- * doubles rather than blast or entity types, which keeps it unit testable without a Bukkit test
- * harness. Finding the entities to damage and applying that damage to them is a caller concern.
+ * doubles rather than blast or entity types, so it holds no server state and computes purely from
+ * its arguments. Finding the entities to damage and applying that damage to them is a caller
+ * concern.
  */
 public final class BlastDamage {
 

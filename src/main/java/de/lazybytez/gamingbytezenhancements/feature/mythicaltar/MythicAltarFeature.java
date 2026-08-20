@@ -79,7 +79,7 @@ public class MythicAltarFeature extends AbstractFeature {
 
     @Override
     public void onEnable() {
-        this.blastScheduler = new BlastScheduler(this.plugin, BlastBlockFilter.production(), new BlastBudget());
+        this.blastScheduler = new BlastScheduler(this.plugin, BlastBlockFilter.create(), new BlastBudget());
         this.chargeGravity = new ExcavationChargeGravity(this.plugin);
         this.chargeGravity.start();
 
