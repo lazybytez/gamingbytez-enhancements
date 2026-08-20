@@ -51,7 +51,7 @@ import static org.mockito.Mockito.when;
  * and what it leaves behind when the server stops.
  */
 class BlastSchedulerTest {
-    private static final int MAX_QUEUED_BLOCKS = 200_000;
+    private static final int MAX_QUEUED_BLOCKS = 1_400_000;
 
     /**
      * Fast enough that every mock block at the origin is reached on the first tick, so the

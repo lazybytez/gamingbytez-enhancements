@@ -43,16 +43,18 @@ public class RisingRingsAltarParticleEffect implements AltarParticleEffectInterf
      * The sound registry is only populated on a running server, so referring to a constant of it
      * from a class a unit test exercises fails before the test body runs.
      */
-    private static final String CHIME_SOUND = "block.amethyst_block.chime";
+    private static final String CHIME_SOUND = "block.note_block.bell";
     private static final String COMPLETE_SOUND = "block.beacon.power_select";
+    private static final String COMPLETE_FLOURISH_SOUND = "entity.player.levelup";
 
     /**
      * The volume of the chimes and the completion sound.
      * <p>
-     * Values above one extend the audible range, so the ritual is heard across the altar area
-     * rather than only right next to the pedestal.
+     * A volume above one only extends the audible range, never the loudness next to the altar,
+     * which is why the chime is a note block bell rather than the quiet amethyst chime and why
+     * the completion layers a level up flourish over the beacon tone.
      */
-    private static final float SOUND_VOLUME = 2.5f;
+    private static final float SOUND_VOLUME = 3.0f;
 
     private static final int RING_COUNT = 5;
     private static final long RING_INTERVAL_TICKS = 12L;
@@ -110,6 +112,12 @@ public class RisingRingsAltarParticleEffect implements AltarParticleEffectInterf
                             RisingRingsAltarParticleEffect.COMPLETE_SOUND,
                             RisingRingsAltarParticleEffect.SOUND_VOLUME,
                             1.4f
+                    );
+                    centre.getWorld().playSound(
+                            centre,
+                            RisingRingsAltarParticleEffect.COMPLETE_FLOURISH_SOUND,
+                            RisingRingsAltarParticleEffect.SOUND_VOLUME,
+                            1.0f
                     );
                     action.onRecipeComplete(this.plugin, altar, event);
                 },

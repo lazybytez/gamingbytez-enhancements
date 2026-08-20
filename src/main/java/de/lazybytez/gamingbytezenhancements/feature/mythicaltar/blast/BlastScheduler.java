@@ -55,7 +55,7 @@ public final class BlastScheduler {
      * detonating charge after charge grows the queue without bound. A full five member cascade of
      * the largest shape sits just under this figure.
      */
-    private static final int MAX_QUEUED_BLOCKS = 200_000;
+    private static final int MAX_QUEUED_BLOCKS = 1_400_000;
 
     private final EnhancementsPlugin plugin;
     private final BlastBlockFilter blockFilter;
@@ -113,7 +113,14 @@ public final class BlastScheduler {
      * @return true when the blast fits under the queued block ceiling.
      */
     public boolean canAccept(int blockCount) {
-        return this.queuedBlocks() + blockCount <= BlastScheduler.MAX_QUEUED_BLOCKS;
+        if (this.queuedBlocks() + blockCount > BlastScheduler.MAX_QUEUED_BLOCKS) {
+            this.plugin.getLogger().warning(
+                    "Refused an Excavation Charge blast because too much carving is already queued.");
+
+            return false;
+        }
+
+        return true;
     }
 
     private int queuedBlocks() {

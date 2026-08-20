@@ -70,6 +70,8 @@ public final class ExcavationChargeDetonator {
     private static final String BLAST_SOUND = "entity.generic.explode";
     private static final String BLAST_BOOM_SOUND = "entity.dragon_fireball.explode";
     private static final String BLAST_RUMBLE_SOUND = "entity.lightning_bolt.thunder";
+    private static final String FIZZLE_SOUND = "block.fire.extinguish";
+    private static final int FIZZLE_PARTICLE_COUNT = 30;
 
     private static final float MIN_BLAST_VOLUME = 4.0f;
     private static final float MAX_BLAST_VOLUME = 10.0f;
@@ -153,6 +155,8 @@ public final class ExcavationChargeDetonator {
         List<Block> plan = this.blastPlanner.plan(geometry, detonationPoint);
 
         if (!this.blastScheduler.canAccept(plan.size())) {
+            ExcavationChargeDetonator.fizzle(detonationPoint);
+
             return List.of();
         }
 
@@ -171,10 +175,32 @@ public final class ExcavationChargeDetonator {
                 level.getWaveSpeed()
         ));
 
-        List<EnderCrystal> woken = this.resolveChain(charge, level, detonationPoint, session);
+        List<EnderCrystal> woken = this.resolveChain(charge, level, geometry, detonationPoint, session);
         charge.remove();
 
         return woken;
+    }
+
+    /**
+     * Shows a refused blast fizzling out instead of failing silently.
+     * <p>
+     * A refusal happens when the queued carving ceiling is reached, so after a full countdown the
+     * charge would otherwise just sit there looking broken. The hiss and the smoke say the charge
+     * gave up on purpose and can be set off again once the queue has drained.
+     *
+     * @param detonationPoint The place the charge tried to go off.
+     */
+    private static void fizzle(Location detonationPoint) {
+        World world = detonationPoint.getWorld();
+
+        world.playSound(detonationPoint, ExcavationChargeDetonator.FIZZLE_SOUND, 2.0f, 0.8f);
+        world.spawnParticle(
+                Particle.LARGE_SMOKE,
+                detonationPoint,
+                ExcavationChargeDetonator.FIZZLE_PARTICLE_COUNT,
+                0.4, 0.4, 0.4,
+                0.02
+        );
     }
 
     /**
@@ -351,15 +377,22 @@ public final class ExcavationChargeDetonator {
      * Resolves which neighbouring charges the blast wakes and books them into the cascade.
      *
      * @param charge          The charge going off
-     * @param level           The blast level supplying the chain reach
+     * @param level           The blast level bounding the neighbour scan
+     * @param geometry        The volume the blast carves, deciding which neighbours wake
      * @param detonationPoint The location the charge detonates in
      * @param session         The shared state of the running cascade
      * @return The charges to wake, at most as many as the session has capacity left
      */
     private List<EnderCrystal> resolveChain(
-            EnderCrystal charge, BlastLevel level, Location detonationPoint, ChainSession session) {
-        int chainReach = level.getChainReach();
-        Map<UUID, EnderCrystal> inRange = this.chargesInRange(detonationPoint, chainReach);
+            EnderCrystal charge,
+            BlastLevel level,
+            BlastGeometry geometry,
+            Location detonationPoint,
+            ChainSession session) {
+        // The scan radius only bounds the entity search; the exact wake decision is the
+        // geometry's containment check. The largest offset any shape reaches is its size along
+        // one axis plus half of it on the others, so twice the size covers every shape.
+        Map<UUID, EnderCrystal> inRange = this.chargesInRange(detonationPoint, level.getSize() * 2);
 
         List<ChainCandidate> placed = new ArrayList<>(inRange.size());
         for (Map.Entry<UUID, EnderCrystal> entry : inRange.entrySet()) {
@@ -368,7 +401,7 @@ public final class ExcavationChargeDetonator {
 
         List<ChainCandidate> woken = ChainResolver.resolve(
                 ExcavationChargeDetonator.toCandidate(charge.getUniqueId(), detonationPoint),
-                chainReach,
+                geometry,
                 placed,
                 session);
 
@@ -381,17 +414,17 @@ public final class ExcavationChargeDetonator {
     }
 
     /**
-     * Collects the placed Excavation Charges standing within the chain reach of the detonation.
+     * Collects the placed Excavation Charges standing within the scan radius of the detonation.
      *
      * @param detonationPoint The location the charge detonates in
-     * @param chainReach      The straight-line reach of the detonating charge's blast level
+     * @param scanRadius      The straight-line radius bounding the entity search
      * @return The charges in range, keyed by their identity
      */
-    private Map<UUID, EnderCrystal> chargesInRange(Location detonationPoint, int chainReach) {
+    private Map<UUID, EnderCrystal> chargesInRange(Location detonationPoint, int scanRadius) {
         Map<UUID, EnderCrystal> inRange = new LinkedHashMap<>();
 
         for (EnderCrystal candidate : detonationPoint.getWorld()
-                .getNearbyEntitiesByType(EnderCrystal.class, detonationPoint, chainReach)) {
+                .getNearbyEntitiesByType(EnderCrystal.class, detonationPoint, scanRadius)) {
             if (!this.isPlacedCharge(candidate)) {
                 continue;
             }

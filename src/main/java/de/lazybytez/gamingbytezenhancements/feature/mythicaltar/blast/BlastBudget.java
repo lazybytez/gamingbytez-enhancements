@@ -39,11 +39,11 @@ public final class BlastBudget {
      * The per tick ceiling across every blast in flight.
      * <p>
      * The pace of a blast comes from its wavefront, not from this figure: it sits above the
-     * widest single shell a level four blast can request, so one blast never feels it. It bites
-     * only when several large blasts land their widest shells in the same tick, which is exactly
-     * the load it exists to bound.
+     * widest single shell most blasts can request, so a blast rarely feels it. Only the widest
+     * shells of a level five blast lean on it briefly, which flattens exactly the spike it
+     * exists to bound, and a throttled shell is recounted next tick rather than lost.
      */
-    private static final int DEFAULT_BLOCKS_PER_TICK = 4000;
+    private static final int DEFAULT_BLOCKS_PER_TICK = 8000;
 
     private final int blocksPerTick;
 

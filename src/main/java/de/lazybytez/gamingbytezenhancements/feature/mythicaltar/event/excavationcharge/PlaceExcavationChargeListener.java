@@ -21,6 +21,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeatu
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.ExcavationChargeManager;
 import java.util.Objects;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -179,6 +180,10 @@ public class PlaceExcavationChargeListener implements Listener {
      * @param player The player who placed the charge
      */
     private void consumeExcavationCharge(ItemStack item, Player player) {
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            return;
+        }
+
         if (item.getAmount() > 1) {
             item.setAmount(item.getAmount() - 1);
 
@@ -226,11 +231,37 @@ public class PlaceExcavationChargeListener implements Listener {
      * @return True when the crystal carries the placed charge marker
      */
     public static boolean isPlacedCharge(Plugin plugin, EnderCrystal crystal) {
+        return PlaceExcavationChargeListener.isPlacedCharge(
+                PlaceExcavationChargeListener.placedKey(plugin), crystal);
+    }
+
+    /**
+     * Tell whether the given end crystal carries the placed charge marker, against a caller
+     * cached key.
+     * <p>
+     * A key carries a validation pass in its constructor, so a caller checking many crystals every
+     * few ticks builds it once instead of per crystal.
+     *
+     * @param placedKey The marker key, built once via placedMarkerKey and cached by the caller
+     * @param crystal   The end crystal to inspect
+     * @return True when the crystal carries the placed charge marker
+     */
+    public static boolean isPlacedCharge(NamespacedKey placedKey, EnderCrystal crystal) {
         return crystal.getPersistentDataContainer().getOrDefault(
-                PlaceExcavationChargeListener.placedKey(plugin),
+                placedKey,
                 PersistentDataType.BOOLEAN,
                 false
         );
+    }
+
+    /**
+     * Build the marker key for callers that check many crystals and want to cache it.
+     *
+     * @param plugin The plugin owning the namespace
+     * @return The namespaced marker key
+     */
+    public static NamespacedKey placedMarkerKey(Plugin plugin) {
+        return PlaceExcavationChargeListener.placedKey(plugin);
     }
 
     /**

@@ -38,14 +38,21 @@ class TunnelBlastGeometryTest {
     void shouldYieldOneBlockPerCrossSectionCellAlongTheLength() {
         TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_4, TunnelBlastGeometryTest.EAST);
 
-        assertEquals(288L, geometry.offsets().count());
+        assertEquals(2048L, geometry.offsets().count());
     }
 
     @Test
-    void shouldScaleOnlyTheLengthWithTheLevel() {
+    void shouldUseTheWalkableCrossSectionAtLevelOne() {
         TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_1, TunnelBlastGeometryTest.EAST);
 
         assertEquals(72L, geometry.offsets().count());
+    }
+
+    @Test
+    void shouldSpendLevelFiveGrowthOnLengthAlone() {
+        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_5, TunnelBlastGeometryTest.EAST);
+
+        assertEquals(4096L, geometry.offsets().count());
     }
 
     @Test
@@ -105,13 +112,23 @@ class TunnelBlastGeometryTest {
     }
 
     @Test
-    void shouldKeepTheCrossSectionThreeWideAndThreeHigh() {
+    void shouldGrowTheCrossSectionWithTheLevel() {
         TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_4, TunnelBlastGeometryTest.EAST);
 
-        assertTrue(geometry.contains(new BlastVector(0, 1, 1)));
-        assertTrue(geometry.contains(new BlastVector(0, -1, -1)));
-        assertFalse(geometry.contains(new BlastVector(0, 2, 0)));
-        assertFalse(geometry.contains(new BlastVector(0, 0, 2)));
+        assertTrue(geometry.contains(new BlastVector(0, 7, 3)));
+        assertTrue(geometry.contains(new BlastVector(0, 0, -4)));
+        assertFalse(geometry.contains(new BlastVector(0, 8, 0)));
+        assertFalse(geometry.contains(new BlastVector(0, 0, 4)));
+    }
+
+    @Test
+    void shouldKeepTheFloorOnTheChargeLayerForAHorizontalBore() {
+        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_1, TunnelBlastGeometryTest.EAST);
+
+        assertTrue(geometry.contains(new BlastVector(0, 0, 0)));
+        assertTrue(geometry.contains(new BlastVector(0, 2, 0)));
+        assertFalse(geometry.contains(new BlastVector(0, -1, 0)));
+        assertFalse(geometry.contains(new BlastVector(0, 3, 0)));
     }
 
     @Test

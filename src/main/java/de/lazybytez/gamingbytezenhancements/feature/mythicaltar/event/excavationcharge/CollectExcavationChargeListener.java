@@ -46,10 +46,21 @@ import java.util.Map;
 public class CollectExcavationChargeListener implements Listener {
 
     private final MythicAltarFeature mythicAltarFeature;
+    private final DetonateExcavationChargeListener detonation;
 
-    public CollectExcavationChargeListener(MythicAltarFeature mythicAltarFeature) {
+    /**
+     * Bind the listener to its feature and the detonation path it asks about burning fuses.
+     *
+     * @param mythicAltarFeature The feature owning the item manager and the messenger
+     * @param detonation         The listener owning the fuse registry
+     */
+    public CollectExcavationChargeListener(
+            MythicAltarFeature mythicAltarFeature,
+            DetonateExcavationChargeListener detonation
+    ) {
         this.mythicAltarFeature = Objects.requireNonNull(
                 mythicAltarFeature, "mythicAltarFeature must not be null");
+        this.detonation = Objects.requireNonNull(detonation, "detonation must not be null");
     }
 
     /**
@@ -78,6 +89,13 @@ public class CollectExcavationChargeListener implements Listener {
         }
 
         event.setCancelled(true);
+
+        if (this.detonation.isBurning(crystal)) {
+            this.mythicAltarFeature.getMessenger().error(
+                    event.getPlayer(), "A burning Excavation Charge cannot be picked up.");
+
+            return;
+        }
 
         ItemStack excavationCharge = this.buildExcavationCharge(container, plugin);
         Location crystalLocation = crystal.getLocation();

@@ -20,10 +20,13 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.PlaceExcavationChargeListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EnderCrystal;
@@ -50,6 +53,7 @@ public final class ExcavationChargeGravity {
 
     private final EnhancementsPlugin plugin;
     private final Map<UUID, Double> fallSpeeds;
+    private final NamespacedKey placedKey;
 
     private BukkitTask task;
 
@@ -61,6 +65,7 @@ public final class ExcavationChargeGravity {
     public ExcavationChargeGravity(EnhancementsPlugin plugin) {
         this.plugin = Objects.requireNonNull(plugin, "plugin must not be null");
         this.fallSpeeds = new HashMap<>();
+        this.placedKey = PlaceExcavationChargeListener.placedMarkerKey(plugin);
     }
 
     /**
@@ -93,15 +98,30 @@ public final class ExcavationChargeGravity {
     }
 
     private void tick() {
+        Set<UUID> loadedCharges = new HashSet<>();
+
         for (World world : this.plugin.getServer().getWorlds()) {
             for (EnderCrystal crystal : world.getEntitiesByClass(EnderCrystal.class)) {
-                if (!PlaceExcavationChargeListener.isPlacedCharge(this.plugin, crystal)) {
+                if (!PlaceExcavationChargeListener.isPlacedCharge(this.placedKey, crystal)) {
                     continue;
                 }
 
+                loadedCharges.add(crystal.getUniqueId());
                 this.applyGravity(crystal);
             }
         }
+
+        // A charge removed mid fall never reaches land(), so its speed entry is swept here.
+        this.fallSpeeds.keySet().retainAll(loadedCharges);
+    }
+
+    /**
+     * Returns how many charges are currently tracked as falling.
+     *
+     * @return The number of tracked fall speeds.
+     */
+    int trackedFallingCharges() {
+        return this.fallSpeeds.size();
     }
 
     private void applyGravity(EnderCrystal crystal) {
@@ -122,9 +142,10 @@ public final class ExcavationChargeGravity {
             return;
         }
 
-        double speed = Math.min(
-                ExcavationChargeGravity.MAX_FALL_SPEED,
-                this.fallSpeeds.merge(crystal.getUniqueId(), ExcavationChargeGravity.GRAVITY_PER_CHECK, Double::sum)
+        double speed = this.fallSpeeds.merge(
+                crystal.getUniqueId(),
+                ExcavationChargeGravity.GRAVITY_PER_CHECK,
+                (current, gain) -> Math.min(ExcavationChargeGravity.MAX_FALL_SPEED, current + gain)
         );
 
         Location fallen = location.clone();

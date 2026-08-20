@@ -14,8 +14,9 @@ See [overview.md](overview.md) for how to build and use the altar.
 - **Appearance:** End Crystal with enchantment glint
 - **Display name:** Excavation Charge
 - **Max stack size:** 1
-- **Lore:** Shows the current shape and level, plus that level's size, centre damage and chain
-  reach, read live from the blast level table so the lore never drifts from what the charge does.
+- **Lore:** Shows the current shape and level, plus that level's size and centre damage, read live
+  from the blast level table so the lore never drifts from what the charge does, and the usage
+  hints for cycling and setting it off.
 
 ---
 
@@ -61,16 +62,15 @@ here instead of a loose Diamond.
 
 Every stat below scales with the level stored on the charge. Size is the full width of the
 carved volume in blocks (the exact meaning of "width" depends on the shape, see Blast Shapes
-below), centre damage is the damage dealt to a living entity standing at the detonation point,
-and chain reach is the straight line distance within which a detonating charge wakes its
-neighbours.
+below) and centre damage is the damage dealt to a living entity standing at the detonation point.
 
-| Level | Size | Centre Damage | Chain Reach |
-|---|---|---|---|
-| 1 | 8 | 10.0 | 6 blocks |
-| 2 | 16 | 18.0 | 8 blocks |
-| 3 | 24 | 26.0 | 10 blocks |
-| 4 | 32 | 34.0 | 12 blocks |
+| Level | Size | Centre Damage |
+|---|---|---|
+| 1 | 8 | 10.0 |
+| 2 | 16 | 18.0 |
+| 3 | 24 | 26.0 |
+| 4 | 32 | 34.0 |
+| 5 | 64 | 42.0 |
 
 Damage falls off linearly from the centre value to zero at the edge of the volume, and a caught
 entity is knocked away from the detonation point in proportion to the damage it took.
@@ -89,7 +89,7 @@ round numbers the level table alone would suggest.
 | Cuboid | Spans `size` blocks on every axis, sunk below the charge | 32 x 32 x 32 = 32,768 blocks |
 | Sphere | A ball of diameter `size` hanging below the charge | 33 blocks across, 17,077 blocks |
 | Cylinder | A shaft of diameter `size` sunk `size` blocks deep | 33 blocks across, 32 blocks deep, 25,504 blocks |
-| Tunnel | Fixed 3 by 3 cross section, only the length scales with `size` | 3 x 3 x 32 = 288 blocks |
+| Tunnel | A square corridor of length `size`, cross section grows with the level | 8 x 8 x 32 = 2,048 blocks |
 
 **Every shape digs away from the charge rather than around it.** The charge sits in the top layer
 of the volume and the cuboid, the sphere and the cylinder all hang below it; the tunnel bores
@@ -98,9 +98,14 @@ spend half its height on the air above a player's head, which on open ground car
 square instead of the pit the shape promises.
 
 The sphere and the cylinder measure one block more across than their `size` suggests, because a
-round volume cannot be both symmetric about its axis and an even number of blocks wide. Only the
-tunnel keeps its width fixed at 3 blocks regardless of level, since it is meant to stay a walkable
-mining corridor and not grow into a cavern.
+round volume cannot be both symmetric about its axis and an even number of blocks wide.
+
+The tunnel's cross section follows its own smaller scale, so it stays a corridor rather than a
+cavern: 3 by 3 at level 1, 4 by 4 at level 2, 6 by 6 at level 3 and 8 by 8 at levels 4 and 5,
+which is wide enough for two rail lines with room for decoration. Level 5 spends its whole growth
+on length instead, boring 64 blocks. On a horizontal bore the corridor's floor sits on the layer
+the charge was placed on and its height extends upwards, so the digger stands on the new floor
+instead of falling into it.
 
 **The lowest layer of the world is never carved**, whatever it is made of. It is bedrock in an
 ordinary world, but a flat or custom world can floor itself with anything, and removing that layer
@@ -114,7 +119,7 @@ would open the world into the void.
 |---|---|
 | Shift + right click, held in hand | Cycles the blast shape to the next one and shows it on the action bar |
 | Right click a block, held in hand, not sneaking | Places the charge as an end crystal above the clicked block, facing the cardinal direction the player was looking (used by the Tunnel shape) |
-| Left click, or any damage, on a placed charge | Arms a fuse. A charge a player sets off this way gets a 5 second fuse (100 ticks), during which the outline of the volume it is about to carve is drawn in particles that run green at level 1 through amber to red at level 4; vanilla explosion damage to the crystal is always cancelled so it never triggers a second, uncarved vanilla blast |
+| Left click, or any damage, on a placed charge | Arms a fuse. A charge a player sets off this way gets a 5 second fuse (100 ticks), during which the outline of the volume it is about to carve is drawn in particles that run green at level 1 through amber and red to deep red at level 5; vanilla explosion damage to the crystal is always cancelled so it never triggers a second, uncarved vanilla blast |
 | Right click a placed charge | Collects it back into the player's inventory, preserving its shape and level; drops it on the ground instead if the inventory is full |
 | Redstone signal next to a placed charge | A rising signal on any redstone component within two blocks arms the normal fuse, so a charge can be wired to a lever, a button or a clock. A signal that stays on does not re-arm |
 
@@ -132,16 +137,18 @@ out by a neighbouring blast, and it then drops until it lands on the next solid 
 
 ## Chain Detonation
 
-A detonating charge wakes every other placed charge within its level's chain reach, and those
-charges arm with a short 0.5 second fuse (10 ticks) instead of the 5 second player fuse, so a
-cascade reads as one continuous chain reaction rather than a string of separate explosions.
+A detonating charge wakes every other placed charge standing inside the volume its blast carves,
+so a chain fires exactly where the explosion visibly reaches: a charge the blast digs out goes off
+with it, and a charge one block outside the carved shape stays untouched. The woken charges arm
+with a short 0.5 second fuse (10 ticks) instead of the 5 second player fuse, so a cascade reads as
+one continuous chain reaction rather than a string of separate explosions.
 
 The whole cascade, counting the charge that started it, is capped at **5 members**. The cap
 applies to the cascade as a whole rather than to how many neighbours a single charge may wake,
 because a per charge limit is unbounded through branching: with a limit of two neighbours each,
 the initiator wakes two, each of those wakes two more, and the chain grows without end while every
 individual step still looks compliant. Once the cascade has recruited its fifth member, no further
-charge is woken even if more sit within reach.
+charge is woken even if more sit inside a blast.
 
 ---
 
@@ -167,7 +174,7 @@ A block is destroyed only if all of the following hold:
   its own location before it is removed. Nothing inside a container is voided.
 - Every other destroyed block has a flat **5% chance** of dropping its normal item drops. The
   remaining 95% of destroyed blocks are voided outright, with no item drop, which is what keeps a
-  level 4 blast from flooding the ground with tens of thousands of items.
+  large blast from flooding the ground with tens of thousands of items.
 - Whatever does drop is tallied by material rather than dropped block by block, and the
   consolidated stacks are thrown at the detonation point only once the whole blast has finished
   carving.
@@ -189,11 +196,13 @@ longer.
 | 2 | 1.0 blocks per tick | one second |
 | 3 | 1.1 blocks per tick | one and a third seconds |
 | 4 | 1.25 blocks per tick | one and a half seconds |
+| 5 | 1.5 blocks per tick | two and a half seconds |
 
-A single shared per tick ceiling sits above the pacing as a safety net. One blast never touches
-it, but when several large blasts land their widest shells in the same tick, the ceiling bounds
-the total work so a chain of level 4 charges cannot pile tens of thousands of block updates into
-a single tick. Under that load the waves slow down instead of the server.
+A single shared per tick ceiling sits above the pacing as a safety net. A small blast never
+touches it, only the widest shells of a level 5 blast lean on it briefly, and when several large
+blasts land their widest shells in the same tick, the ceiling bounds the total work so a chain of
+large charges cannot pile tens of thousands of block updates into a single tick. Under that load
+the waves slow down instead of the server.
 
 If the server stops while blasts are still in flight, the scheduler carves every remaining block of
 every queued blast synchronously right away rather than leaving a half carved volume behind, since

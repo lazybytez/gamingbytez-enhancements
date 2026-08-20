@@ -38,17 +38,18 @@ public final class ChainResolver {
      * single resolve stayed within it.
      *
      * @param detonating the charge going off right now
-     * @param chainReach the straight-line reach of the detonating charge's blast level
+     * @param geometry the volume the detonating charge carves
      * @param placed every charge placed in the world that may take part
      * @param session the shared state of the running cascade
      * @return the charges to wake, at most as many as the session has capacity left
      */
     public static List<ChainCandidate> resolve(
             ChainCandidate detonating,
-            double chainReach,
+            BlastGeometry geometry,
             List<ChainCandidate> placed,
             ChainSession session) {
         Objects.requireNonNull(detonating, "detonating must not be null");
+        Objects.requireNonNull(geometry, "geometry must not be null");
         Objects.requireNonNull(placed, "placed must not be null");
         Objects.requireNonNull(session, "session must not be null");
 
@@ -65,7 +66,7 @@ public final class ChainResolver {
                 break;
             }
 
-            if (!ChainResolver.isWakeable(detonating, chainReach, candidate, session)) {
+            if (!ChainResolver.isWakeable(detonating, geometry, candidate, session)) {
                 continue;
             }
 
@@ -78,7 +79,7 @@ public final class ChainResolver {
 
     private static boolean isWakeable(
             ChainCandidate detonating,
-            double chainReach,
+            BlastGeometry geometry,
             ChainCandidate candidate,
             ChainSession session) {
         if (candidate.id().equals(detonating.id())) {
@@ -89,16 +90,25 @@ public final class ChainResolver {
             return false;
         }
 
-        return ChainResolver.isWithinReach(detonating.position(), candidate.position(), chainReach);
+        return ChainResolver.isInsideBlast(detonating.position(), geometry, candidate.position());
     }
 
-    private static boolean isWithinReach(BlastVector origin, BlastVector target, double chainReach) {
-        long deltaX = (long) target.x() - origin.x();
-        long deltaY = (long) target.y() - origin.y();
-        long deltaZ = (long) target.z() - origin.z();
-
-        long distanceSquared = (deltaX * deltaX) + (deltaY * deltaY) + (deltaZ * deltaZ);
-
-        return distanceSquared <= chainReach * chainReach;
+    /**
+     * Tells whether a candidate stands inside the volume the detonating charge carves.
+     * <p>
+     * Waking by the blast volume rather than a fixed radius means every charge the explosion
+     * visibly reaches goes off with it, which is what a player laying out a chain expects.
+     *
+     * @param origin the position of the detonating charge
+     * @param geometry the volume the detonating charge carves
+     * @param target the position of the candidate
+     * @return whether the candidate stands inside the carved volume
+     */
+    private static boolean isInsideBlast(BlastVector origin, BlastGeometry geometry, BlastVector target) {
+        return geometry.contains(new BlastVector(
+                target.x() - origin.x(),
+                target.y() - origin.y(),
+                target.z() - origin.z()
+        ));
     }
 }

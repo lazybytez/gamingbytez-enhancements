@@ -27,9 +27,10 @@ import java.util.stream.Stream;
  * A corridor of {@link BlastLevel#getSize()} blocks bored away from the detonating block along a
  * single axis.
  * <p>
- * Only the length follows the blast level. The cross-section stays three blocks wide and three
- * blocks high at every level, which is what makes this a walkable mining corridor rather than a
- * cavern and what makes it the cheapest shape per level by a wide margin.
+ * The length follows the blast level and the square cross section grows with it, from a walkable
+ * three by three corridor up to an eight by eight gallery wide enough for two rail lines and their
+ * decoration. On a horizontal bore the floor sits on the detonating block's layer and the corridor
+ * extends upwards from it, so a player never falls into their own tunnel.
  * <p>
  * The corridor starts at the detonating block and reaches forwards only, so nothing behind the
  * charge is carved.
@@ -41,11 +42,6 @@ import java.util.stream.Stream;
  */
 public final class TunnelBlastGeometry implements BlastGeometry {
 
-    private static final int CROSS_SECTION_WIDTH = 3;
-    private static final int CROSS_SECTION_HEIGHT = 3;
-    private static final int HALF_CROSS_SECTION_WIDTH = TunnelBlastGeometry.CROSS_SECTION_WIDTH / 2;
-    private static final int HALF_CROSS_SECTION_HEIGHT = TunnelBlastGeometry.CROSS_SECTION_HEIGHT / 2;
-
     private final BlastVector direction;
     private final int length;
     private final BlastVector lowerBound;
@@ -54,7 +50,7 @@ public final class TunnelBlastGeometry implements BlastGeometry {
     /**
      * Creates the tunnel geometry for the given blast level and travel direction.
      *
-     * @param level     the blast level supplying the corridor length
+     * @param level     the blast level supplying the corridor length and cross section
      * @param direction the axis-aligned unit offset the corridor is bored along
      * @throws IllegalArgumentException when the direction is not an axis-aligned unit offset
      */
@@ -65,14 +61,16 @@ public final class TunnelBlastGeometry implements BlastGeometry {
 
         this.direction = direction;
         this.length = level.getSize();
+
+        int breadth = TunnelBlastGeometry.crossSection(level);
         this.lowerBound = new BlastVector(
-                this.axisLowerBound(direction.x(), TunnelBlastGeometry.HALF_CROSS_SECTION_WIDTH),
-                this.axisLowerBound(direction.y(), TunnelBlastGeometry.HALF_CROSS_SECTION_HEIGHT),
-                this.axisLowerBound(direction.z(), TunnelBlastGeometry.HALF_CROSS_SECTION_WIDTH));
+                this.axisLowerBound(direction.x(), false, breadth),
+                this.axisLowerBound(direction.y(), true, breadth),
+                this.axisLowerBound(direction.z(), false, breadth));
         this.upperBound = new BlastVector(
-                this.axisUpperBound(direction.x(), TunnelBlastGeometry.HALF_CROSS_SECTION_WIDTH),
-                this.axisUpperBound(direction.y(), TunnelBlastGeometry.HALF_CROSS_SECTION_HEIGHT),
-                this.axisUpperBound(direction.z(), TunnelBlastGeometry.HALF_CROSS_SECTION_WIDTH));
+                this.axisUpperBound(direction.x(), false, breadth),
+                this.axisUpperBound(direction.y(), true, breadth),
+                this.axisUpperBound(direction.z(), false, breadth));
     }
 
     @Override
@@ -99,6 +97,24 @@ public final class TunnelBlastGeometry implements BlastGeometry {
         return this.withinLength(offset) && this.withinCrossSection(offset);
     }
 
+    /**
+     * Returns the side length of the square cross section for the given blast level.
+     * <p>
+     * The top two levels share the eight block gallery deliberately: past eight blocks a corridor
+     * stops reading as a tunnel, so level five spends its whole growth on length.
+     *
+     * @param level the blast level to size the cross section for
+     * @return the cross section side length in blocks
+     */
+    private static int crossSection(BlastLevel level) {
+        return switch (level) {
+            case LEVEL_1 -> 3;
+            case LEVEL_2 -> 4;
+            case LEVEL_3 -> 6;
+            case LEVEL_4, LEVEL_5 -> 8;
+        };
+    }
+
     private static void requireAxisAlignedUnit(BlastVector direction) {
         int magnitude = Math.abs(direction.x()) + Math.abs(direction.y()) + Math.abs(direction.z());
 
@@ -109,27 +125,19 @@ public final class TunnelBlastGeometry implements BlastGeometry {
         throw new IllegalArgumentException("direction must be an axis-aligned unit offset, got " + direction);
     }
 
-    private static boolean withinCrossAxis(int coordinate, int directionComponent, int halfExtent) {
-        if (directionComponent != 0) {
-            return true;
-        }
-
-        return Math.abs(coordinate) <= halfExtent;
-    }
-
-    private int axisLowerBound(int directionComponent, int halfExtent) {
+    private int axisLowerBound(int directionComponent, boolean vertical, int breadth) {
         return switch (directionComponent) {
             case 1 -> 0;
             case -1 -> -(this.length - 1);
-            default -> -halfExtent;
+            default -> vertical ? 0 : -(breadth / 2);
         };
     }
 
-    private int axisUpperBound(int directionComponent, int halfExtent) {
+    private int axisUpperBound(int directionComponent, boolean vertical, int breadth) {
         return switch (directionComponent) {
             case 1 -> this.length - 1;
             case -1 -> 0;
-            default -> halfExtent;
+            default -> vertical ? breadth - 1 : breadth - 1 - breadth / 2;
         };
     }
 
@@ -142,12 +150,17 @@ public final class TunnelBlastGeometry implements BlastGeometry {
     }
 
     private boolean withinCrossSection(BlastVector offset) {
-        return TunnelBlastGeometry.withinCrossAxis(
-                        offset.x(), this.direction.x(), TunnelBlastGeometry.HALF_CROSS_SECTION_WIDTH)
-                && TunnelBlastGeometry.withinCrossAxis(
-                        offset.y(), this.direction.y(), TunnelBlastGeometry.HALF_CROSS_SECTION_HEIGHT)
-                && TunnelBlastGeometry.withinCrossAxis(
-                        offset.z(), this.direction.z(), TunnelBlastGeometry.HALF_CROSS_SECTION_WIDTH);
+        return this.withinCrossAxis(offset.x(), this.direction.x(), this.lowerBound.x(), this.upperBound.x())
+                && this.withinCrossAxis(offset.y(), this.direction.y(), this.lowerBound.y(), this.upperBound.y())
+                && this.withinCrossAxis(offset.z(), this.direction.z(), this.lowerBound.z(), this.upperBound.z());
+    }
+
+    private boolean withinCrossAxis(int coordinate, int directionComponent, int lower, int upper) {
+        if (directionComponent != 0) {
+            return true;
+        }
+
+        return coordinate >= lower && coordinate <= upper;
     }
 
     private void collectWhenInside(List<BlastVector> volume, BlastVector offset) {

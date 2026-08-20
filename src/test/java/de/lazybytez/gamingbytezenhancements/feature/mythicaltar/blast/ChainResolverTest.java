@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 class ChainResolverTest {
 
-    private static final int CHAIN_REACH = 6;
+    private static final BlastGeometry GEOMETRY = new CuboidBlastGeometry(BlastLevel.LEVEL_1);
 
     @Test
     void sessionForInitiatorReportsFourRemainingCapacity() {
@@ -43,14 +43,14 @@ class ChainResolverTest {
     }
 
     @Test
-    void candidateOutsideReachIsNotReturned() {
+    void candidateOutsideTheBlastVolumeIsNotReturned() {
         ChainCandidate detonating = ChainResolverTest.candidateAt(0, 0, 0);
         ChainCandidate outOfReach = ChainResolverTest.candidateAt(7, 0, 0);
         ChainSession session = new ChainSession(detonating.id());
 
         List<ChainCandidate> woken = ChainResolver.resolve(
                 detonating,
-                ChainResolverTest.CHAIN_REACH,
+                ChainResolverTest.GEOMETRY,
                 List.of(outOfReach),
                 session);
 
@@ -59,18 +59,34 @@ class ChainResolverTest {
     }
 
     @Test
-    void candidateOnTheReachBoundaryIsReturned() {
+    void candidateOnTheVolumeBoundaryIsReturned() {
         ChainCandidate detonating = ChainResolverTest.candidateAt(0, 0, 0);
-        ChainCandidate onBoundary = ChainResolverTest.candidateAt(6, 0, 0);
+        ChainCandidate onBoundary = ChainResolverTest.candidateAt(3, 0, 0);
         ChainSession session = new ChainSession(detonating.id());
 
         List<ChainCandidate> woken = ChainResolver.resolve(
                 detonating,
-                ChainResolverTest.CHAIN_REACH,
+                ChainResolverTest.GEOMETRY,
                 List.of(onBoundary),
                 session);
 
         assertEquals(List.of(onBoundary), woken);
+    }
+
+    @Test
+    void candidateBelowInsideTheDugVolumeIsReturned() {
+        ChainCandidate detonating = ChainResolverTest.candidateAt(0, 0, 0);
+        ChainCandidate below = ChainResolverTest.candidateAt(0, -7, 0);
+        ChainCandidate above = ChainResolverTest.candidateAt(0, 1, 0);
+        ChainSession session = new ChainSession(detonating.id());
+
+        List<ChainCandidate> woken = ChainResolver.resolve(
+                detonating,
+                ChainResolverTest.GEOMETRY,
+                List.of(below, above),
+                session);
+
+        assertEquals(List.of(below), woken);
     }
 
     @Test
@@ -82,12 +98,12 @@ class ChainResolverTest {
 
         List<ChainCandidate> first = ChainResolver.resolve(
                 detonating,
-                ChainResolverTest.CHAIN_REACH,
+                ChainResolverTest.GEOMETRY,
                 placed,
                 session);
         List<ChainCandidate> second = ChainResolver.resolve(
                 detonating,
-                ChainResolverTest.CHAIN_REACH,
+                ChainResolverTest.GEOMETRY,
                 placed,
                 session);
 
@@ -109,7 +125,7 @@ class ChainResolverTest {
 
         List<ChainCandidate> woken = ChainResolver.resolve(
                 detonating,
-                ChainResolverTest.CHAIN_REACH,
+                ChainResolverTest.GEOMETRY,
                 placed,
                 session);
 
@@ -139,7 +155,7 @@ class ChainResolverTest {
 
             pending.addAll(ChainResolver.resolve(
                     detonating,
-                    ChainResolverTest.CHAIN_REACH,
+                    ChainResolverTest.GEOMETRY,
                     placed,
                     session));
         }
@@ -155,7 +171,7 @@ class ChainResolverTest {
         ChainCandidate neighbour = ChainResolverTest.candidateAt(1, 0, 0);
 
         ChainSession session = new ChainSession(initiator.id());
-        ChainResolver.resolve(initiator, ChainResolverTest.CHAIN_REACH, List.of(neighbour), session);
+        ChainResolver.resolve(initiator, ChainResolverTest.GEOMETRY, List.of(neighbour), session);
 
         assertEquals(2, session.recruitedCount());
 

@@ -263,7 +263,7 @@ class ExcavationChargeManagerTest {
         assertTrue(rendered.contains("Cuboid"));
         assertTrue(rendered.contains(String.valueOf(BlastLevel.of(1).getSize())));
         assertTrue(rendered.contains(String.valueOf(BlastLevel.of(1).getCentreDamage())));
-        assertTrue(rendered.contains(String.valueOf(BlastLevel.of(1).getChainReach())));
+        assertTrue(rendered.contains("Chains to every charge inside the blast."));
 
         boolean hasBodyToken = lore.stream().anyMatch(line -> line.color() == MessagePalette.BODY);
         boolean hasValueToken = lore.stream()

@@ -43,19 +43,17 @@ class BlastLevelTest {
     }
 
     @Test
+    void of_returnsSizeSixtyFourForLevelFive() {
+        assertEquals(64, BlastLevel.of(5).getSize());
+    }
+
+    @Test
     void of_returnsCentreDamageForEachLevel() {
         assertEquals(10.0, BlastLevel.of(1).getCentreDamage());
         assertEquals(18.0, BlastLevel.of(2).getCentreDamage());
         assertEquals(26.0, BlastLevel.of(3).getCentreDamage());
         assertEquals(34.0, BlastLevel.of(4).getCentreDamage());
-    }
-
-    @Test
-    void of_returnsChainReachForEachLevel() {
-        assertEquals(6, BlastLevel.of(1).getChainReach());
-        assertEquals(8, BlastLevel.of(2).getChainReach());
-        assertEquals(10, BlastLevel.of(3).getChainReach());
-        assertEquals(12, BlastLevel.of(4).getChainReach());
+        assertEquals(42.0, BlastLevel.of(5).getCentreDamage());
     }
 
     @Test
@@ -64,6 +62,7 @@ class BlastLevelTest {
         assertEquals(1.0, BlastLevel.of(2).getWaveSpeed());
         assertEquals(1.1, BlastLevel.of(3).getWaveSpeed());
         assertEquals(1.25, BlastLevel.of(4).getWaveSpeed());
+        assertEquals(1.5, BlastLevel.of(5).getWaveSpeed());
     }
 
     @Test
@@ -72,13 +71,13 @@ class BlastLevelTest {
     }
 
     @Test
-    void of_clampsAboveMaximumToLevelFour() {
+    void of_clampsAboveMaximumToLevelFive() {
         assertEquals(BlastLevel.of(BlastLevel.MAX_LEVEL), BlastLevel.of(9));
     }
 
     @Test
     void maxLevel_isExposedAsConstant() {
-        assertEquals(4, BlastLevel.MAX_LEVEL);
+        assertEquals(5, BlastLevel.MAX_LEVEL);
     }
 
     @Test

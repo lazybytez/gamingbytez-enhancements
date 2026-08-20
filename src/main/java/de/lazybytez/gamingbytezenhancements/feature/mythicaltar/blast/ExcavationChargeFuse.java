@@ -101,6 +101,16 @@ public final class ExcavationChargeFuse {
     }
 
     /**
+     * Tells whether the given charge is currently counting down.
+     *
+     * @param charge The placed charge to check
+     * @return True when a fuse is burning on the charge
+     */
+    public boolean isBurning(EnderCrystal charge) {
+        return this.burning.contains(charge.getUniqueId());
+    }
+
+    /**
      * Starts the countdown of a charge.
      *
      * @param charge    The placed charge to count down
@@ -327,7 +337,14 @@ public final class ExcavationChargeFuse {
                 return;
             }
 
-            this.drawOffsets(this.outline(), this.fillDust());
+            // Every particle position is one packet to every player in range, so fill and edges
+            // alternate beats: the picture refreshes constantly at half the peak packet rate.
+            if (remaining % (ExcavationChargeFuse.OUTLINE_INTERVAL_TICKS * 2) == 0) {
+                this.drawOffsets(this.outline(), this.fillDust());
+
+                return;
+            }
+
             this.drawOffsets(this.edges(), this.edgeDust());
         }
 
