@@ -18,7 +18,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.PlaceExcavationChargeListener;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.PlacedExcavationCharge;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EnderCrystal;
@@ -53,7 +52,7 @@ public final class ExcavationChargeGravity {
 
     private final EnhancementsPlugin plugin;
     private final Map<UUID, Double> fallSpeeds;
-    private final NamespacedKey placedKey;
+    private final PlacedExcavationCharge.Keys keys;
 
     private BukkitTask task;
 
@@ -65,7 +64,7 @@ public final class ExcavationChargeGravity {
     public ExcavationChargeGravity(EnhancementsPlugin plugin) {
         this.plugin = Objects.requireNonNull(plugin, "plugin must not be null");
         this.fallSpeeds = new HashMap<>();
-        this.placedKey = PlaceExcavationChargeListener.placedMarkerKey(plugin);
+        this.keys = PlacedExcavationCharge.Keys.of(plugin);
     }
 
     /**
@@ -102,7 +101,7 @@ public final class ExcavationChargeGravity {
 
         for (World world : this.plugin.getServer().getWorlds()) {
             for (EnderCrystal crystal : world.getEntitiesByClass(EnderCrystal.class)) {
-                if (!PlaceExcavationChargeListener.isPlacedCharge(this.placedKey, crystal)) {
+                if (PlacedExcavationCharge.of(this.keys, crystal).isEmpty()) {
                     continue;
                 }
 

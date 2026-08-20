@@ -18,8 +18,6 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +32,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.PlacedExcavationCharge;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import java.util.List;
@@ -45,7 +44,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.LivingEntity;
@@ -66,6 +64,12 @@ class ExcavationChargeDetonatorTest {
     private static final NamespacedKey SHAPE_KEY = new NamespacedKey("gamingbytez", "excavation_charge_shape");
     private static final NamespacedKey LEVEL_KEY = new NamespacedKey("gamingbytez", "excavation_charge_level");
     private static final NamespacedKey FACING_KEY = new NamespacedKey("gamingbytez", "excavation_charge_facing");
+
+    private static final PlacedExcavationCharge.Keys KEYS = new PlacedExcavationCharge.Keys(
+            ExcavationChargeDetonatorTest.PLACED_KEY,
+            ExcavationChargeDetonatorTest.SHAPE_KEY,
+            ExcavationChargeDetonatorTest.LEVEL_KEY,
+            ExcavationChargeDetonatorTest.FACING_KEY);
 
     private static final int MIN_HEIGHT = -64;
     private static final int MAX_HEIGHT = 320;
@@ -121,48 +125,6 @@ class ExcavationChargeDetonatorTest {
         this.bukkit.close();
         this.damageSource.close();
         this.registryAccess.close();
-    }
-
-    @Test
-    void decodeFacingReadsTheStoredName() {
-        assertEquals(BlockFace.UP, ExcavationChargeDetonator.decodeFacing("UP"));
-    }
-
-    @Test
-    void decodeFacingFallsBackToNorthWhenMissing() {
-        assertEquals(BlockFace.NORTH, ExcavationChargeDetonator.decodeFacing(null));
-    }
-
-    @Test
-    void decodeFacingFallsBackToNorthWhenNotCardinal() {
-        assertEquals(BlockFace.NORTH, ExcavationChargeDetonator.decodeFacing("NORTH_EAST"));
-        assertEquals(BlockFace.NORTH, ExcavationChargeDetonator.decodeFacing("SELF"));
-    }
-
-    @Test
-    void decodeFacingFallsBackToNorthWhenUnknown() {
-        assertEquals(BlockFace.NORTH, ExcavationChargeDetonator.decodeFacing("SIDEWAYS"));
-    }
-
-    @Test
-    void geometryForMapsEveryShapeToItsVolume() {
-        assertInstanceOf(CuboidBlastGeometry.class,
-                ExcavationChargeDetonator.geometryFor(BlastShape.CUBOID, BlastLevel.LEVEL_1, BlockFace.NORTH));
-        assertInstanceOf(SphereBlastGeometry.class,
-                ExcavationChargeDetonator.geometryFor(BlastShape.SPHERE, BlastLevel.LEVEL_1, BlockFace.NORTH));
-        assertInstanceOf(CylinderBlastGeometry.class,
-                ExcavationChargeDetonator.geometryFor(BlastShape.CYLINDER, BlastLevel.LEVEL_1, BlockFace.NORTH));
-        assertInstanceOf(TunnelBlastGeometry.class,
-                ExcavationChargeDetonator.geometryFor(BlastShape.TUNNEL, BlastLevel.LEVEL_1, BlockFace.NORTH));
-    }
-
-    @Test
-    void geometryForBoresTheTunnelAlongTheStoredFacing() {
-        BlastGeometry geometry =
-                ExcavationChargeDetonator.geometryFor(BlastShape.TUNNEL, BlastLevel.LEVEL_1, BlockFace.EAST);
-
-        assertTrue(geometry.contains(new BlastVector(1, 0, 0)));
-        assertFalse(geometry.contains(new BlastVector(-1, 0, 0)));
     }
 
     @Test
@@ -249,18 +211,15 @@ class ExcavationChargeDetonatorTest {
 
     private ExcavationChargeDetonator detonator() {
         return new ExcavationChargeDetonator(
-                this.blastScheduler,
-                this.auditLog,
-                ExcavationChargeDetonatorTest.PLACED_KEY,
-                ExcavationChargeDetonatorTest.SHAPE_KEY,
-                ExcavationChargeDetonatorTest.LEVEL_KEY,
-                ExcavationChargeDetonatorTest.FACING_KEY);
+                this.blastScheduler, this.auditLog, ExcavationChargeDetonatorTest.KEYS);
     }
 
     private EnderCrystal placedCharge() {
         PersistentDataContainer container = mock(PersistentDataContainer.class);
         when(container.getOrDefault(
-                ExcavationChargeDetonatorTest.LEVEL_KEY, PersistentDataType.INTEGER, BlastLevel.MIN_LEVEL))
+                ExcavationChargeDetonatorTest.PLACED_KEY, PersistentDataType.BOOLEAN, false))
+                .thenReturn(true);
+        when(container.get(ExcavationChargeDetonatorTest.LEVEL_KEY, PersistentDataType.INTEGER))
                 .thenReturn(BlastLevel.MIN_LEVEL);
 
         EnderCrystal charge = mock(EnderCrystal.class);

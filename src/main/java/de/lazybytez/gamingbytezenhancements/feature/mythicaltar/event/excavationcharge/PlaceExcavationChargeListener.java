@@ -21,11 +21,11 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeatu
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.ExcavationChargeManager;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.PlacedExcavationCharge;
 import java.util.Objects;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -38,9 +38,6 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 
@@ -59,17 +56,6 @@ import java.util.List;
  * axis-aligned unit vector, which is what the tunnel geometry requires.
  */
 public class PlaceExcavationChargeListener implements Listener {
-    /**
-     * Marks an end crystal as a placed Excavation Charge, stored as {@link PersistentDataType#BOOLEAN}.
-     * An end crystal without this marker belongs to vanilla or to another plugin.
-     */
-    public static final String PDC_KEY_PLACED_EXCAVATION_CHARGE = "gamingbytez-excavation-charge-placed";
-
-    /**
-     * The blast direction of a placed Excavation Charge, stored as the {@link BlockFace} name in a
-     * {@link PersistentDataType#STRING}. Always one of the six cardinal faces.
-     */
-    public static final String PDC_KEY_FACING = "gamingbytez-excavation-charge-facing";
 
     private static final List<BlockFace> COMPASS_FACES =
             List.of(BlockFace.SOUTH, BlockFace.WEST, BlockFace.NORTH, BlockFace.EAST);
@@ -171,13 +157,13 @@ public class PlaceExcavationChargeListener implements Listener {
      * @param facing  The cardinal blast direction to store
      */
     private void writeChargeState(EnderCrystal crystal, BlastShape shape, int level, BlockFace facing) {
-        Plugin plugin = this.mythicAltarFeature.getPlugin();
-        PersistentDataContainer container = crystal.getPersistentDataContainer();
-
-        container.set(PlaceExcavationChargeListener.placedKey(plugin), PersistentDataType.BOOLEAN, true);
-        container.set(PlaceExcavationChargeListener.shapeKey(plugin), PersistentDataType.STRING, shape.name());
-        container.set(PlaceExcavationChargeListener.levelKey(plugin), PersistentDataType.INTEGER, level);
-        container.set(PlaceExcavationChargeListener.facingKey(plugin), PersistentDataType.STRING, facing.name());
+        PlacedExcavationCharge.stamp(
+                PlacedExcavationCharge.Keys.of(this.mythicAltarFeature.getPlugin()),
+                crystal,
+                shape,
+                level,
+                facing
+        );
     }
 
     /**
@@ -228,86 +214,5 @@ public class PlaceExcavationChargeListener implements Listener {
                 % PlaceExcavationChargeListener.COMPASS_FACES.size();
 
         return PlaceExcavationChargeListener.COMPASS_FACES.get(faceIndex);
-    }
-
-    /**
-     * Tell whether the given end crystal is an Excavation Charge placed by this plugin.
-     *
-     * @param plugin  The plugin owning the namespace
-     * @param crystal The end crystal to inspect
-     * @return True when the crystal carries the placed charge marker
-     */
-    public static boolean isPlacedCharge(Plugin plugin, EnderCrystal crystal) {
-        return PlaceExcavationChargeListener.isPlacedCharge(
-                PlaceExcavationChargeListener.placedKey(plugin), crystal);
-    }
-
-    /**
-     * Tell whether the given end crystal carries the placed charge marker, against a caller
-     * cached key.
-     * <p>
-     * A key carries a validation pass in its constructor, so a caller checking many crystals every
-     * few ticks builds it once instead of per crystal.
-     *
-     * @param placedKey The marker key, built once via placedMarkerKey and cached by the caller
-     * @param crystal   The end crystal to inspect
-     * @return True when the crystal carries the placed charge marker
-     */
-    public static boolean isPlacedCharge(NamespacedKey placedKey, EnderCrystal crystal) {
-        return crystal.getPersistentDataContainer().getOrDefault(
-                placedKey,
-                PersistentDataType.BOOLEAN,
-                false
-        );
-    }
-
-    /**
-     * Build the marker key for callers that check many crystals and want to cache it.
-     *
-     * @param plugin The plugin owning the namespace
-     * @return The namespaced marker key
-     */
-    public static NamespacedKey placedMarkerKey(Plugin plugin) {
-        return PlaceExcavationChargeListener.placedKey(plugin);
-    }
-
-    /**
-     * Build the key marking an end crystal as a placed Excavation Charge.
-     *
-     * @param plugin The plugin owning the namespace
-     * @return The namespaced marker key
-     */
-    static NamespacedKey placedKey(Plugin plugin) {
-        return new NamespacedKey(plugin, PlaceExcavationChargeListener.PDC_KEY_PLACED_EXCAVATION_CHARGE);
-    }
-
-    /**
-     * Build the key holding the blast shape of a placed Excavation Charge.
-     *
-     * @param plugin The plugin owning the namespace
-     * @return The namespaced shape key
-     */
-    static NamespacedKey shapeKey(Plugin plugin) {
-        return new NamespacedKey(plugin, ExcavationChargeManager.PDC_KEY_SHAPE);
-    }
-
-    /**
-     * Build the key holding the blast level of a placed Excavation Charge.
-     *
-     * @param plugin The plugin owning the namespace
-     * @return The namespaced level key
-     */
-    static NamespacedKey levelKey(Plugin plugin) {
-        return new NamespacedKey(plugin, ExcavationChargeManager.PDC_KEY_LEVEL);
-    }
-
-    /**
-     * Build the key holding the cardinal blast direction of a placed Excavation Charge.
-     *
-     * @param plugin The plugin owning the namespace
-     * @return The namespaced facing key
-     */
-    static NamespacedKey facingKey(Plugin plugin) {
-        return new NamespacedKey(plugin, PlaceExcavationChargeListener.PDC_KEY_FACING);
     }
 }

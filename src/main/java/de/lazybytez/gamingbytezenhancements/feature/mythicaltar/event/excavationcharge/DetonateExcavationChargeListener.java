@@ -23,6 +23,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastSched
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeDetonator;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeFuse;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.PlacedExcavationCharge;
 import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
 import java.util.Objects;
 import org.bukkit.entity.EnderCrystal;
@@ -48,6 +49,7 @@ public class DetonateExcavationChargeListener implements Listener {
     private final ExcavationChargeFuse fuse;
     private final ExcavationChargeAuditLog auditLog;
     private final Messenger messenger;
+    private final PlacedExcavationCharge.Keys keys;
 
     /**
      * Creates the listener and the detonation pipeline it drives.
@@ -61,19 +63,15 @@ public class DetonateExcavationChargeListener implements Listener {
             MythicAltarFeature mythicAltarFeature,
             BlastScheduler blastScheduler,
             ExcavationChargeAuditLog auditLog,
-            Messenger messenger) {
+            Messenger messenger
+    ) {
         Objects.requireNonNull(mythicAltarFeature, "mythicAltarFeature must not be null");
 
         EnhancementsPlugin plugin = mythicAltarFeature.getPlugin();
 
         this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
-        this.detonator = new ExcavationChargeDetonator(
-                blastScheduler,
-                this.auditLog,
-                PlaceExcavationChargeListener.placedKey(plugin),
-                PlaceExcavationChargeListener.shapeKey(plugin),
-                PlaceExcavationChargeListener.levelKey(plugin),
-                PlaceExcavationChargeListener.facingKey(plugin));
+        this.keys = PlacedExcavationCharge.Keys.of(plugin);
+        this.detonator = new ExcavationChargeDetonator(blastScheduler, this.auditLog, this.keys);
         this.fuse = new ExcavationChargeFuse(plugin, this.detonator, this.auditLog);
         this.messenger = Objects.requireNonNull(messenger, "messenger must not be null");
     }
@@ -89,7 +87,7 @@ public class DetonateExcavationChargeListener implements Listener {
             return;
         }
 
-        if (!this.detonator.isPlacedCharge(charge)) {
+        if (PlacedExcavationCharge.of(this.keys, charge).isEmpty()) {
             return;
         }
 
@@ -114,7 +112,7 @@ public class DetonateExcavationChargeListener implements Listener {
      * @return True when a countdown was started
      */
     public boolean ignite(EnderCrystal crystal) {
-        if (!this.detonator.isPlacedCharge(crystal)) {
+        if (PlacedExcavationCharge.of(this.keys, crystal).isEmpty()) {
             return false;
         }
 

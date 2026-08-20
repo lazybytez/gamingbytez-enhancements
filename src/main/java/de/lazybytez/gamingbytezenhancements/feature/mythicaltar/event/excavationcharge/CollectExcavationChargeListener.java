@@ -18,11 +18,11 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.ExcavationChargeManager;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.PlacedExcavationCharge;
 import java.util.Objects;
+import java.util.Optional;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.EnderCrystal;
@@ -32,9 +32,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 
 import java.util.Map;
 
@@ -86,10 +83,10 @@ public class CollectExcavationChargeListener implements Listener {
             return;
         }
 
-        Plugin plugin = this.mythicAltarFeature.getPlugin();
-        PersistentDataContainer container = crystal.getPersistentDataContainer();
+        Optional<PlacedExcavationCharge> placedCharge = PlacedExcavationCharge.of(
+                PlacedExcavationCharge.Keys.of(this.mythicAltarFeature.getPlugin()), crystal);
 
-        if (!container.getOrDefault(PlaceExcavationChargeListener.placedKey(plugin), PersistentDataType.BOOLEAN, false)) {
+        if (placedCharge.isEmpty()) {
             return;
         }
 
@@ -102,7 +99,7 @@ public class CollectExcavationChargeListener implements Listener {
             return;
         }
 
-        ItemStack excavationCharge = this.buildExcavationCharge(container, plugin);
+        ItemStack excavationCharge = this.buildExcavationCharge(placedCharge.get());
         Location crystalLocation = crystal.getLocation();
         crystal.remove();
 
@@ -113,21 +110,18 @@ public class CollectExcavationChargeListener implements Listener {
     /**
      * Build the item returned to the player from the state stored on the entity.
      *
-     * @param container The persistent data container of the placed charge
-     * @param plugin    The plugin owning the namespace
+     * @param placedCharge The charge standing in the world
      * @return The Excavation Charge item carrying the entity's shape and level
      */
-    private ItemStack buildExcavationCharge(PersistentDataContainer container, Plugin plugin) {
+    private ItemStack buildExcavationCharge(PlacedExcavationCharge placedCharge) {
         ExcavationChargeManager excavationChargeManager = this.mythicAltarFeature
                 .getCustomItemManagerRegistry()
                 .getCustomItemManager(ExcavationChargeManager.class);
 
         ItemStack excavationCharge = excavationChargeManager.createCustomItem();
 
-        excavationChargeManager.setShape(excavationCharge, BlastShape.decode(
-                container.get(PlaceExcavationChargeListener.shapeKey(plugin), PersistentDataType.STRING)));
-        excavationChargeManager.setLevel(excavationCharge, container.getOrDefault(
-                PlaceExcavationChargeListener.levelKey(plugin), PersistentDataType.INTEGER, BlastLevel.MIN_LEVEL));
+        excavationChargeManager.setShape(excavationCharge, placedCharge.shape());
+        excavationChargeManager.setLevel(excavationCharge, placedCharge.level().getLevel());
 
         return excavationCharge;
     }
