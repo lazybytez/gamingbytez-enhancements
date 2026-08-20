@@ -49,6 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -148,6 +149,7 @@ class MythicAltarFeatureTest {
     private void stubPluginManager() {
         when(this.plugin.getServer()).thenReturn(this.server);
         when(this.server.getPluginManager()).thenReturn(this.pluginManager);
+        when(this.server.getScheduler()).thenReturn(mock(org.bukkit.scheduler.BukkitScheduler.class));
         when(this.plugin.namespace()).thenReturn("gamingbytez-enhancements");
     }
 }

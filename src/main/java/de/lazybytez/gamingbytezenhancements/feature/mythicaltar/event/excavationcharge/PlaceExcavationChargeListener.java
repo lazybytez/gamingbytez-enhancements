@@ -219,6 +219,21 @@ public class PlaceExcavationChargeListener implements Listener {
     }
 
     /**
+     * Tell whether the given end crystal is an Excavation Charge placed by this plugin.
+     *
+     * @param plugin  The plugin owning the namespace
+     * @param crystal The end crystal to inspect
+     * @return True when the crystal carries the placed charge marker
+     */
+    public static boolean isPlacedCharge(Plugin plugin, EnderCrystal crystal) {
+        return crystal.getPersistentDataContainer().getOrDefault(
+                PlaceExcavationChargeListener.placedKey(plugin),
+                PersistentDataType.BOOLEAN,
+                false
+        );
+    }
+
+    /**
      * Build the key marking an end crystal as a placed Excavation Charge.
      *
      * @param plugin The plugin owning the namespace

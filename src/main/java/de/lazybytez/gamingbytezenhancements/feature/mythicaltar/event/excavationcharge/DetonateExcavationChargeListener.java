@@ -95,6 +95,24 @@ public class DetonateExcavationChargeListener implements Listener {
     }
 
     /**
+     * Arm the given crystal if it is a placed Excavation Charge.
+     * <p>
+     * This is the entry point for triggers that are not damage, such as a redstone pulse next to
+     * the charge. It shares the fuse with the damage path, so a charge already counting down is
+     * left alone rather than restarted.
+     *
+     * @param crystal The end crystal a trigger fired next to
+     * @return True when a countdown was started
+     */
+    public boolean ignite(EnderCrystal crystal) {
+        if (!this.detonator.isPlacedCharge(crystal)) {
+            return false;
+        }
+
+        return this.fuse.armForPlayer(crystal);
+    }
+
+    /**
      * Tell the player who hit the charge that its countdown is running.
      *
      * @param event The entity damage event that started the countdown
