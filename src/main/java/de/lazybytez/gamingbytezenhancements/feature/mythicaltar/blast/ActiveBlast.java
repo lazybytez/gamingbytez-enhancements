@@ -38,6 +38,9 @@ public final class ActiveBlast {
     private final Deque<Block> remaining;
     private final BlastDropTally dropTally;
     private final Location detonationPoint;
+    private final double waveSpeed;
+
+    private double wavefront;
 
     /**
      * Creates a blast over the planned blocks.
@@ -45,15 +48,56 @@ public final class ActiveBlast {
      * @param plannedBlocks   The blocks the blast removes, in carving order.
      * @param dropTally       The tally collecting the drops the blast earns.
      * @param detonationPoint The location the charge detonated in, where the drops end up.
+     * @param waveSpeed       How far the wavefront travels per tick, in blocks of radius.
      */
-    public ActiveBlast(List<Block> plannedBlocks, BlastDropTally dropTally, Location detonationPoint) {
+    public ActiveBlast(List<Block> plannedBlocks, BlastDropTally dropTally, Location detonationPoint, double waveSpeed) {
         Objects.requireNonNull(plannedBlocks, "plannedBlocks must not be null");
+
+        if (waveSpeed <= 0.0) {
+            throw new IllegalArgumentException("waveSpeed must be positive");
+        }
 
         this.remaining = new ArrayDeque<>(plannedBlocks);
         this.dropTally = Objects.requireNonNull(dropTally, "dropTally must not be null");
         this.detonationPoint = Objects.requireNonNull(detonationPoint, "detonationPoint must not be null");
+        this.waveSpeed = waveSpeed;
+        this.wavefront = 0.0;
 
         Objects.requireNonNull(detonationPoint.getWorld(), "detonationPoint must have a world");
+    }
+
+    /**
+     * Moves the wavefront one tick outwards and returns how many blocks it has reached.
+     * <p>
+     * The plan is ordered by distance from the detonation point, so the blocks the wavefront has
+     * passed are exactly the leading ones. Pacing by radius instead of by a flat block count is
+     * what makes the carve read as a shock wave: the small inner shells fall in quick succession
+     * and the wide outer shells take their share of blocks in one sweep instead of crawling.
+     *
+     * @return The number of leading blocks within the advanced wavefront.
+     */
+    public int advanceWavefront() {
+        this.wavefront += this.waveSpeed;
+
+        double reach = this.wavefront * this.wavefront;
+        int originX = this.detonationPoint.getBlockX();
+        int originY = this.detonationPoint.getBlockY();
+        int originZ = this.detonationPoint.getBlockZ();
+
+        int reached = 0;
+        for (Block block : this.remaining) {
+            long deltaX = block.getX() - originX;
+            long deltaY = block.getY() - originY;
+            long deltaZ = block.getZ() - originZ;
+
+            if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ > reach) {
+                break;
+            }
+
+            reached++;
+        }
+
+        return reached;
     }
 
     /**

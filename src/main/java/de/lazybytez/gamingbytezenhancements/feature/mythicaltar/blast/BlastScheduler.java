@@ -162,8 +162,16 @@ public final class BlastScheduler {
         this.task = null;
     }
 
+    /**
+     * Carves one tick of every blast in flight.
+     * <p>
+     * Each blast asks for the blocks its wavefront has reached this tick, so the pacing comes
+     * from the wave speed of the blast's level. The budget only caps the total against the per
+     * tick ceiling: under normal load it never bites, it exists so a chain of large blasts
+     * cannot pile their widest shells into one tick.
+     */
     private void tick() {
-        int[] allocation = this.budget.allocate(this.remainingBlocks());
+        int[] allocation = this.budget.allocate(this.wavefrontRequests());
 
         for (int index = 0; index < allocation.length; index++) {
             this.spend(this.activeBlasts.get(index), allocation[index]);
@@ -176,14 +184,14 @@ public final class BlastScheduler {
         }
     }
 
-    private int[] remainingBlocks() {
-        int[] remaining = new int[this.activeBlasts.size()];
+    private int[] wavefrontRequests() {
+        int[] requests = new int[this.activeBlasts.size()];
 
-        for (int index = 0; index < remaining.length; index++) {
-            remaining[index] = this.activeBlasts.get(index).remainingBlocks();
+        for (int index = 0; index < requests.length; index++) {
+            requests[index] = this.activeBlasts.get(index).advanceWavefront();
         }
 
-        return remaining;
+        return requests;
     }
 
     /**

@@ -59,6 +59,14 @@ class BlastLevelTest {
     }
 
     @Test
+    void wavefrontSpeedGrowsWithTheLevel() {
+        assertEquals(0.9, BlastLevel.of(1).getWaveSpeed());
+        assertEquals(1.0, BlastLevel.of(2).getWaveSpeed());
+        assertEquals(1.1, BlastLevel.of(3).getWaveSpeed());
+        assertEquals(1.25, BlastLevel.of(4).getWaveSpeed());
+    }
+
+    @Test
     void of_clampsBelowMinimumToLevelOne() {
         assertEquals(BlastLevel.of(BlastLevel.MIN_LEVEL), BlastLevel.of(0));
     }

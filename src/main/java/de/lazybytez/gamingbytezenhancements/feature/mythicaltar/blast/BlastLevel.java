@@ -25,10 +25,10 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
  * is the radius within which a detonating charge wakes its neighbours.
  */
 public enum BlastLevel {
-    LEVEL_1(1, 8, 10.0, 6, 0x3CE85A),
-    LEVEL_2(2, 16, 18.0, 8, 0xE8DC3C),
-    LEVEL_3(3, 24, 26.0, 10, 0xE8913C),
-    LEVEL_4(4, 32, 34.0, 12, 0xE83C3C);
+    LEVEL_1(1, 8, 10.0, 6, 0x3CE85A, 0.9),
+    LEVEL_2(2, 16, 18.0, 8, 0xE8DC3C, 1.0),
+    LEVEL_3(3, 24, 26.0, 10, 0xE8913C, 1.1),
+    LEVEL_4(4, 32, 34.0, 12, 0xE83C3C, 1.25);
 
     /**
      * The lowest valid blast level.
@@ -45,13 +45,15 @@ public enum BlastLevel {
     private final double centreDamage;
     private final int chainReach;
     private final int armingColour;
+    private final double waveSpeed;
 
-    BlastLevel(int level, int size, double centreDamage, int chainReach, int armingColour) {
+    BlastLevel(int level, int size, double centreDamage, int chainReach, int armingColour, double waveSpeed) {
         this.level = level;
         this.size = size;
         this.centreDamage = centreDamage;
         this.chainReach = chainReach;
         this.armingColour = armingColour;
+        this.waveSpeed = waveSpeed;
     }
 
     /**
@@ -80,6 +82,20 @@ public enum BlastLevel {
      */
     public int getLevel() {
         return this.level;
+    }
+
+    /**
+     * Returns how far the blast wavefront travels per tick, in blocks of radius.
+     * <p>
+     * The speed grows slightly with the level, so a big blast reads as a stronger shock rather
+     * than a slower one, while its greater extent still makes the whole carve last longer. Every
+     * level lands between half a second and two seconds: fast enough to impress, slow enough for
+     * a player to watch the wave travel.
+     *
+     * @return the wavefront speed in blocks per tick
+     */
+    public double getWaveSpeed() {
+        return this.waveSpeed;
     }
 
     /**
