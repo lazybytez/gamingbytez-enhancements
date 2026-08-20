@@ -18,6 +18,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.world.WorldChunks;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -46,7 +47,6 @@ public final class BlastScheduler {
     private static final double DROP_CHANCE = 0.05;
     private static final long TICK_DELAY = 1L;
     private static final long TICK_PERIOD = 1L;
-    private static final int CHUNK_SHIFT = 4;
 
     /**
      * The most blocks that may wait to be carved across every blast at once.
@@ -248,9 +248,7 @@ public final class BlastScheduler {
      * @param dropTally The tally collecting the drops of the blast.
      */
     private void carve(Block block, BlastDropTally dropTally) {
-        if (!block.getWorld().isChunkLoaded(
-                block.getX() >> BlastScheduler.CHUNK_SHIFT,
-                block.getZ() >> BlastScheduler.CHUNK_SHIFT)) {
+        if (!WorldChunks.isChunkLoadedAt(block.getWorld(), block.getX(), block.getZ())) {
             return;
         }
 
@@ -326,9 +324,8 @@ public final class BlastScheduler {
             Location detonationPoint = blast.detonationPoint();
             World world = detonationPoint.getWorld();
 
-            if (!world.isChunkLoaded(
-                    detonationPoint.getBlockX() >> BlastScheduler.CHUNK_SHIFT,
-                    detonationPoint.getBlockZ() >> BlastScheduler.CHUNK_SHIFT)) {
+            if (!WorldChunks.isChunkLoadedAt(
+                    world, detonationPoint.getBlockX(), detonationPoint.getBlockZ())) {
                 blast.dropTally().drain();
 
                 return;
