@@ -32,6 +32,14 @@ public record OpenAiResponse(String role, String content, int totalTokens) {
     public static final String TOTAL_TOKENS = "total_tokens";
 
     public static OpenAiResponse createFromJsonResponse(JsonObject parsedJson) throws OpenAiException {
+        if (!parsedJson.has(CHOICES)) {
+            throw new OpenAiException(
+                    "Response carried no " + CHOICES + ", so it is not a chat completion: "
+                            + parsedJson.keySet(),
+                    500,
+                    "openai_result_parse");
+        }
+
         try {
             JsonArray choices = parsedJson.get(CHOICES).getAsJsonArray();
             JsonObject firstChoice = choices.get(0).getAsJsonObject();

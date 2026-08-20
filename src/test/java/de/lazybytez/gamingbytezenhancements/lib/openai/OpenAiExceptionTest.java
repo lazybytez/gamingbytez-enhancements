@@ -47,7 +47,7 @@ class OpenAiExceptionTest {
                 """;
         JsonObject parsedJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
 
-        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 200);
+        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 200, jsonResponse);
 
         assertNull(exception);
     }
@@ -64,7 +64,7 @@ class OpenAiExceptionTest {
                 """;
         JsonObject parsedJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
 
-        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 401);
+        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 401, jsonResponse);
 
         assertNotNull(exception);
         assertEquals("Invalid API key provided", exception.getMessage());
@@ -84,7 +84,7 @@ class OpenAiExceptionTest {
                 """;
         JsonObject parsedJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
 
-        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 429);
+        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 429, jsonResponse);
 
         assertNotNull(exception);
         assertEquals("Rate limit exceeded", exception.getMessage());
@@ -93,7 +93,7 @@ class OpenAiExceptionTest {
     }
 
     @Test
-    void createFromResponse_withMalformedError_throwsNullPointerException() {
+    void createFromResponse_withErrorMissingItsCode_reportsTheMessage() {
         String jsonResponse = """
                 {
                     "error": {
@@ -103,13 +103,33 @@ class OpenAiExceptionTest {
                 """;
         JsonObject parsedJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
 
-        assertThrows(NullPointerException.class, () ->
-                OpenAiException.createFromResponse(parsedJson, 500)
-        );
+        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 500, jsonResponse);
+
+        assertEquals("Some error", exception.getMessage());
+        assertEquals(500, exception.getStatusCode());
+        assertEquals("http_500", exception.getErrorCode());
     }
 
     @Test
-    void createFromResponse_withEmptyErrorObject_throwsNullPointerException() {
+    void createFromResponse_withNullErrorCode_reportsTheMessage() {
+        String jsonResponse = """
+                {
+                    "error": {
+                        "message": "Unknown parameter: chat_template_kwargs",
+                        "code": null
+                    }
+                }
+                """;
+        JsonObject parsedJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
+
+        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 400, jsonResponse);
+
+        assertEquals("Unknown parameter: chat_template_kwargs", exception.getMessage());
+        assertEquals("http_400", exception.getErrorCode());
+    }
+
+    @Test
+    void createFromResponse_withEmptyErrorObject_quotesTheBody() {
         String jsonResponse = """
                 {
                     "error": {}
@@ -117,9 +137,40 @@ class OpenAiExceptionTest {
                 """;
         JsonObject parsedJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
 
-        assertThrows(NullPointerException.class, () ->
-                OpenAiException.createFromResponse(parsedJson, 500)
-        );
+        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 500, jsonResponse);
+
+        assertEquals("failed_to_parse_json", exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("\"error\": {}"));
+    }
+
+    @Test
+    void createFromResponse_withFailingStatusAndNoErrorField_reportsTheStatusAndBody() {
+        String jsonResponse = """
+                {
+                    "object": "error",
+                    "message": "Unknown parameter chat_template_kwargs",
+                    "type": "BadRequestError"
+                }
+                """;
+        JsonObject parsedJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
+
+        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 400, jsonResponse);
+
+        assertEquals(400, exception.getStatusCode());
+        assertEquals("http_400", exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("Unknown parameter chat_template_kwargs"));
+    }
+
+    @Test
+    void createFromResponse_withSuccessStatusAndNoErrorField_returnsNull() {
+        String jsonResponse = """
+                {
+                    "choices": []
+                }
+                """;
+        JsonObject parsedJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
+
+        assertNull(OpenAiException.createFromResponse(parsedJson, 200, jsonResponse));
     }
 
     @Test
@@ -134,7 +185,7 @@ class OpenAiExceptionTest {
                 """;
         JsonObject parsedJson = JsonParser.parseString(jsonResponse).getAsJsonObject();
 
-        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 500);
+        OpenAiException exception = OpenAiException.createFromResponse(parsedJson, 500, jsonResponse);
 
         assertNotNull(exception);
         assertEquals("Internal server error", exception.getMessage());
