@@ -17,6 +17,8 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastDimensions;
+
 /**
  * The tuning table for a charge's blast level.
  * <p>

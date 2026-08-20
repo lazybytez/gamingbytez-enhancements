@@ -21,7 +21,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeatu
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInterface;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.CustomItemManagerRegistry;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.ExcavationChargeManager;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;

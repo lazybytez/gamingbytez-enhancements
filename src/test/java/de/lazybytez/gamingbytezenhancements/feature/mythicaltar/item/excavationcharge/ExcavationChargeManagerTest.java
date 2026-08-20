@@ -18,7 +18,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
 import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import net.kyori.adventure.text.Component;

@@ -19,7 +19,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavatio
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastScheduler;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastScheduler;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeDetonator;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeFuse;

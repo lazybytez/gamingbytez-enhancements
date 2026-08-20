@@ -22,7 +22,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.AltarInter
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.PedestalLocation;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.ExcavationChargeManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.particles.RisingRingsAltarParticleEffect;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.recipe.AbstractAltarRecipe;

@@ -22,6 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
 import java.util.List;
 import java.util.logging.Logger;
 import org.bukkit.Location;
