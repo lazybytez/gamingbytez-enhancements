@@ -22,6 +22,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class OpenAiClientTest {
@@ -104,5 +107,25 @@ class OpenAiClientTest {
         JsonObject parsed = JsonParser.parseString(json).getAsJsonObject();
 
         assertFalse(parsed.has("chat_template_kwargs"));
+    }
+
+    @Test
+    void completion_withUnparsableApiUrl_throwsIOExceptionCausedByUriSyntaxException() {
+        OpenAiClient client = new OpenAiClient(
+                "http://[invalid-ipv6]/v1/chat/completions", API_KEY, ORGANIZATION, MODEL, TEMPERATURE
+        );
+
+        IOException thrown = assertThrows(IOException.class, () -> client.completion("Hello", null, false));
+
+        assertInstanceOf(URISyntaxException.class, thrown.getCause());
+    }
+
+    @Test
+    void completion_withNonAbsoluteApiUrl_throwsIOExceptionCausedByIllegalArgumentException() {
+        OpenAiClient client = new OpenAiClient("", API_KEY, ORGANIZATION, MODEL, TEMPERATURE);
+
+        IOException thrown = assertThrows(IOException.class, () -> client.completion("Hello", null, false));
+
+        assertInstanceOf(IllegalArgumentException.class, thrown.getCause());
     }
 }

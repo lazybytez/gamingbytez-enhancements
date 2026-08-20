@@ -27,6 +27,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -156,7 +158,7 @@ public class OpenAiClient {
 
     @NotNull
     private HttpURLConnection getHttpURLConnection(byte[] bodyBytes) throws IOException {
-        URL url = new URL(this.apiUrl);
+        URL url = this.parseApiUrl();
         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
         httpURLConnection.setRequestMethod(HTTP_METHOD);
 
@@ -173,6 +175,27 @@ public class OpenAiClient {
 
         httpURLConnection.setDoOutput(true);
         return httpURLConnection;
+    }
+
+    /**
+     * Parses {@link #apiUrl} into a {@link URL}, using the modern {@link URI}-based construction
+     * instead of the deprecated {@link URL#URL(String)} constructor.
+     * <p>
+     * {@link URI#URI(String)} throws the checked {@link URISyntaxException} for a malformed URL string,
+     * and {@link URI#toURL()} throws the unchecked {@link IllegalArgumentException} when the URI is not
+     * absolute (e.g. missing a scheme). Both are translated into a checked {@link IOException} here so a
+     * misconfigured {@code apiUrl} keeps surfacing through this method's declared checked contract instead
+     * of escaping callers as an unchecked exception.
+     *
+     * @return the parsed API URL
+     * @throws IOException if {@link #apiUrl} is not a valid, absolute URL
+     */
+    private URL parseApiUrl() throws IOException {
+        try {
+            return new URI(this.apiUrl).toURL();
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            throw new IOException("Malformed OpenAI API URL: " + this.apiUrl, e);
+        }
     }
 
     String getRequestJsonWithSingleMessage(

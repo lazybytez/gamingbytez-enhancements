@@ -1,7 +1,7 @@
 name: gamingbytez-enhancements
 version: '${project.version}'
 main: de.lazybytez.gamingbytezenhancements.EnhancementsPlugin
-api-version: '1.21'
+api-version: '${minecraft.version}'
 permissions:
   gamingbytez.minecartportals.admin:
     description: Allows management of Minecart Portals

@@ -3,13 +3,17 @@ name: Git
 
 on: [ "pull_request" ]
 
+permissions:
+  contents: read
+
 jobs:
   # Verify that the branch name matches the format
   verify_branch_name:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Check branch name
-        uses: deepakputhraya/action-branch-name@master
+        uses: deepakputhraya/action-branch-name@v1.0.0
         with:
           regex: '([a-zA-Z0-9-])+\/([a-zA-Z0-9-])+'
           allowed_prefixes: "feature,fix,hotfix,release,renovate"
@@ -19,11 +23,12 @@ jobs:
   verify_commit_messages:
     if: (github.actor!= 'renovate[bot]') && (contains(github.head_ref, 'renovate/github_actions/') == false)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Run commitlint
-        uses: wagoid/commitlint-github-action@v5
+        uses: wagoid/commitlint-github-action@v6
         with:
           configFile: commitlint.config.mjs

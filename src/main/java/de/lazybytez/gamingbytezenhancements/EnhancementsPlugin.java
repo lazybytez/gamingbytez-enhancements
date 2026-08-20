@@ -28,6 +28,9 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeatu
 import de.lazybytez.gamingbytezenhancements.feature.temporarycart.TemporaryCartFeature;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiApiConfig;
 import de.lazybytez.gamingbytezenhancements.lib.openai.OpenAiClient;
+import de.lazybytez.gamingbytezenhancements.lib.version.ServerVersionWarning;
+import java.util.List;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -84,6 +87,19 @@ public final class EnhancementsPlugin extends JavaPlugin {
         }
 
         this.getLogger().info("All features have been enabled!");
+
+        this.warnIfServerVersionUnsupported();
+    }
+
+    private void warnIfServerVersionUnsupported() {
+        String supportedVersion = this.getPluginMeta().getAPIVersion();
+        String runningVersion = Bukkit.getMinecraftVersion();
+
+        List<String> warningLines = ServerVersionWarning.compose(supportedVersion, runningVersion);
+
+        for (String line : warningLines) {
+            this.getLogger().warning(line);
+        }
     }
 
     private void initializeOpenAiClient() {
