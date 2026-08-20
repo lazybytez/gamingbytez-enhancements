@@ -17,29 +17,26 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.PlacedExcavationCharge;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.ExplosionResult;
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 
 /**
@@ -51,11 +48,6 @@ import org.bukkit.util.Vector;
  * detonation stay free of any scheduling of its own.
  */
 public final class ExcavationChargeDetonator {
-
-    private static final BlockFace DEFAULT_FACING = BlockFace.NORTH;
-    private static final Set<BlockFace> CARDINAL_FACES = Set.of(
-            BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH,
-            BlockFace.WEST, BlockFace.UP, BlockFace.DOWN);
 
     private static final float EXPLOSION_YIELD = 0.0f;
     private static final double KNOCKBACK_STRENGTH = 1.2;
@@ -93,48 +85,24 @@ public final class ExcavationChargeDetonator {
     private final BlastScheduler blastScheduler;
     private final BlastPlanner blastPlanner;
     private final ExcavationChargeAuditLog auditLog;
-    private final NamespacedKey placedKey;
-    private final NamespacedKey shapeKey;
-    private final NamespacedKey levelKey;
-    private final NamespacedKey facingKey;
+    private final PlacedExcavationCharge.Keys keys;
 
     /**
      * Creates a detonator carving through the given scheduler.
      *
      * @param blastScheduler The scheduler owning every block mutation a blast performs
      * @param auditLog       The audit trail every detonation is recorded on
-     * @param placedKey      The key marking an end crystal as a placed Excavation Charge
-     * @param shapeKey       The key holding the blast shape of a placed charge
-     * @param levelKey       The key holding the blast level of a placed charge
-     * @param facingKey      The key holding the cardinal blast direction of a placed charge
+     * @param keys           The keys a placed Excavation Charge stores its state under
      */
     public ExcavationChargeDetonator(
             BlastScheduler blastScheduler,
             ExcavationChargeAuditLog auditLog,
-            NamespacedKey placedKey,
-            NamespacedKey shapeKey,
-            NamespacedKey levelKey,
-            NamespacedKey facingKey) {
+            PlacedExcavationCharge.Keys keys
+    ) {
         this.blastScheduler = Objects.requireNonNull(blastScheduler, "blastScheduler must not be null");
         this.blastPlanner = new BlastPlanner(BlastBlockFilter.production());
         this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
-        this.placedKey = Objects.requireNonNull(placedKey, "placedKey must not be null");
-        this.shapeKey = Objects.requireNonNull(shapeKey, "shapeKey must not be null");
-        this.levelKey = Objects.requireNonNull(levelKey, "levelKey must not be null");
-        this.facingKey = Objects.requireNonNull(facingKey, "facingKey must not be null");
-    }
-
-    /**
-     * Tells whether the given end crystal is an Excavation Charge placed by this plugin.
-     *
-     * @param charge The end crystal to inspect
-     * @return true when the crystal carries the placed Excavation Charge marker
-     */
-    public boolean isPlacedCharge(EnderCrystal charge) {
-        Objects.requireNonNull(charge, "charge must not be null");
-
-        return charge.getPersistentDataContainer()
-                .getOrDefault(this.placedKey, PersistentDataType.BOOLEAN, false);
+        this.keys = Objects.requireNonNull(keys, "keys must not be null");
     }
 
     /**
@@ -143,6 +111,9 @@ public final class ExcavationChargeDetonator {
      * A cancelled {@link EntityExplodeEvent} aborts the whole detonation: nothing is carved, nothing
      * is damaged, no neighbour is woken and the charge stays in the world, so another plugin can
      * veto a blast without leaving the charge in a half detonated state.
+     * <p>
+     * A crystal that lost its marker between arming and firing is left standing for the same
+     * reason: without the state it was placed with there is no volume to carve.
      *
      * @param charge  The placed charge going off
      * @param session The shared state of the running cascade
@@ -152,9 +123,15 @@ public final class ExcavationChargeDetonator {
         Objects.requireNonNull(charge, "charge must not be null");
         Objects.requireNonNull(session, "session must not be null");
 
+        Optional<PlacedExcavationCharge> placedCharge = PlacedExcavationCharge.of(this.keys, charge);
+
+        if (placedCharge.isEmpty()) {
+            return List.of();
+        }
+
         Location detonationPoint = charge.getLocation();
-        BlastLevel level = this.levelOf(charge);
-        BlastGeometry geometry = this.geometryOf(charge);
+        BlastLevel level = placedCharge.get().level();
+        BlastGeometry geometry = placedCharge.get().geometry();
 
         List<Block> plan = this.blastPlanner.plan(geometry, detonationPoint);
 
@@ -170,7 +147,7 @@ public final class ExcavationChargeDetonator {
             return List.of();
         }
 
-        this.auditLog.detonated(this.shapeOf(charge), level, detonationPoint, carved);
+        this.auditLog.detonated(placedCharge.get().shape(), level, detonationPoint, carved);
         ExcavationChargeDetonator.announceToSenses(level, detonationPoint);
         this.damageCaughtEntities(geometry, level, detonationPoint);
         this.blastScheduler.submit(new ActiveBlast(
@@ -251,42 +228,6 @@ public final class ExcavationChargeDetonator {
                 0.0,
                 new Particle.DustOptions(
                         Color.fromRGB(level.getArmingColour()), ExcavationChargeDetonator.BURST_DUST_SIZE));
-    }
-
-    /**
-     * Reads the volume a placed charge carves from the state stored on it.
-     *
-     * @param charge The placed charge to inspect
-     * @return The geometry described by the charge's shape, level and facing
-     */
-    BlastGeometry geometryOf(EnderCrystal charge) {
-        PersistentDataContainer container = charge.getPersistentDataContainer();
-
-        return ExcavationChargeDetonator.geometryFor(
-                this.shapeOf(charge),
-                this.levelOf(charge),
-                ExcavationChargeDetonator.decodeFacing(container.get(this.facingKey, PersistentDataType.STRING)));
-    }
-
-    /**
-     * Reads the blast shape stored on a placed charge.
-     *
-     * @param charge The placed charge to inspect
-     * @return The stored shape, defaulting like the item side does
-     */
-    BlastShape shapeOf(EnderCrystal charge) {
-        return BlastShape.decode(charge.getPersistentDataContainer().get(this.shapeKey, PersistentDataType.STRING));
-    }
-
-    /**
-     * Reads the blast level stored on a placed charge.
-     *
-     * @param charge The placed charge to inspect
-     * @return The stored level, clamped into the valid range
-     */
-    BlastLevel levelOf(EnderCrystal charge) {
-        return BlastLevel.of(charge.getPersistentDataContainer()
-                .getOrDefault(this.levelKey, PersistentDataType.INTEGER, BlastLevel.MIN_LEVEL));
     }
 
     /**
@@ -440,7 +381,7 @@ public final class ExcavationChargeDetonator {
 
         for (EnderCrystal candidate : detonationPoint.getWorld()
                 .getNearbyEntitiesByType(EnderCrystal.class, detonationPoint, scanRadius)) {
-            if (!this.isPlacedCharge(candidate)) {
+            if (PlacedExcavationCharge.of(this.keys, candidate).isEmpty()) {
                 continue;
             }
 
@@ -462,54 +403,6 @@ public final class ExcavationChargeDetonator {
                 location.getBlockX() - detonationPoint.getBlockX(),
                 location.getBlockY() - detonationPoint.getBlockY(),
                 location.getBlockZ() - detonationPoint.getBlockZ());
-    }
-
-    /**
-     * Decodes the blast direction stored on a placed Excavation Charge.
-     * <p>
-     * Anything that is not one of the six cardinal faces reads back as {@link BlockFace#NORTH}. A
-     * charge placed before the facing was written carries none at all, and a diagonal face would
-     * make the tunnel geometry reject the direction, so the value is narrowed here rather than
-     * passed on.
-     *
-     * @param rawFacing The raw face name read from the entity, may be null
-     * @return One of the six cardinal block faces
-     */
-    static BlockFace decodeFacing(String rawFacing) {
-        if (rawFacing == null) {
-            return ExcavationChargeDetonator.DEFAULT_FACING;
-        }
-
-        BlockFace facing;
-        try {
-            facing = BlockFace.valueOf(rawFacing);
-        } catch (IllegalArgumentException e) {
-            return ExcavationChargeDetonator.DEFAULT_FACING;
-        }
-
-        if (!ExcavationChargeDetonator.CARDINAL_FACES.contains(facing)) {
-            return ExcavationChargeDetonator.DEFAULT_FACING;
-        }
-
-        return facing;
-    }
-
-    /**
-     * Builds the volume a charge carves from its shape, level and blast direction.
-     *
-     * @param shape  The blast shape stored on the charge
-     * @param level  The blast level stored on the charge
-     * @param facing The cardinal blast direction stored on the charge
-     * @return The geometry describing the carved volume
-     */
-    static BlastGeometry geometryFor(BlastShape shape, BlastLevel level, BlockFace facing) {
-        return switch (shape) {
-            case CUBOID -> new CuboidBlastGeometry(level);
-            case SPHERE -> new SphereBlastGeometry(level);
-            case CYLINDER -> new CylinderBlastGeometry(level);
-            case TUNNEL -> new TunnelBlastGeometry(
-                    level, new BlastVector(facing.getModX(), facing.getModY(), facing.getModZ()));
-        };
     }
 
     /**
