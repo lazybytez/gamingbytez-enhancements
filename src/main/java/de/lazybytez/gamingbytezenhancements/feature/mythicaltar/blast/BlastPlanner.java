@@ -17,6 +17,8 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.world.WorldChunks;
+
 import java.util.List;
 import java.util.Objects;
 import org.bukkit.Location;
@@ -31,8 +33,6 @@ import org.bukkit.block.Block;
  * in which order, and leaves the removal itself to its caller.
  */
 public final class BlastPlanner {
-    private static final int CHUNK_SHIFT = 4;
-
     private final BlastBlockFilter blockFilter;
 
     /**
@@ -93,8 +93,6 @@ public final class BlastPlanner {
             return false;
         }
 
-        return world.isChunkLoaded(
-                position.x() >> BlastPlanner.CHUNK_SHIFT,
-                position.z() >> BlastPlanner.CHUNK_SHIFT);
+        return WorldChunks.isChunkLoadedAt(world, position.x(), position.z());
     }
 }

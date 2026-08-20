@@ -179,8 +179,13 @@ public class SafariNetCatchEntityListener implements Listener {
      * @param item             The Safari Net item
      * @param safariNetManager The Safari Net manager
      */
-    private void handleCaptureAttempt(String playerName, LivingEntity livingEntity, Location entityLocation,
-                                      ItemStack item, SafariNetManager safariNetManager) {
+    private void handleCaptureAttempt(
+            String playerName,
+            LivingEntity livingEntity,
+            Location entityLocation,
+            ItemStack item,
+            SafariNetManager safariNetManager
+    ) {
         boolean success = this.random.nextDouble() < CAPTURE_SUCCESS_RATE;
 
         safariNetManager.storeEntity(item, livingEntity);
@@ -237,8 +242,13 @@ public class SafariNetCatchEntityListener implements Listener {
      * @param item             The Safari Net item
      * @param safariNetManager The Safari Net manager
      */
-    private void handleCaptureFailure(String playerName, LivingEntity livingEntity, Location entityLocation,
-                                      ItemStack item, SafariNetManager safariNetManager) {
+    private void handleCaptureFailure(
+            String playerName,
+            LivingEntity livingEntity,
+            Location entityLocation,
+            ItemStack item,
+            SafariNetManager safariNetManager
+    ) {
         this.plugin.getLogger().info("The player "
                 + playerName
                 + " failed to capture a "

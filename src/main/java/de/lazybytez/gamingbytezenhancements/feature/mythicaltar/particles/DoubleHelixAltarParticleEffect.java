@@ -62,9 +62,15 @@ public class DoubleHelixAltarParticleEffect implements AltarParticleEffectInterf
      * @param rotations              Number of complete rotations.
      * @param animationDurationTicks Duration of the animation in ticks.
      */
-    public DoubleHelixAltarParticleEffect(Plugin plugin, Color color, double particleSpacing,
-                                          double helixRadius, double helixHeight, int rotations,
-                                          int animationDurationTicks) {
+    public DoubleHelixAltarParticleEffect(
+            Plugin plugin,
+            Color color,
+            double particleSpacing,
+            double helixRadius,
+            double helixHeight,
+            int rotations,
+            int animationDurationTicks
+    ) {
         this.plugin = plugin;
         this.color = color;
         this.particleSpacing = particleSpacing;

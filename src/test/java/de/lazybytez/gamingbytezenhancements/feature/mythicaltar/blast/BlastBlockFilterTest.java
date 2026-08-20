@@ -99,6 +99,6 @@ class BlastBlockFilterTest {
 
     @Test
     void production_bindsToGetBlastResistanceAndReturnsAnInstance() {
-        assertNotNull(BlastBlockFilter.production());
+        assertNotNull(BlastBlockFilter.create());
     }
 }

@@ -31,8 +31,8 @@ import java.util.Objects;
  * Blasts are served round robin, and a blast that needs less than its share leaves the rest to the
  * others, so the allowance is spent in full while no blast is starved.
  * <p>
- * The class holds no Bukkit types, so the arithmetic that carries the safety property is directly
- * testable.
+ * The class holds no Bukkit types: the arithmetic that carries the safety property depends on
+ * nothing beyond the counts it is handed.
  */
 public final class BlastBudget {
     /**

@@ -33,8 +33,9 @@ import java.util.function.ToDoubleFunction;
  * be destroyed by a blast.
  * <p>
  * The blast resistance lookup is injected rather than called directly on {@link Material}, because
- * {@link Material#getBlastResistance()} requires a live server registry and cannot run in a unit
- * test. Production code obtains an instance via {@link #production()}.
+ * {@link Material#getBlastResistance()} resolves against the block registry, which exists only on a
+ * running server. The filter therefore depends on a plain lookup function and binds to no registry
+ * itself; {@link #create()} supplies the registry backed lookup.
  */
 public final class BlastBlockFilter {
     private static final double MAX_BLAST_RESISTANCE = 1200.0;
@@ -80,7 +81,7 @@ public final class BlastBlockFilter {
      *
      * @return a filter that resolves blast resistance via {@link Material#getBlastResistance()}
      */
-    public static BlastBlockFilter production() {
+    public static BlastBlockFilter create() {
         return new BlastBlockFilter(Material::getBlastResistance);
     }
 

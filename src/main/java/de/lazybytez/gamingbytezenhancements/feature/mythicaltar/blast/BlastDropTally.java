@@ -100,8 +100,8 @@ public final class BlastDropTally {
     /**
      * Drains the tally into consolidated material and count pairs, split at each material's
      * maximum stack size, without constructing any {@link ItemStack}. Draining clears the
-     * tally. This is the testable seam behind {@link #drain()}: {@link ItemStack} construction
-     * needs a live server registry and cannot run in a unit test.
+     * tally. It carries the consolidation logic behind {@link #drain()}, keeping that logic clear
+     * of {@link ItemStack} construction and the live server registry construction depends on.
      *
      * @return The consolidated material stacks, or an empty list if the tally is empty.
      */
