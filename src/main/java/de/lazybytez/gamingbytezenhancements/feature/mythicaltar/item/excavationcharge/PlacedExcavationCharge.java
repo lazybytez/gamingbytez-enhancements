@@ -21,10 +21,6 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastGeome
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastVector;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.CuboidBlastGeometry;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.CylinderBlastGeometry;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.SphereBlastGeometry;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.TunnelBlastGeometry;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EnderCrystal;
@@ -200,16 +196,11 @@ public final class PlacedExcavationCharge {
      * @return The geometry described by the charge's shape, level and facing
      */
     public BlastGeometry geometry() {
-        BlastLevel level = this.level();
         BlockFace facing = this.facing();
 
-        return switch (this.shape()) {
-            case CUBOID -> new CuboidBlastGeometry(level);
-            case SPHERE -> new SphereBlastGeometry(level);
-            case CYLINDER -> new CylinderBlastGeometry(level);
-            case TUNNEL -> new TunnelBlastGeometry(
-                    level, new BlastVector(facing.getModX(), facing.getModY(), facing.getModZ()));
-        };
+        return this.shape().geometry(
+                this.level().getDimensions(),
+                new BlastVector(facing.getModX(), facing.getModY(), facing.getModZ()));
     }
 
     private PersistentDataContainer container() {

@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * A ball of radius {@link BlastLevel#getSize()} halved, hanging below the detonating block.
+ * A ball of half the given size in radius, hanging below the detonating block.
  * <p>
  * The ball touches the charge from below rather than surrounding it, so every shape digs away
  * from the charge instead of into the air above it.
@@ -40,14 +40,12 @@ public final class SphereBlastGeometry implements BlastGeometry {
     private final double squaredRadius;
 
     /**
-     * Creates the sphere geometry for the given blast level.
+     * Creates the sphere geometry for the given diameter.
      *
-     * @param level the blast level supplying the diameter
+     * @param size the diameter in blocks
      */
-    public SphereBlastGeometry(BlastLevel level) {
-        Objects.requireNonNull(level, "level must not be null");
-
-        double radius = level.getSize() / 2.0;
+    public SphereBlastGeometry(int size) {
+        double radius = size / 2.0;
 
         this.boundingOffset = (int) Math.floor(radius);
         this.centreOffset = -this.boundingOffset;

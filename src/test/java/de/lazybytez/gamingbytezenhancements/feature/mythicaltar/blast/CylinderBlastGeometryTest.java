@@ -28,7 +28,7 @@ class CylinderBlastGeometryTest {
 
     @Test
     void shouldYieldAnOffsetCountMatchingTheCylinderVolume() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         long count = geometry.offsets().count();
 
@@ -37,29 +37,29 @@ class CylinderBlastGeometryTest {
 
     @Test
     void shouldYieldMoreOffsetsThanTheInscribedSphere() {
-        CylinderBlastGeometry cylinder = new CylinderBlastGeometry(BlastLevel.LEVEL_2);
-        SphereBlastGeometry sphere = new SphereBlastGeometry(BlastLevel.LEVEL_2);
+        CylinderBlastGeometry cylinder = new CylinderBlastGeometry(BlastLevel.LEVEL_2.getSize());
+        SphereBlastGeometry sphere = new SphereBlastGeometry(BlastLevel.LEVEL_2.getSize());
 
         assertTrue(cylinder.offsets().count() > sphere.offsets().count());
     }
 
     @Test
     void shouldYieldDistinctOffsets() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_2);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_2.getSize());
 
         assertEquals(geometry.offsets().count(), geometry.offsets().distinct().count());
     }
 
     @Test
     void shouldYieldOnlyOffsetsItContains() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_2);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_2.getSize());
 
         assertTrue(geometry.offsets().allMatch(geometry::contains));
     }
 
     @Test
     void shouldYieldOffsetsOrderedByNonDecreasingDistance() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_2);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_2.getSize());
 
         List<BlastVector> offsets = geometry.offsets().toList();
 
@@ -73,14 +73,14 @@ class CylinderBlastGeometryTest {
 
     @Test
     void shouldStartAtTheCentre() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_3);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_3.getSize());
 
         assertEquals(BlastVector.ORIGIN, geometry.offsets().findFirst().orElseThrow());
     }
 
     @Test
     void shouldContainBlocksWhoseCentreSitsOnTheHorizontalRadius() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         assertTrue(geometry.contains(new BlastVector(16, 0, 0)));
         assertTrue(geometry.contains(new BlastVector(0, 0, -16)));
@@ -88,7 +88,7 @@ class CylinderBlastGeometryTest {
 
     @Test
     void shouldRejectBlocksOutsideTheHorizontalRadius() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         assertFalse(geometry.contains(new BlastVector(17, 0, 0)));
         assertFalse(geometry.contains(new BlastVector(12, 0, 12)));
@@ -96,7 +96,7 @@ class CylinderBlastGeometryTest {
 
     @Test
     void shouldKeepTheFullHorizontalRadiusAtEveryHeight() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         assertTrue(geometry.contains(new BlastVector(16, 0, 0)));
         assertTrue(geometry.contains(new BlastVector(16, -31, 0)));
@@ -104,7 +104,7 @@ class CylinderBlastGeometryTest {
 
     @Test
     void shouldSinkTheShaftBelowTheCharge() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         assertTrue(geometry.contains(new BlastVector(0, 0, 0)));
         assertTrue(geometry.offsets().allMatch(offset -> offset.y() <= 0));
@@ -112,7 +112,7 @@ class CylinderBlastGeometryTest {
 
     @Test
     void shouldRejectBlocksBeyondTheHeight() {
-        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4);
+        CylinderBlastGeometry geometry = new CylinderBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         assertFalse(geometry.contains(new BlastVector(0, 1, 0)));
         assertFalse(geometry.contains(new BlastVector(0, -32, 0)));

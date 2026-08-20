@@ -66,6 +66,22 @@ class BlastLevelTest {
     }
 
     @Test
+    void getDimensions_carriesTheSizeOfItsLevel() {
+        for (BlastLevel level : BlastLevel.values()) {
+            assertEquals(level.getSize(), level.getDimensions().size());
+        }
+    }
+
+    @Test
+    void getDimensions_growsTheCrossSectionUpToTheGalleryWidth() {
+        assertEquals(3, BlastLevel.of(1).getDimensions().crossSection());
+        assertEquals(4, BlastLevel.of(2).getDimensions().crossSection());
+        assertEquals(6, BlastLevel.of(3).getDimensions().crossSection());
+        assertEquals(8, BlastLevel.of(4).getDimensions().crossSection());
+        assertEquals(8, BlastLevel.of(5).getDimensions().crossSection());
+    }
+
+    @Test
     void of_clampsBelowMinimumToLevelOne() {
         assertEquals(BlastLevel.of(BlastLevel.MIN_LEVEL), BlastLevel.of(0));
     }

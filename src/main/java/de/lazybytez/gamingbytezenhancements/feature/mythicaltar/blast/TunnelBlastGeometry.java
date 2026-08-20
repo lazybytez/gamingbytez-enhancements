@@ -24,13 +24,13 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * A corridor of {@link BlastLevel#getSize()} blocks bored away from the detonating block along a
- * single axis.
+ * A corridor of the given length in blocks bored away from the detonating block along a single
+ * axis.
  * <p>
- * The length follows the blast level and the square cross section grows with it, from a walkable
- * three by three corridor up to an eight by eight gallery wide enough for two rail lines and their
- * decoration. On a horizontal bore the floor sits on the detonating block's layer and the corridor
- * extends upwards from it, so a player never falls into their own tunnel.
+ * The corridor carries a square cross section, from a walkable three by three passage up to a
+ * gallery wide enough for two rail lines and their decoration. On a horizontal bore the floor sits
+ * on the detonating block's layer and the corridor extends upwards from it, so a player never falls
+ * into their own tunnel.
  * <p>
  * The corridor starts at the detonating block and reaches forwards only, so nothing behind the
  * charge is carved.
@@ -48,29 +48,28 @@ public final class TunnelBlastGeometry implements BlastGeometry {
     private final BlastVector upperBound;
 
     /**
-     * Creates the tunnel geometry for the given blast level and travel direction.
+     * Creates the tunnel geometry for the given corridor measurements and travel direction.
      *
-     * @param level     the blast level supplying the corridor length and cross section
-     * @param direction the axis-aligned unit offset the corridor is bored along
+     * @param length       the corridor length in blocks
+     * @param crossSection the side length of the square cross section in blocks
+     * @param direction    the axis-aligned unit offset the corridor is bored along
      * @throws IllegalArgumentException when the direction is not an axis-aligned unit offset
      */
-    public TunnelBlastGeometry(BlastLevel level, BlastVector direction) {
-        Objects.requireNonNull(level, "level must not be null");
+    public TunnelBlastGeometry(int length, int crossSection, BlastVector direction) {
         Objects.requireNonNull(direction, "direction must not be null");
         TunnelBlastGeometry.requireAxisAlignedUnit(direction);
 
         this.direction = direction;
-        this.length = level.getSize();
+        this.length = length;
 
-        int breadth = TunnelBlastGeometry.crossSection(level);
         this.lowerBound = new BlastVector(
-                this.axisLowerBound(direction.x(), false, breadth),
-                this.axisLowerBound(direction.y(), true, breadth),
-                this.axisLowerBound(direction.z(), false, breadth));
+                this.axisLowerBound(direction.x(), false, crossSection),
+                this.axisLowerBound(direction.y(), true, crossSection),
+                this.axisLowerBound(direction.z(), false, crossSection));
         this.upperBound = new BlastVector(
-                this.axisUpperBound(direction.x(), false, breadth),
-                this.axisUpperBound(direction.y(), true, breadth),
-                this.axisUpperBound(direction.z(), false, breadth));
+                this.axisUpperBound(direction.x(), false, crossSection),
+                this.axisUpperBound(direction.y(), true, crossSection),
+                this.axisUpperBound(direction.z(), false, crossSection));
     }
 
     @Override
@@ -95,24 +94,6 @@ public final class TunnelBlastGeometry implements BlastGeometry {
         Objects.requireNonNull(offset, "offset must not be null");
 
         return this.withinLength(offset) && this.withinCrossSection(offset);
-    }
-
-    /**
-     * Returns the side length of the square cross section for the given blast level.
-     * <p>
-     * The top two levels share the eight block gallery deliberately: past eight blocks a corridor
-     * stops reading as a tunnel, so level five spends its whole growth on length.
-     *
-     * @param level the blast level to size the cross section for
-     * @return the cross section side length in blocks
-     */
-    private static int crossSection(BlastLevel level) {
-        return switch (level) {
-            case LEVEL_1 -> 3;
-            case LEVEL_2 -> 4;
-            case LEVEL_3 -> 6;
-            case LEVEL_4, LEVEL_5 -> 8;
-        };
     }
 
     private static void requireAxisAlignedUnit(BlastVector direction) {

@@ -34,33 +34,39 @@ class TunnelBlastGeometryTest {
     private static final BlastVector NORTH = new BlastVector(0, 0, -1);
     private static final BlastVector UP = new BlastVector(0, 1, 0);
 
+    private static TunnelBlastGeometry tunnelAt(BlastLevel level, BlastVector direction) {
+        BlastDimensions dimensions = level.getDimensions();
+
+        return new TunnelBlastGeometry(dimensions.size(), dimensions.crossSection(), direction);
+    }
+
     @Test
     void shouldYieldOneBlockPerCrossSectionCellAlongTheLength() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_4, TunnelBlastGeometryTest.EAST);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_4, TunnelBlastGeometryTest.EAST);
 
         assertEquals(2048L, geometry.offsets().count());
     }
 
     @Test
     void shouldUseTheWalkableCrossSectionAtLevelOne() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_1, TunnelBlastGeometryTest.EAST);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_1, TunnelBlastGeometryTest.EAST);
 
         assertEquals(72L, geometry.offsets().count());
     }
 
     @Test
     void shouldSpendLevelFiveGrowthOnLengthAlone() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_5, TunnelBlastGeometryTest.EAST);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_5, TunnelBlastGeometryTest.EAST);
 
         assertEquals(4096L, geometry.offsets().count());
     }
 
     @Test
     void shouldYieldDifferentOffsetsForDifferentDirections() {
-        Set<BlastVector> east = new TunnelBlastGeometry(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.EAST)
+        Set<BlastVector> east = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.EAST)
                 .offsets()
                 .collect(Collectors.toSet());
-        Set<BlastVector> north = new TunnelBlastGeometry(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.NORTH)
+        Set<BlastVector> north = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.NORTH)
                 .offsets()
                 .collect(Collectors.toSet());
 
@@ -69,21 +75,21 @@ class TunnelBlastGeometryTest {
 
     @Test
     void shouldYieldDistinctOffsets() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.NORTH);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.NORTH);
 
         assertEquals(geometry.offsets().count(), geometry.offsets().distinct().count());
     }
 
     @Test
     void shouldYieldOnlyOffsetsItContains() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.NORTH);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.NORTH);
 
         assertTrue(geometry.offsets().allMatch(geometry::contains));
     }
 
     @Test
     void shouldYieldOffsetsOrderedByNonDecreasingDistance() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_3, TunnelBlastGeometryTest.EAST);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_3, TunnelBlastGeometryTest.EAST);
 
         List<BlastVector> offsets = geometry.offsets().toList();
 
@@ -97,14 +103,14 @@ class TunnelBlastGeometryTest {
 
     @Test
     void shouldStartAtTheCentre() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_3, TunnelBlastGeometryTest.EAST);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_3, TunnelBlastGeometryTest.EAST);
 
         assertEquals(BlastVector.ORIGIN, geometry.offsets().findFirst().orElseThrow());
     }
 
     @Test
     void shouldNotReachBehindTheCentre() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.EAST);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_2, TunnelBlastGeometryTest.EAST);
 
         assertFalse(geometry.contains(new BlastVector(-1, 0, 0)));
         assertTrue(geometry.contains(new BlastVector(15, 0, 0)));
@@ -113,7 +119,7 @@ class TunnelBlastGeometryTest {
 
     @Test
     void shouldGrowTheCrossSectionWithTheLevel() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_4, TunnelBlastGeometryTest.EAST);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_4, TunnelBlastGeometryTest.EAST);
 
         assertTrue(geometry.contains(new BlastVector(0, 7, 3)));
         assertTrue(geometry.contains(new BlastVector(0, 0, -4)));
@@ -123,7 +129,7 @@ class TunnelBlastGeometryTest {
 
     @Test
     void shouldKeepTheFloorOnTheChargeLayerForAHorizontalBore() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_1, TunnelBlastGeometryTest.EAST);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_1, TunnelBlastGeometryTest.EAST);
 
         assertTrue(geometry.contains(new BlastVector(0, 0, 0)));
         assertTrue(geometry.contains(new BlastVector(0, 2, 0)));
@@ -133,7 +139,7 @@ class TunnelBlastGeometryTest {
 
     @Test
     void shouldBoreVerticallyWhenTheDirectionPointsUp() {
-        TunnelBlastGeometry geometry = new TunnelBlastGeometry(BlastLevel.LEVEL_1, TunnelBlastGeometryTest.UP);
+        TunnelBlastGeometry geometry = TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_1, TunnelBlastGeometryTest.UP);
 
         assertTrue(geometry.contains(new BlastVector(0, 7, 0)));
         assertFalse(geometry.contains(new BlastVector(0, 8, 0)));
@@ -143,10 +149,10 @@ class TunnelBlastGeometryTest {
     @Test
     void shouldRejectADirectionThatIsNotAnAxisAlignedUnitVector() {
         assertThrows(IllegalArgumentException.class,
-                () -> new TunnelBlastGeometry(BlastLevel.LEVEL_1, new BlastVector(1, 1, 0)));
+                () -> TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_1, new BlastVector(1, 1, 0)));
         assertThrows(IllegalArgumentException.class,
-                () -> new TunnelBlastGeometry(BlastLevel.LEVEL_1, BlastVector.ORIGIN));
+                () -> TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_1, BlastVector.ORIGIN));
         assertThrows(IllegalArgumentException.class,
-                () -> new TunnelBlastGeometry(BlastLevel.LEVEL_1, new BlastVector(2, 0, 0)));
+                () -> TunnelBlastGeometryTest.tunnelAt(BlastLevel.LEVEL_1, new BlastVector(2, 0, 0)));
     }
 }

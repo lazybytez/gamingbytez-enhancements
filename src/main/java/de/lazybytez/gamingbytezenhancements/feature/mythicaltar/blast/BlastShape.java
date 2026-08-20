@@ -17,6 +17,8 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
+import java.util.Objects;
+
 /**
  * The shape a charge carves into the world when it detonates.
  * <p>
@@ -46,6 +48,28 @@ public enum BlastShape {
         int nextOrdinal = (this.ordinal() + 1) % shapes.length;
 
         return shapes[nextOrdinal];
+    }
+
+    /**
+     * Builds the volume this shape carves at the given measurements.
+     * <p>
+     * Only {@link #TUNNEL} reads the direction, because it is the one shape bored along an axis
+     * rather than sunk around the charge. The other three ignore it, which lets a caller hand over
+     * the facing it holds without first asking which shape it is talking to.
+     *
+     * @param dimensions the measurements to carve to
+     * @param direction  the axis-aligned unit offset a tunnel is bored along
+     * @return the geometry of this shape
+     */
+    public BlastGeometry geometry(BlastDimensions dimensions, BlastVector direction) {
+        Objects.requireNonNull(dimensions, "dimensions must not be null");
+
+        return switch (this) {
+            case CUBOID -> new CuboidBlastGeometry(dimensions.size());
+            case SPHERE -> new SphereBlastGeometry(dimensions.size());
+            case CYLINDER -> new CylinderBlastGeometry(dimensions.size());
+            case TUNNEL -> new TunnelBlastGeometry(dimensions.size(), dimensions.crossSection(), direction);
+        };
     }
 
     /**

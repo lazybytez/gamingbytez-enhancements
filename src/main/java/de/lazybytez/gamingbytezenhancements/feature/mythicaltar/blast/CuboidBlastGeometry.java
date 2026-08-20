@@ -24,8 +24,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * An axis-aligned box measuring {@link BlastLevel#getSize()} blocks along every edge, hanging
- * below the detonating block.
+ * An axis-aligned box measuring the given size in blocks along every edge, hanging below the
+ * detonating block.
  * <p>
  * The box is centred horizontally on the charge and extends downwards from it, so the charge sits
  * in the top layer. A box centred on the charge would spend half its height on the air above a
@@ -39,15 +39,11 @@ public final class CuboidBlastGeometry implements BlastGeometry {
     private final int minVerticalOffset;
 
     /**
-     * Creates the cuboid geometry for the given blast level.
+     * Creates the cuboid geometry for the given edge length.
      *
-     * @param level the blast level supplying the edge length
+     * @param size the edge length in blocks
      */
-    public CuboidBlastGeometry(BlastLevel level) {
-        Objects.requireNonNull(level, "level must not be null");
-
-        int size = level.getSize();
-
+    public CuboidBlastGeometry(int size) {
         this.minHorizontalOffset = -(size / 2);
         this.maxHorizontalOffset = this.minHorizontalOffset + size - 1;
         this.minVerticalOffset = -(size - 1);
