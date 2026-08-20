@@ -17,6 +17,7 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge;
 
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import java.util.Objects;
 import org.bukkit.Location;
 import org.bukkit.entity.EnderCrystal;
@@ -42,14 +43,18 @@ public class RedstoneIgniteExcavationChargeListener implements Listener {
     private static final double IGNITE_RANGE = 2.0;
 
     private final DetonateExcavationChargeListener detonation;
+    private final ExcavationChargeAuditLog auditLog;
 
     /**
      * Bind the listener to the detonation path it arms charges through.
      *
      * @param detonation The listener owning the shared fuse
+     * @param auditLog   The audit trail redstone ignitions are recorded on
      */
-    public RedstoneIgniteExcavationChargeListener(DetonateExcavationChargeListener detonation) {
+    public RedstoneIgniteExcavationChargeListener(
+            DetonateExcavationChargeListener detonation, ExcavationChargeAuditLog auditLog) {
         this.detonation = Objects.requireNonNull(detonation, "detonation must not be null");
+        this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
     }
 
     /**
@@ -67,7 +72,9 @@ public class RedstoneIgniteExcavationChargeListener implements Listener {
 
         for (EnderCrystal crystal : centre.getWorld().getNearbyEntitiesByType(
                 EnderCrystal.class, centre, RedstoneIgniteExcavationChargeListener.IGNITE_RANGE)) {
-            this.detonation.ignite(crystal);
+            if (this.detonation.ignite(crystal)) {
+                this.auditLog.ignitedByRedstone(event.getBlock().getLocation(), crystal.getLocation());
+            }
         }
     }
 }

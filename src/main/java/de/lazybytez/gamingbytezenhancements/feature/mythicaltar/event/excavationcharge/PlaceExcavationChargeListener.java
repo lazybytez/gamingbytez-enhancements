@@ -19,6 +19,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavatio
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.ExcavationChargeManager;
 import java.util.Objects;
 import org.bukkit.GameMode;
@@ -77,10 +78,13 @@ public class PlaceExcavationChargeListener implements Listener {
     private static final float FULL_TURN_DEGREES = 360.0f;
 
     private final MythicAltarFeature mythicAltarFeature;
+    private final ExcavationChargeAuditLog auditLog;
 
-    public PlaceExcavationChargeListener(MythicAltarFeature mythicAltarFeature) {
+    public PlaceExcavationChargeListener(
+            MythicAltarFeature mythicAltarFeature, ExcavationChargeAuditLog auditLog) {
         this.mythicAltarFeature = Objects.requireNonNull(
                 mythicAltarFeature, "mythicAltarFeature must not be null");
+        this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
     }
 
     /**
@@ -122,13 +126,13 @@ public class PlaceExcavationChargeListener implements Listener {
 
         event.setCancelled(true);
 
-        this.spawnExcavationCharge(
-                clickedBlock,
-                excavationChargeManager.getShape(item),
-                excavationChargeManager.getLevel(item),
-                PlaceExcavationChargeListener.toCardinalFace(player.getYaw(), player.getPitch())
-        );
+        BlastShape shape = excavationChargeManager.getShape(item);
+        int level = excavationChargeManager.getLevel(item);
+        BlockFace facing = PlaceExcavationChargeListener.toCardinalFace(player.getYaw(), player.getPitch());
+
+        Location spawnLocation = this.spawnExcavationCharge(clickedBlock, shape, level, facing);
         this.consumeExcavationCharge(item, player);
+        this.auditLog.placed(player, shape, level, facing, spawnLocation);
     }
 
     /**
@@ -138,8 +142,9 @@ public class PlaceExcavationChargeListener implements Listener {
      * @param shape        The blast shape carried by the item
      * @param level        The blast level carried by the item
      * @param facing       The cardinal blast direction to store
+     * @return The location the charge was spawned at
      */
-    private void spawnExcavationCharge(Block clickedBlock, BlastShape shape, int level, BlockFace facing) {
+    private Location spawnExcavationCharge(Block clickedBlock, BlastShape shape, int level, BlockFace facing) {
         Location spawnLocation = clickedBlock.getLocation().add(0.5, 1.0, 0.5);
 
         clickedBlock.getWorld().spawn(
@@ -153,6 +158,8 @@ public class PlaceExcavationChargeListener implements Listener {
         );
 
         clickedBlock.getWorld().playSound(spawnLocation, Sound.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1.0f, 1.2f);
+
+        return spawnLocation;
     }
 
     /**

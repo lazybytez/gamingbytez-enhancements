@@ -74,6 +74,7 @@ public final class ExcavationChargeFuse {
 
     private final EnhancementsPlugin plugin;
     private final ExcavationChargeDetonator detonator;
+    private final ExcavationChargeAuditLog auditLog;
     private final Set<UUID> burning;
 
     /**
@@ -81,10 +82,15 @@ public final class ExcavationChargeFuse {
      *
      * @param plugin    The plugin owning the countdown tasks
      * @param detonator The detonator the countdown hands the charge to
+     * @param auditLog  The audit trail chain ignitions are recorded on
      */
-    public ExcavationChargeFuse(EnhancementsPlugin plugin, ExcavationChargeDetonator detonator) {
+    public ExcavationChargeFuse(
+            EnhancementsPlugin plugin,
+            ExcavationChargeDetonator detonator,
+            ExcavationChargeAuditLog auditLog) {
         this.plugin = Objects.requireNonNull(plugin, "plugin must not be null");
         this.detonator = Objects.requireNonNull(detonator, "detonator must not be null");
+        this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
         this.burning = new HashSet<>();
     }
 
@@ -142,6 +148,7 @@ public final class ExcavationChargeFuse {
      * @param session The shared state of the cascade the charge belongs to
      */
     private void fire(EnderCrystal charge, ChainSession session) {
+        Location detonationPoint = charge.getLocation();
         List<EnderCrystal> woken;
 
         try {
@@ -155,6 +162,8 @@ public final class ExcavationChargeFuse {
 
         for (EnderCrystal chained : woken) {
             if (this.arm(chained, ExcavationChargeFuse.CHAIN_FUSE_TICKS, session)) {
+                this.auditLog.chainIgnited(detonationPoint, chained.getLocation());
+
                 continue;
             }
 
