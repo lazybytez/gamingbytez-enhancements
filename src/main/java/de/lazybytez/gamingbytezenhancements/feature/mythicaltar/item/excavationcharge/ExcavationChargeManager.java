@@ -20,6 +20,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavation
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
 import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.AbstractCustomItemManager;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.item.CustomItemDefinition;
 import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -27,7 +28,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
@@ -117,13 +117,13 @@ public class ExcavationChargeManager extends AbstractCustomItemManager {
     }
 
     @Override
-    protected ItemMeta configureItemMeta(ItemMeta itemMeta) {
-        itemMeta.displayName(this.computeDisplayName());
-        itemMeta.lore(this.computeLore(BlastShape.CUBOID, BlastLevel.MIN_LEVEL));
-        itemMeta.setEnchantmentGlintOverride(true);
-        itemMeta.setMaxStackSize(1);
-
-        return itemMeta;
+    protected CustomItemDefinition createItemDefinition() {
+        return CustomItemDefinition.builder()
+                .name(this.computeDisplayName())
+                .lore(this.computeLore(BlastShape.CUBOID, BlastLevel.MIN_LEVEL))
+                .enchantmentGlintOverride(true)
+                .maxStackSize(1)
+                .build();
     }
 
     @Override
@@ -141,15 +141,19 @@ public class ExcavationChargeManager extends AbstractCustomItemManager {
 
     /**
      * Refresh the lore of the given Excavation Charge to reflect its current shape and level.
+     * <p>
+     * Only the lore is described, so a charge already in a player's inventory keeps the name, the
+     * glint and the stack limit it was created with.
      *
      * @param excavationCharge the Excavation Charge item to update
      * @param shape      the blast shape to render
      * @param level      the blast level to render
      */
     private void updateItemDisplay(ItemStack excavationCharge, BlastShape shape, int level) {
-        ItemMeta itemMeta = excavationCharge.getItemMeta();
-        itemMeta.lore(this.computeLore(shape, level));
-        excavationCharge.setItemMeta(itemMeta);
+        CustomItemDefinition.builder()
+                .lore(this.computeLore(shape, level))
+                .build()
+                .applyTo(excavationCharge);
     }
 
     /**

@@ -18,6 +18,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.safarinet;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.AbstractCustomItemManager;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.item.CustomItemDefinition;
 import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -30,7 +31,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
@@ -174,13 +174,13 @@ public class SafariNetManager extends AbstractCustomItemManager {
     }
 
     @Override
-    protected ItemMeta configureItemMeta(ItemMeta itemMeta) {
-        itemMeta.displayName(this.computeDisplayName(null, null));
-        itemMeta.lore(this.computeLore(null, null));
-        itemMeta.setEnchantmentGlintOverride(true);
-        itemMeta.setMaxStackSize(1);
-
-        return itemMeta;
+    protected CustomItemDefinition createItemDefinition() {
+        return CustomItemDefinition.builder()
+                .name(this.computeDisplayName(null, null))
+                .lore(this.computeLore(null, null))
+                .enchantmentGlintOverride(true)
+                .maxStackSize(1)
+                .build();
     }
 
     @Override
@@ -198,16 +198,20 @@ public class SafariNetManager extends AbstractCustomItemManager {
 
     /**
      * Update the display name and lore of the Safari Net item.
+     * <p>
+     * Only the name and the lore are described, so a net already in a player's inventory keeps the
+     * glint and the stack limit it was created with.
      *
      * @param safariNet  The Safari Net item to update
      * @param entityType The entity type stored in the net
      * @param entity     The entity instance (may be null)
      */
     private void updateItemDisplay(ItemStack safariNet, EntityType entityType, Entity entity) {
-        ItemMeta itemMeta = safariNet.getItemMeta();
-        itemMeta.displayName(this.computeDisplayName(entityType, entity));
-        itemMeta.lore(this.computeLore(entityType, entity));
-        safariNet.setItemMeta(itemMeta);
+        CustomItemDefinition.builder()
+                .name(this.computeDisplayName(entityType, entity))
+                .lore(this.computeLore(entityType, entity))
+                .build()
+                .applyTo(safariNet);
     }
 
     /**

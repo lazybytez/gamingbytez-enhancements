@@ -17,16 +17,10 @@
  */
 package de.lazybytez.gamingbytezenhancements.lib.gameplay.item;
 
-import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
-import io.papermc.paper.registry.RegistryAccess;
-import io.papermc.paper.registry.RegistryKey;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Keyed;
-import org.bukkit.Registry;
 import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,22 +33,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.withSettings;
 
 /**
  * Covers {@link CustomItemDefinition}.
@@ -70,8 +59,6 @@ import static org.mockito.Mockito.withSettings;
 @ExtendWith(MockitoExtension.class)
 class CustomItemDefinitionTest {
 
-    private static Registry<Keyed> registry;
-
     @Mock
     private ItemStack itemStack;
 
@@ -79,51 +66,9 @@ class CustomItemDefinitionTest {
 
     private ItemLore loreComponent;
 
-    /**
-     * Resolves every {@code DataComponentTypes} constant against a stub registry that hands out one
-     * distinct type per key, which is what lets a verification tell the lore component apart from
-     * the name component. The deprecated class keyed lookup is answered as well because
-     * {@code org.bukkit.Registry} still fills its legacy constants through it while initialising,
-     * and a constant left null there breaks the classes that read it.
-     */
     @BeforeAll
-    @SuppressWarnings({"unchecked", "deprecation", "removal"})
     static void bindComponentTypesToAStubRegistry() {
-        RegistryAccess registryAccess = mock(RegistryAccess.class);
-
-        try (MockedStatic<RegistryAccess> access = mockStatic(RegistryAccess.class)) {
-            access.when(RegistryAccess::registryAccess).thenReturn(registryAccess);
-            lenient().when(registryAccess.getRegistry(any(RegistryKey.class)))
-                    .thenAnswer(invocation -> stubRegistry());
-            lenient().when(registryAccess.getRegistry(any(Class.class)))
-                    .thenAnswer(invocation -> stubRegistry());
-
-            assertEquals(DataComponentTypes.LORE, DataComponentTypes.LORE);
-        }
-    }
-
-    /**
-     * Builds the registry lazily, because mocking it eagerly loads {@code org.bukkit.Registry}
-     * before the stub that its own static initialiser reaches for is in place. Every handed out type
-     * answers to both component type shapes, since the pool being resolved holds valued and
-     * unvalued types alike.
-     */
-    @SuppressWarnings("unchecked")
-    private static Registry<Keyed> stubRegistry() {
-        if (CustomItemDefinitionTest.registry != null) {
-            return CustomItemDefinitionTest.registry;
-        }
-
-        Map<Key, DataComponentType> types = new HashMap<>();
-        CustomItemDefinitionTest.registry = mock(Registry.class);
-        lenient().when(CustomItemDefinitionTest.registry.getOrThrow(any(Key.class)))
-                .thenAnswer(invocation -> types.computeIfAbsent(
-                        invocation.getArgument(0),
-                        key -> mock(DataComponentType.Valued.class, withSettings()
-                                .extraInterfaces(DataComponentType.NonValued.class))
-                ));
-
-        return CustomItemDefinitionTest.registry;
+        ItemDataComponentStubs.bindComponentTypes();
     }
 
     @BeforeEach
@@ -229,7 +174,7 @@ class CustomItemDefinitionTest {
     }
 
     private void stubLoreFactory() {
-        this.loreFactory.when(() -> ItemLore.lore(anyList())).thenReturn(this.loreComponent);
+        ItemDataComponentStubs.stubLoreFactory(this.loreFactory, this.loreComponent);
     }
 
     @SuppressWarnings("unchecked")

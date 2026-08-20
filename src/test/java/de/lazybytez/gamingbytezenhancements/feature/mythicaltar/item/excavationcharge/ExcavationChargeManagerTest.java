@@ -19,7 +19,10 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavation
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
 import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.item.ItemDataComponentStubs;
 import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.ItemLore;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -27,14 +30,17 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -45,6 +51,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,7 +61,8 @@ import static org.mockito.Mockito.when;
  * Covers {@link ExcavationChargeManager}.
  * <p>
  * A real {@link ItemStack} cannot be constructed in a unit test: {@code ItemStack.of(Material)}
- * resolves through the live server registry. The persistent data container round trip is
+ * resolves through the live server registry, and so do the data components a definition writes.
+ * The persistent data container round trip is
  * therefore exercised against Mockito doubles, and the shape/level encode-decode rules that
  * govern the stored primitives are covered exhaustively through the package-private static
  * helpers, including the missing-key defaults an older item on disk would trigger.
@@ -72,8 +82,48 @@ class ExcavationChargeManagerTest {
     @Mock
     private PersistentDataContainer mutableContainer;
 
-    @Mock
-    private ItemMeta itemMeta;
+    private MockedStatic<ItemLore> loreFactory;
+
+    private ItemLore loreComponent;
+
+    @BeforeAll
+    static void bindComponentTypes() {
+        ItemDataComponentStubs.bindComponentTypes();
+    }
+
+    @BeforeEach
+    void openLoreFactory() {
+        this.loreFactory = mockStatic(ItemLore.class);
+        this.loreComponent = mock(ItemLore.class);
+    }
+
+    @AfterEach
+    void closeLoreFactory() {
+        this.loreFactory.close();
+    }
+
+    @Test
+    void setLevel_refreshesTheLoreAndLeavesEveryOtherComponentAlone() {
+        this.stubNamespace();
+        ExcavationChargeManager manager = new ExcavationChargeManager(this.plugin);
+
+        this.stubEditingPdc();
+        when(this.excavationCharge.getPersistentDataContainer()).thenReturn(this.view);
+        when(this.view.get(any(NamespacedKey.class), eq(PersistentDataType.STRING))).thenReturn(null);
+        ItemDataComponentStubs.stubLoreFactory(this.loreFactory, this.loreComponent);
+
+        manager.setLevel(this.excavationCharge, 2);
+
+        verify(this.excavationCharge).setData(DataComponentTypes.LORE, this.loreComponent);
+        verify(this.excavationCharge, never()).setData(eq(DataComponentTypes.CUSTOM_NAME), any(Component.class));
+        verify(this.excavationCharge, never()).setData(eq(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE), any(Boolean.class));
+        verify(this.excavationCharge, never()).setData(eq(DataComponentTypes.MAX_STACK_SIZE), any(Integer.class));
+
+        String rendered = ItemDataComponentStubs.captureLoreLines(this.loreFactory).stream()
+                .map(ExcavationChargeManagerTest::flatten)
+                .reduce("", (left, right) -> left + right + "\n");
+        assertTrue(rendered.contains("Level: 2"));
+    }
 
     private void stubNamespace() {
         when(this.plugin.namespace()).thenReturn("gamingbytez-enhancements");
@@ -174,14 +224,14 @@ class ExcavationChargeManagerTest {
         this.stubEditingPdc();
         when(this.excavationCharge.getPersistentDataContainer()).thenReturn(this.view);
         when(this.view.get(any(NamespacedKey.class), eq(PersistentDataType.INTEGER))).thenReturn(null);
-        when(this.excavationCharge.getItemMeta()).thenReturn(this.itemMeta);
+        ItemDataComponentStubs.stubLoreFactory(this.loreFactory, this.loreComponent);
 
         manager.setShape(this.excavationCharge, BlastShape.SPHERE);
 
         ArgumentCaptor<NamespacedKey> keyCaptor = ArgumentCaptor.forClass(NamespacedKey.class);
         verify(this.mutableContainer).set(keyCaptor.capture(), eq(PersistentDataType.STRING), eq("SPHERE"));
         assertEquals("gamingbytez-excavation-charge-shape", keyCaptor.getValue().getKey());
-        verify(this.excavationCharge).setItemMeta(this.itemMeta);
+        verify(this.excavationCharge).setData(DataComponentTypes.LORE, this.loreComponent);
     }
 
     @Test
@@ -192,7 +242,7 @@ class ExcavationChargeManagerTest {
         this.stubEditingPdc();
         when(this.excavationCharge.getPersistentDataContainer()).thenReturn(this.view);
         when(this.view.get(any(NamespacedKey.class), eq(PersistentDataType.STRING))).thenReturn(null);
-        when(this.excavationCharge.getItemMeta()).thenReturn(this.itemMeta);
+        ItemDataComponentStubs.stubLoreFactory(this.loreFactory, this.loreComponent);
 
         manager.setLevel(this.excavationCharge, 99);
 
@@ -242,19 +292,17 @@ class ExcavationChargeManagerTest {
     }
 
     @Test
-    void configureItemMeta_keepsDisplayNameIdentityColour_andListsBlastLevelOneStatsInLore() {
+    void createItemDefinition_keepsDisplayNameIdentityColour_andListsBlastLevelOneStatsInLore() {
         ExcavationChargeManager manager = new ExcavationChargeManager(this.plugin);
+        ItemDataComponentStubs.stubLoreFactory(this.loreFactory, this.loreComponent);
 
-        manager.configureItemMeta(this.itemMeta);
+        manager.createItemDefinition().applyTo(this.excavationCharge);
 
         ArgumentCaptor<Component> nameCaptor = ArgumentCaptor.forClass(Component.class);
-        verify(this.itemMeta).displayName(nameCaptor.capture());
+        verify(this.excavationCharge).setData(eq(DataComponentTypes.CUSTOM_NAME), nameCaptor.capture());
         assertTrue(nameCaptor.getValue().hasDecoration(TextDecoration.BOLD));
 
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<Component>> loreCaptor = ArgumentCaptor.forClass(List.class);
-        verify(this.itemMeta).lore(loreCaptor.capture());
-        List<Component> lore = loreCaptor.getValue();
+        List<Component> lore = ItemDataComponentStubs.captureLoreLines(this.loreFactory);
 
         String rendered = lore.stream()
                 .map(ExcavationChargeManagerTest::flatten)
