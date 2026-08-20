@@ -268,6 +268,26 @@ Two further rules:
 - Render a location with `LocationFormat.format(location)`, which takes the world from
   `World#getKey()` and renders a null location as an italic placeholder.
 
+### Reusable Gameplay Mechanics
+
+`lib/gameplay/` holds mechanics that are not tied to the feature that first needed them. A class
+belongs here when it would still make sense to a second feature, and stays in the feature when it
+encodes that feature's own rules.
+
+| Package | Holds |
+| --- | --- |
+| `lib/gameplay/blast/` | The blast engine: shapes and their geometry, the wavefront scheduler and its per tick budget, the block filter, drop tally, damage falloff and chain resolution |
+| `lib/gameplay/world/` | World access that hides an easily mistaken detail, currently the chunk lookup for a block coordinate |
+| `lib/gameplay/item/` | `CustomItemDefinition`, which describes an item's name, lore, glint and stack size and writes them as data components |
+
+Nothing under `lib/` may import from `feature/`, in main sources or in tests. The blast engine is the
+worked example: it takes the measurements of a volume rather than an Excavation Charge level, so the
+charge maps its own levels to measurements and the engine never learns what a level is.
+
+The same rule decides what does not move. `BlastLevel` is the charge's own table of sizes, damage,
+arming colours and wave speeds, so it stays with the charge, as do placement, arming, gravity and the
+audit log.
+
 ### Current Features (8 Total)
 
 1. **TemporaryCartFeature** - Temporary minecart spawning with cooldown system
@@ -275,8 +295,8 @@ Two further rules:
 3. **FarmlandProtectionFeature** - Prevents farmland trampling
 4. **AntiMobGriefingFeature** - Selective mob griefing prevention
 5. **CustomCreeperDamageFeature** - Armor-based creeper damage calculation
-6. **MythicAltarFeature** - Custom crafting altar system with recipes for weather/time control
-7. **CustomLootFeature** - Custom entity loot drops (currently Husk-specific)
+6. **MythicAltarFeature** - Custom crafting altar with weather and time rituals, an XP bottle system, the Safari Net and the Excavation Charge
+7. **CustomLootFeature** - Custom entity loot drops for Husks, Endermen and Parched Skeletons
 8. **MinecartPortalFeature** - Portal system for minecarts with Brigadier commands
 
 ### Feature Organization Patterns
@@ -294,7 +314,12 @@ Common subdirectory structure within feature packages:
 - Uses recipe registry pattern (`CompletableRecipeRegistry`)
 - Implements structure validation for multiblock altars
 - Particle effect system for visual feedback
-- Recipes include weather control (sun, rain, thunderstorm) and time manipulation
+- Recipes cover weather control (sun, rain, thunderstorm), time manipulation, the XP bottle system,
+  the Safari Net and the Excavation Charge
+- Custom items are described rather than configured: a manager returns a `CustomItemDefinition` and
+  the library writes it through the Data Component API, so no manager touches `ItemMeta`
+- A placed Excavation Charge is an entity, and `PlacedExcavationCharge` owns every key it stores its
+  shape, level and facing under. Nothing else reads that container directly
 
 **MinecartPortalFeature** (`feature/minecartportal/`):
 - Persistent configuration using `minecart_portals.yaml`
@@ -320,6 +345,8 @@ chatbot:
   enable_ai_answers: false
   system_prompt: ""       # Optional; when non-empty, sent as system-role message in API requests
   disable_thinking: false  # When true, sends chat_template_kwargs to disable model thinking
+  prompt: |               # User prompt template; %s is replaced with the player's message
+    ...
 openai:
   apiUrl: "https://api.openai.com/v1/chat/completions"
   apiKey: ""
