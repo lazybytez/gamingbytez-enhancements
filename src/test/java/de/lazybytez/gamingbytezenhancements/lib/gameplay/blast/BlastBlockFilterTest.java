@@ -39,8 +39,7 @@ class BlastBlockFilterTest {
             Material.JIGSAW,
             Material.END_PORTAL,
             Material.END_PORTAL_FRAME,
-            Material.END_GATEWAY,
-            Material.NETHER_PORTAL
+            Material.END_GATEWAY
     };
 
     @Test
@@ -64,7 +63,7 @@ class BlastBlockFilterTest {
                     "BEDROCK", "REINFORCED_DEEPSLATE", "BARRIER", "LIGHT",
                     "COMMAND_BLOCK", "CHAIN_COMMAND_BLOCK", "REPEATING_COMMAND_BLOCK",
                     "STRUCTURE_BLOCK", "JIGSAW", "END_PORTAL", "END_PORTAL_FRAME",
-                    "END_GATEWAY", "NETHER_PORTAL"
+                    "END_GATEWAY"
             }
     )
     void isDestructible_rejectsDenySetMaterialsEvenAtZeroResistance(Material material) {
@@ -83,11 +82,27 @@ class BlastBlockFilterTest {
     }
 
     @Test
-    void isDestructible_rejectsLiquids() {
+    void isDestructible_acceptsLiquids() {
+        BlastBlockFilter filter = new BlastBlockFilter(material -> 100.0);
+
+        assertTrue(filter.isDestructible(Material.WATER));
+        assertTrue(filter.isDestructible(Material.LAVA));
+    }
+
+    @Test
+    void isDestructible_acceptsNetherPortal() {
         BlastBlockFilter filter = new BlastBlockFilter(material -> 0.0);
 
-        assertFalse(filter.isDestructible(Material.WATER));
-        assertFalse(filter.isDestructible(Material.LAVA));
+        assertTrue(filter.isDestructible(Material.NETHER_PORTAL));
+    }
+
+    @Test
+    void isDestructible_stillRejectsTheOtherPortalBlocks() {
+        BlastBlockFilter filter = new BlastBlockFilter(material -> 0.0);
+
+        assertFalse(filter.isDestructible(Material.END_PORTAL));
+        assertFalse(filter.isDestructible(Material.END_PORTAL_FRAME));
+        assertFalse(filter.isDestructible(Material.END_GATEWAY));
     }
 
     @Test
