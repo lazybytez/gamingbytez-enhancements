@@ -22,12 +22,14 @@ jobs:
           distribution: 'corretto'
           cache: 'maven'
 
-      - name: Extract version from pom.xml
+      - name: Extract versions from pom.xml
         id: extract_version
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          MINECRAFT_VERSION=$(mvn help:evaluate -Dexpression=minecraft.version -q -DforceStdout)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "Extracted version: $VERSION"
+          echo "MINECRAFT_VERSION=$MINECRAFT_VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION for Minecraft $MINECRAFT_VERSION"
 
       - name: Build with Maven
         run: mvn --batch-mode clean package
@@ -35,6 +37,11 @@ jobs:
       - name: Create release and upload artifact
         uses: softprops/action-gh-release@v2
         with:
+          name: v${{ steps.extract_version.outputs.VERSION }} for Minecraft ${{ steps.extract_version.outputs.MINECRAFT_VERSION }}
+          body: |
+            Requires a PaperMC server running Minecraft ${{ steps.extract_version.outputs.MINECRAFT_VERSION }} on Java 25.
+
+            The plugin warns in the console and keeps running on any other Minecraft version.
           files: target/gamingbytez-enhancements-${{ steps.extract_version.outputs.VERSION }}.jar
           generate_release_notes: true
           make_latest: true
