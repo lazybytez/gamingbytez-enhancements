@@ -148,7 +148,7 @@ public class OpenAiClient {
             parsedBody.add(OpenAiError.ERROR, errorObject);
         }
 
-        OpenAiException possibleException = OpenAiException.createFromResponse(parsedBody, statusCode);
+        OpenAiException possibleException = OpenAiException.createFromResponse(parsedBody, statusCode, responseBody);
         if (possibleException != null) {
             throw possibleException;
         }
