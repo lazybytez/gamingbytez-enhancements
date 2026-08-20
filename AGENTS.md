@@ -4,7 +4,9 @@ This file is the single source of the instructions for this repository. It is re
 
 ## Project Overview
 
-GamingBytez Enhancements is a modular Minecraft Paper/Spigot plugin (Java 21, Paper API 1.21.11) for a private server. The plugin provides custom game mechanics and enhancements through a feature-based architecture.
+GamingBytez Enhancements is a modular Minecraft Paper plugin (Java 25, Paper API 26.2) for a private server. The plugin provides custom game mechanics and enhancements through a feature-based architecture.
+
+The plugin supports exactly one Minecraft version at a time. That version is written once, as the `minecraft.version` property in `pom.xml`, and everything else derives from it: the paper-api coordinates, the `api-version` in the plugin descriptor, the startup warning shown on any other version, and the version named on a generated release. Bumping the property is what moves the plugin to a new Minecraft version.
 
 ## AI Assistance Guidelines
 
@@ -48,7 +50,12 @@ mvn clean
 mvn install
 ```
 
-The compiled plugin JAR will be in `target/gamingbytez-enhancements-<version>.jar` and can be dropped into a Paper/Spigot server's `plugins/` directory.
+The compiled plugin JAR will be in `target/gamingbytez-enhancements-<version>.jar` and can be dropped into a Paper server's `plugins/` directory.
+
+The build needs **JDK 25**, which is also the minimum Minecraft 26.1 and later require of a server, so
+a machine that can run the server can build the plugin. The compiler targets it through
+`maven.compiler.release`, which is the single statement of the Java version and is read by the
+release workflow as well.
 
 ## Commit Message Convention
 
@@ -347,8 +354,12 @@ The plugin uses several concurrent patterns:
 name: gamingbytez-enhancements
 version: '${project.version}'
 main: de.lazybytez.gamingbytezenhancements.EnhancementsPlugin
-api-version: '1.21'
+api-version: '${minecraft.version}'
 ```
+
+`api-version` is filtered from the Maven property rather than written out, and it is also what the
+plugin reads back at startup to decide whether the server it landed on is the one it was built for.
+A literal version here would be a second copy of that fact and could disagree with the jar.
 
 The same file declares the permission nodes. A command that checks a permission in `requires(...)`
 must have that node declared here with its default.
@@ -356,8 +367,14 @@ must have that node declared here with its default.
 ## Dependencies
 
 **Maven (pom.xml):**
-- Paper API 1.21.11-R0.1-SNAPSHOT (provided scope)
+- Paper API `${minecraft.version}.build.${paper.build}-stable` (provided scope)
 - Maven Shade Plugin for creating uber-JARs
+
+Paper publishes releases rather than snapshots, so the build is pinned to one of them. Do not replace
+the pin with a version range: an open range such as `[26.2.build,)` resolves across Minecraft drops,
+and a bounded one such as `[26.1.build,26.2)` resolves into the next drop's release candidates,
+because a pre-release qualifier sorts below the release. Both were tried and both picked a build the
+plugin does not support. Raise `paper.build` instead.
 
 No additional runtime dependencies are bundled.
 

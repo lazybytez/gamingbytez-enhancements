@@ -31,9 +31,13 @@ The plugin is built around a modular feature system — each feature is self-con
 
 ## Requirements
 
-- Java 21+
-- [Paper](https://papermc.io/) 1.21.11+
+- Java 25, which is also the minimum Minecraft requires from 26.1 onwards
+- [Paper](https://papermc.io/) 26.2
 - Maven 3.x (for building)
+
+The plugin supports one Minecraft version at a time. On any other version it still loads and enables
+every feature, and warns in the console; see [the configuration guide](docs/configuration.md) for
+what that warning means.
 
 ## Getting Started
 
