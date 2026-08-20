@@ -20,20 +20,24 @@ The plugin is built around a modular feature system — each feature is self-con
 
 | Feature | Description |
 |---|---|
-| [Mythic Altar](docs/mythic-altar/overview.md) | Custom multiblock crafting altar with weather/time rituals and unique items |
+| [Mythic Altar](docs/mythic-altar/overview.md) | Custom multiblock crafting altar with weather and time rituals, an XP bottle system, the Safari Net and the Excavation Charge |
 | [Minecart Portals](docs/minecart-portals.md) | Admin-configurable portals that teleport minecart passengers between locations |
 | [Chat Bot](docs/chatbot.md) | In-game chat bot with static responses and optional AI integration |
 | [Temporary Cart](docs/temporary-cart.md) | Spawns a temporary minecart when right-clicking a rail |
 | [Farmland Protection](docs/farmland-protection.md) | Prevents farmland from being trampled by players and mobs |
 | [Anti Mob Griefing](docs/anti-mob-griefing.md) | Prevents specific mobs from destroying blocks, items, and entities |
 | [Custom Creeper Damage](docs/custom-creeper-damage.md) | Scales creeper explosion damage based on the player's equipped armor |
-| [Custom Loot](docs/custom-loot.md) | Adds extra loot drops to Husks and Endermen |
+| [Custom Loot](docs/custom-loot.md) | Adds extra loot drops to Husks, Endermen and Parched Skeletons |
 
 ## Requirements
 
-- Java 21+
-- [Paper](https://papermc.io/) 1.21.11+
+- Java 25, which is also the minimum Minecraft requires from 26.1 onwards
+- [Paper](https://papermc.io/) 26.2
 - Maven 3.x (for building)
+
+The plugin supports one Minecraft version at a time. On any other version it still loads and enables
+every feature, and warns in the console; see [the configuration guide](docs/configuration.md) for
+what that warning means.
 
 ## Getting Started
 

@@ -4,7 +4,9 @@ This file is the single source of the instructions for this repository. It is re
 
 ## Project Overview
 
-GamingBytez Enhancements is a modular Minecraft Paper/Spigot plugin (Java 21, Paper API 1.21.11) for a private server. The plugin provides custom game mechanics and enhancements through a feature-based architecture.
+GamingBytez Enhancements is a modular Minecraft Paper plugin (Java 25, Paper API 26.2) for a private server. The plugin provides custom game mechanics and enhancements through a feature-based architecture.
+
+The plugin supports exactly one Minecraft version at a time. That version is written once, as the `minecraft.version` property in `pom.xml`, and everything else derives from it: the paper-api coordinates, the `api-version` in the plugin descriptor, the startup warning shown on any other version, and the version named on a generated release. Bumping the property is what moves the plugin to a new Minecraft version.
 
 ## AI Assistance Guidelines
 
@@ -48,7 +50,12 @@ mvn clean
 mvn install
 ```
 
-The compiled plugin JAR will be in `target/gamingbytez-enhancements-<version>.jar` and can be dropped into a Paper/Spigot server's `plugins/` directory.
+The compiled plugin JAR will be in `target/gamingbytez-enhancements-<version>.jar` and can be dropped into a Paper server's `plugins/` directory.
+
+The build needs **JDK 25**, which is also the minimum Minecraft 26.1 and later require of a server, so
+a machine that can run the server can build the plugin. The compiler targets it through
+`maven.compiler.release`, which is the single statement of the Java version and is read by the
+release workflow as well.
 
 ## Commit Message Convention
 
@@ -261,6 +268,26 @@ Two further rules:
 - Render a location with `LocationFormat.format(location)`, which takes the world from
   `World#getKey()` and renders a null location as an italic placeholder.
 
+### Reusable Gameplay Mechanics
+
+`lib/gameplay/` holds mechanics that are not tied to the feature that first needed them. A class
+belongs here when it would still make sense to a second feature, and stays in the feature when it
+encodes that feature's own rules.
+
+| Package | Holds |
+| --- | --- |
+| `lib/gameplay/blast/` | The blast engine: shapes and their geometry, the wavefront scheduler and its per tick budget, the block filter, drop tally, damage falloff and chain resolution |
+| `lib/gameplay/world/` | World access that hides an easily mistaken detail, currently the chunk lookup for a block coordinate |
+| `lib/gameplay/item/` | `CustomItemDefinition`, which describes an item's name, lore, glint and stack size and writes them as data components |
+
+Nothing under `lib/` may import from `feature/`, in main sources or in tests. The blast engine is the
+worked example: it takes the measurements of a volume rather than an Excavation Charge level, so the
+charge maps its own levels to measurements and the engine never learns what a level is.
+
+The same rule decides what does not move. `BlastLevel` is the charge's own table of sizes, damage,
+arming colours and wave speeds, so it stays with the charge, as do placement, arming, gravity and the
+audit log.
+
 ### Current Features (8 Total)
 
 1. **TemporaryCartFeature** - Temporary minecart spawning with cooldown system
@@ -268,8 +295,8 @@ Two further rules:
 3. **FarmlandProtectionFeature** - Prevents farmland trampling
 4. **AntiMobGriefingFeature** - Selective mob griefing prevention
 5. **CustomCreeperDamageFeature** - Armor-based creeper damage calculation
-6. **MythicAltarFeature** - Custom crafting altar system with recipes for weather/time control
-7. **CustomLootFeature** - Custom entity loot drops (currently Husk-specific)
+6. **MythicAltarFeature** - Custom crafting altar with weather and time rituals, an XP bottle system, the Safari Net and the Excavation Charge
+7. **CustomLootFeature** - Custom entity loot drops for Husks, Endermen and Parched Skeletons
 8. **MinecartPortalFeature** - Portal system for minecarts with Brigadier commands
 
 ### Feature Organization Patterns
@@ -287,7 +314,12 @@ Common subdirectory structure within feature packages:
 - Uses recipe registry pattern (`CompletableRecipeRegistry`)
 - Implements structure validation for multiblock altars
 - Particle effect system for visual feedback
-- Recipes include weather control (sun, rain, thunderstorm) and time manipulation
+- Recipes cover weather control (sun, rain, thunderstorm), time manipulation, the XP bottle system,
+  the Safari Net and the Excavation Charge
+- Custom items are described rather than configured: a manager returns a `CustomItemDefinition` and
+  the library writes it through the Data Component API, so no manager touches `ItemMeta`
+- A placed Excavation Charge is an entity, and `PlacedExcavationCharge` owns every key it stores its
+  shape, level and facing under. Nothing else reads that container directly
 
 **MinecartPortalFeature** (`feature/minecartportal/`):
 - Persistent configuration using `minecart_portals.yaml`
@@ -313,6 +345,8 @@ chatbot:
   enable_ai_answers: false
   system_prompt: ""       # Optional; when non-empty, sent as system-role message in API requests
   disable_thinking: false  # When true, sends chat_template_kwargs to disable model thinking
+  prompt: |               # User prompt template; %s is replaced with the player's message
+    ...
 openai:
   apiUrl: "https://api.openai.com/v1/chat/completions"
   apiKey: ""
@@ -347,8 +381,12 @@ The plugin uses several concurrent patterns:
 name: gamingbytez-enhancements
 version: '${project.version}'
 main: de.lazybytez.gamingbytezenhancements.EnhancementsPlugin
-api-version: '1.21'
+api-version: '${minecraft.version}'
 ```
+
+`api-version` is filtered from the Maven property rather than written out, and it is also what the
+plugin reads back at startup to decide whether the server it landed on is the one it was built for.
+A literal version here would be a second copy of that fact and could disagree with the jar.
 
 The same file declares the permission nodes. A command that checks a permission in `requires(...)`
 must have that node declared here with its default.
@@ -356,8 +394,14 @@ must have that node declared here with its default.
 ## Dependencies
 
 **Maven (pom.xml):**
-- Paper API 1.21.11-R0.1-SNAPSHOT (provided scope)
+- Paper API `${minecraft.version}.build.${paper.build}-stable` (provided scope)
 - Maven Shade Plugin for creating uber-JARs
+
+Paper publishes releases rather than snapshots, so the build is pinned to one of them. Do not replace
+the pin with a version range: an open range such as `[26.2.build,)` resolves across Minecraft drops,
+and a bounded one such as `[26.1.build,26.2)` resolves into the next drop's release candidates,
+because a pre-release qualifier sorts below the release. Both were tried and both picked a build the
+plugin does not support. Raise `paper.build` instead.
 
 No additional runtime dependencies are bundled.
 
