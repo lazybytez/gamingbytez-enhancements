@@ -183,10 +183,13 @@ charge is woken even if more sit inside a blast.
 
 A block is destroyed only if all of the following hold:
 
-- It is not air, cave air, void air, water or lava. Liquids are left in place entirely: an Excavation Charge does not turn water or lava into air, it simply skips them.
+- It is not air, cave air or void air. Water and lava are carved out like any other block, so a hole
+  dug into an ocean or a lava lake comes out as the shape it promised. Once the blast has finished
+  carving, the liquid along the rim of the hole is nudged, so an ocean or a lava lake flows back in
+  over the following seconds.
 - It is not on the explicit deny list: **Bedrock**, Reinforced Deepslate, Barrier, Light, Command
   Block, Chain Command Block, Repeating Command Block, Structure Block, Jigsaw, End Portal, End
-  Portal Frame, End Gateway and Nether Portal never break, regardless of their blast resistance.
+  Portal Frame and End Gateway never break, regardless of their blast resistance.
 - Its blast resistance does not exceed **Obsidian's**. Obsidian's own resistance is used as the
   ceiling of what an Excavation Charge can destroy, so obsidian itself sits exactly on that ceiling and is
   destroyed along with everything weaker than it; only blocks tougher than obsidian, such as

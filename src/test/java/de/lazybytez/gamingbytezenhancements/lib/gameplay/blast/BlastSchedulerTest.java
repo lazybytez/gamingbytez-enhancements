@@ -26,6 +26,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.junit.jupiter.api.AfterEach;
@@ -43,6 +44,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,6 +68,7 @@ class BlastSchedulerTest {
     private BukkitTask task;
     private Runnable tickTask;
     private boolean chunkLoaded;
+    private Block solidNeighbour;
 
     @BeforeEach
     void setUp() {
@@ -77,6 +80,10 @@ class BlastSchedulerTest {
 
         when(this.plugin.getLogger()).thenReturn(this.logger);
         when(this.world.isChunkLoaded(anyInt(), anyInt())).thenAnswer(invocation -> this.chunkLoaded);
+
+        this.solidNeighbour = mock(Block.class);
+        when(this.solidNeighbour.getWorld()).thenReturn(this.world);
+        when(this.solidNeighbour.getType()).thenReturn(Material.STONE);
 
         BukkitScheduler bukkitScheduler = mock(BukkitScheduler.class);
         when(bukkitScheduler.runTaskTimer(eq(this.plugin), any(Runnable.class), anyLong(), anyLong()))
@@ -110,6 +117,7 @@ class BlastSchedulerTest {
         this.chunkLoaded = false;
         Block block = mock(Block.class);
         when(block.getWorld()).thenReturn(this.world);
+        when(block.getRelative(any(BlockFace.class))).thenReturn(this.solidNeighbour);
 
         this.schedulerWith(new BlastBudget()).submit(this.blastOf(block));
         this.tick();
@@ -166,6 +174,48 @@ class BlastSchedulerTest {
         verify(refused, never()).setType(any(Material.class), anyBoolean());
     }
 
+    @Test
+    void tick_withALiquidNeighbourOfACarvedBlock_ticksItSoItFlowsBackIn() {
+        Block water = this.blockOf(Material.WATER);
+
+        this.schedulerWith(new BlastBudget()).submit(this.blastOf(this.carvedNextTo(Material.STONE, water)));
+        this.tick();
+
+        verify(water).fluidTick();
+    }
+
+    @Test
+    void tick_withASolidNeighbourOfACarvedBlock_leavesItUntouched() {
+        this.schedulerWith(new BlastBudget()).submit(this.blastOf(this.blockOf(Material.STONE)));
+        this.tick();
+
+        verify(this.solidNeighbour, never()).fluidTick();
+    }
+
+    @Test
+    void tick_withALiquidNeighbourOfTwoCarvedBlocks_ticksItOnce() {
+        Block water = this.blockOf(Material.WATER);
+
+        this.schedulerWith(new BlastBudget()).submit(this.blastOf(
+                this.carvedNextTo(Material.STONE, water),
+                this.carvedNextTo(Material.STONE, water)));
+        this.tick();
+
+        verify(water, times(1)).fluidTick();
+    }
+
+    @Test
+    void tick_withALiquidNeighbourInAnUnloadedChunk_leavesItUntouched() {
+        Block lava = this.blockOf(Material.LAVA);
+        when(lava.getX()).thenReturn(32);
+        when(this.world.isChunkLoaded(2, 0)).thenReturn(false);
+
+        this.schedulerWith(new BlastBudget()).submit(this.blastOf(this.carvedNextTo(Material.STONE, lava)));
+        this.tick();
+
+        verify(lava, never()).fluidTick();
+    }
+
     private BlastScheduler schedulerWith(BlastBudget budget) {
         return new BlastScheduler(this.plugin, new BlastBlockFilter(material -> 0.0), budget);
     }
@@ -191,6 +241,14 @@ class BlastSchedulerTest {
         Block block = mock(Block.class);
         when(block.getWorld()).thenReturn(this.world);
         when(block.getType()).thenReturn(material);
+        when(block.getRelative(any(BlockFace.class))).thenReturn(this.solidNeighbour);
+
+        return block;
+    }
+
+    private Block carvedNextTo(Material material, Block neighbour) {
+        Block block = this.blockOf(material);
+        when(block.getRelative(any(BlockFace.class))).thenReturn(neighbour);
 
         return block;
     }

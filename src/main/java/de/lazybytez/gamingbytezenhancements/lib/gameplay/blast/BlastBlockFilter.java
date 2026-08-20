@@ -28,7 +28,7 @@ import java.util.function.ToDoubleFunction;
  * Decides whether a {@link Material} may be destroyed by a blast.
  * <p>
  * A material is destructible only when its blast resistance does not exceed obsidian's, it is not
- * air or a liquid, and it is not part of an explicit deny set. The deny set exists because blast
+ * air, and it is not part of an explicit deny set. The deny set exists because blast
  * resistance alone does not describe intent: some blocks share obsidian's resistance but must never
  * be destroyed by a blast.
  * <p>
@@ -52,16 +52,20 @@ public final class BlastBlockFilter {
             Material.JIGSAW,
             Material.END_PORTAL,
             Material.END_PORTAL_FRAME,
-            Material.END_GATEWAY,
-            Material.NETHER_PORTAL
+            Material.END_GATEWAY
     );
 
+    /**
+     * The blocks a blast steps over because there is nothing there to remove.
+     * <p>
+     * Liquids are absent on purpose. A blast clears water and lava out of its volume, so a hole dug
+     * in an ocean or a lava lake comes out as the shape it promised rather than as a shell full of
+     * liquid.
+     */
     private static final Set<Material> NON_DESTRUCTIBLE_MATERIALS = EnumSet.of(
             Material.AIR,
             Material.CAVE_AIR,
-            Material.VOID_AIR,
-            Material.WATER,
-            Material.LAVA
+            Material.VOID_AIR
     );
 
     private final ToDoubleFunction<Material> blastResistanceLookup;

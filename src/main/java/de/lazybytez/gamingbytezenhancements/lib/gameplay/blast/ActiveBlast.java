@@ -35,6 +35,7 @@ import java.util.Objects;
  */
 public final class ActiveBlast {
 
+    private final List<Block> plannedBlocks;
     private final Deque<Block> remaining;
     private final BlastDropTally dropTally;
     private final Location detonationPoint;
@@ -57,7 +58,8 @@ public final class ActiveBlast {
             throw new IllegalArgumentException("waveSpeed must be positive");
         }
 
-        this.remaining = new ArrayDeque<>(plannedBlocks);
+        this.plannedBlocks = List.copyOf(plannedBlocks);
+        this.remaining = new ArrayDeque<>(this.plannedBlocks);
         this.dropTally = Objects.requireNonNull(dropTally, "dropTally must not be null");
         this.detonationPoint = Objects.requireNonNull(detonationPoint, "detonationPoint must not be null");
         this.waveSpeed = waveSpeed;
@@ -125,6 +127,18 @@ public final class ActiveBlast {
      */
     public Block nextBlock() {
         return this.remaining.poll();
+    }
+
+    /**
+     * Returns every block the blast was planned to remove, in carving order.
+     * <p>
+     * The plan outlives the carve because the volume it describes is still needed once the blast
+     * has finished, and the queue handing out blocks is empty by then.
+     *
+     * @return The planned blocks of this blast.
+     */
+    public List<Block> plannedBlocks() {
+        return this.plannedBlocks;
     }
 
     /**

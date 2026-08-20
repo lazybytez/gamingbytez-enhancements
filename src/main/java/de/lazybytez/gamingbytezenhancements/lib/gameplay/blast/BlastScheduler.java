@@ -23,15 +23,18 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Container;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
@@ -56,6 +59,15 @@ public final class BlastScheduler {
      * the largest shape sits just under this figure.
      */
     private static final int MAX_QUEUED_BLOCKS = 1_400_000;
+
+    private static final List<BlockFace> BORDER_FACES = List.of(
+            BlockFace.NORTH,
+            BlockFace.EAST,
+            BlockFace.SOUTH,
+            BlockFace.WEST,
+            BlockFace.UP,
+            BlockFace.DOWN
+    );
 
     private final Plugin plugin;
     private final BlastBlockFilter blockFilter;
@@ -311,6 +323,16 @@ public final class BlastScheduler {
     }
 
     /**
+     * Completes a blast that has no blocks left to carve.
+     *
+     * @param blast The blast that finished carving.
+     */
+    private void finish(ActiveBlast blast) {
+        this.dropSalvage(blast);
+        this.nudgeBorderLiquids(blast);
+    }
+
+    /**
      * Drops the salvage of a blast that has finished carving.
      * <p>
      * The detonation point's chunk can have unloaded during the carve, and dropping there would
@@ -319,7 +341,7 @@ public final class BlastScheduler {
      *
      * @param blast The blast that finished carving.
      */
-    private void finish(ActiveBlast blast) {
+    private void dropSalvage(ActiveBlast blast) {
         try {
             Location detonationPoint = blast.detonationPoint();
             World world = detonationPoint.getWorld();
@@ -340,5 +362,63 @@ public final class BlastScheduler {
                     "Failed to drop the salvage of a finished blast.",
                     exception);
         }
+    }
+
+    /**
+     * Asks the liquids along the border of a finished blast to flow into it.
+     * <p>
+     * Carving suppresses physics, so the water or lava a hole was dug into stands still until
+     * something tells it to move. Every carved block is air once the blast is done, which makes any
+     * neighbour that is still a liquid part of the border by definition, and no set of carved
+     * positions is needed to find it.
+     * <p>
+     * The pass runs at the end rather than during the carve because the carve is a wavefront moving
+     * outwards: a liquid nudged mid carve would flow into a half dug hole, be carved again by the
+     * next shell and do its work several times over.
+     *
+     * @param blast The blast that finished carving.
+     */
+    private void nudgeBorderLiquids(ActiveBlast blast) {
+        try {
+            Set<Block> nudged = new HashSet<>();
+
+            for (Block carved : blast.plannedBlocks()) {
+                for (BlockFace face : BlastScheduler.BORDER_FACES) {
+                    this.nudgeLiquid(carved.getRelative(face), nudged);
+                }
+            }
+        } catch (RuntimeException exception) {
+            this.plugin.getLogger().log(
+                    Level.WARNING,
+                    "Failed to nudge the liquids along the border of a finished blast.",
+                    exception);
+        }
+    }
+
+    /**
+     * Ticks a single border candidate when it is a liquid that has not been ticked yet.
+     * <p>
+     * The chunk is checked before the block is read, because reading a block in an unloaded chunk
+     * would load it back synchronously on the main thread.
+     *
+     * @param neighbour The block next to a carved one.
+     * @param nudged    The blocks this blast has already ticked.
+     */
+    private void nudgeLiquid(Block neighbour, Set<Block> nudged) {
+        if (!WorldChunks.isChunkLoadedAt(neighbour.getWorld(), neighbour.getX(), neighbour.getZ())) {
+            return;
+        }
+
+        if (!nudged.add(neighbour)) {
+            return;
+        }
+
+        Material type = neighbour.getType();
+
+        if (type != Material.WATER && type != Material.LAVA) {
+            return;
+        }
+
+        neighbour.fluidTick();
     }
 }
