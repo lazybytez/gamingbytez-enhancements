@@ -92,6 +92,7 @@ public final class ExcavationChargeDetonator {
 
     private final BlastScheduler blastScheduler;
     private final BlastPlanner blastPlanner;
+    private final ExcavationChargeAuditLog auditLog;
     private final NamespacedKey placedKey;
     private final NamespacedKey shapeKey;
     private final NamespacedKey levelKey;
@@ -101,6 +102,7 @@ public final class ExcavationChargeDetonator {
      * Creates a detonator carving through the given scheduler.
      *
      * @param blastScheduler The scheduler owning every block mutation a blast performs
+     * @param auditLog       The audit trail every detonation is recorded on
      * @param placedKey      The key marking an end crystal as a placed Excavation Charge
      * @param shapeKey       The key holding the blast shape of a placed charge
      * @param levelKey       The key holding the blast level of a placed charge
@@ -108,12 +110,14 @@ public final class ExcavationChargeDetonator {
      */
     public ExcavationChargeDetonator(
             BlastScheduler blastScheduler,
+            ExcavationChargeAuditLog auditLog,
             NamespacedKey placedKey,
             NamespacedKey shapeKey,
             NamespacedKey levelKey,
             NamespacedKey facingKey) {
         this.blastScheduler = Objects.requireNonNull(blastScheduler, "blastScheduler must not be null");
         this.blastPlanner = new BlastPlanner(BlastBlockFilter.production());
+        this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
         this.placedKey = Objects.requireNonNull(placedKey, "placedKey must not be null");
         this.shapeKey = Objects.requireNonNull(shapeKey, "shapeKey must not be null");
         this.levelKey = Objects.requireNonNull(levelKey, "levelKey must not be null");
@@ -166,6 +170,7 @@ public final class ExcavationChargeDetonator {
             return List.of();
         }
 
+        this.auditLog.detonated(this.shapeOf(charge), level, detonationPoint, carved);
         ExcavationChargeDetonator.announceToSenses(level, detonationPoint);
         this.damageCaughtEntities(geometry, level, detonationPoint);
         this.blastScheduler.submit(new ActiveBlast(
@@ -258,9 +263,19 @@ public final class ExcavationChargeDetonator {
         PersistentDataContainer container = charge.getPersistentDataContainer();
 
         return ExcavationChargeDetonator.geometryFor(
-                BlastShape.decode(container.get(this.shapeKey, PersistentDataType.STRING)),
+                this.shapeOf(charge),
                 this.levelOf(charge),
                 ExcavationChargeDetonator.decodeFacing(container.get(this.facingKey, PersistentDataType.STRING)));
+    }
+
+    /**
+     * Reads the blast shape stored on a placed charge.
+     *
+     * @param charge The placed charge to inspect
+     * @return The stored shape, defaulting like the item side does
+     */
+    BlastShape shapeOf(EnderCrystal charge) {
+        return BlastShape.decode(charge.getPersistentDataContainer().get(this.shapeKey, PersistentDataType.STRING));
     }
 
     /**

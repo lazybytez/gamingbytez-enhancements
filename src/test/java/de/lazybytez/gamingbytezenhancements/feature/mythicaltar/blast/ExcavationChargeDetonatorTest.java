@@ -77,6 +77,7 @@ class ExcavationChargeDetonatorTest {
     private World world;
     private PluginManager pluginManager;
     private BlastScheduler blastScheduler;
+    private ExcavationChargeAuditLog auditLog;
 
     /**
      * Stands the server statics the detonator reaches through up.
@@ -91,6 +92,7 @@ class ExcavationChargeDetonatorTest {
         this.world = mock(World.class);
         this.pluginManager = mock(PluginManager.class);
         this.blastScheduler = mock(BlastScheduler.class);
+        this.auditLog = mock(ExcavationChargeAuditLog.class);
         lenient().when(this.blastScheduler.canAccept(anyInt())).thenReturn(true);
 
         when(this.world.getMinHeight()).thenReturn(ExcavationChargeDetonatorTest.MIN_HEIGHT);
@@ -248,6 +250,7 @@ class ExcavationChargeDetonatorTest {
     private ExcavationChargeDetonator detonator() {
         return new ExcavationChargeDetonator(
                 this.blastScheduler,
+                this.auditLog,
                 ExcavationChargeDetonatorTest.PLACED_KEY,
                 ExcavationChargeDetonatorTest.SHAPE_KEY,
                 ExcavationChargeDetonatorTest.LEVEL_KEY,

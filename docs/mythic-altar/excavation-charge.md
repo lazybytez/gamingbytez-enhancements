@@ -135,6 +135,28 @@ out by a neighbouring blast, and it then drops until it lands on the next solid 
 
 ---
 
+## Audit Log
+
+Every action on a charge is written to the server log with the `Excavation Charge:` prefix, so the
+whole trail of an incident is one grep away:
+
+- Who placed a charge, with its level, shape, facing and position.
+- Who collected a placed charge back up, and from where.
+- Who ignited a charge, or what did: a non player ignition names the damage cause, a redstone
+  ignition names the position of the component whose signal rose.
+- Which blast chain ignited which charge, so a cascade can be walked back to the player who
+  started it.
+- Every detonation, with its level, shape, position, the number of blocks carved and the corner to
+  corner bounding box of the removed region, so the affected area can be judged without replaying
+  the blast.
+
+Block removals themselves are additionally picked up by block loggers such as CoreProtect as an
+end crystal explosion. Attributing them there to the igniting player would require compiling
+against the logger's API, which this plugin deliberately does not depend on, so the who and where
+live in the plugin's own log lines instead.
+
+---
+
 ## Chain Detonation
 
 A detonating charge wakes every other placed charge standing inside the volume its blast carves,

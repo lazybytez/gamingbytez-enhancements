@@ -20,6 +20,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavatio
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.ExcavationChargeManager;
 import java.util.Objects;
 import org.bukkit.Location;
@@ -47,20 +48,24 @@ public class CollectExcavationChargeListener implements Listener {
 
     private final MythicAltarFeature mythicAltarFeature;
     private final DetonateExcavationChargeListener detonation;
+    private final ExcavationChargeAuditLog auditLog;
 
     /**
      * Bind the listener to its feature and the detonation path it asks about burning fuses.
      *
      * @param mythicAltarFeature The feature owning the item manager and the messenger
      * @param detonation         The listener owning the fuse registry
+     * @param auditLog           The audit trail collections are recorded on
      */
     public CollectExcavationChargeListener(
             MythicAltarFeature mythicAltarFeature,
-            DetonateExcavationChargeListener detonation
+            DetonateExcavationChargeListener detonation,
+            ExcavationChargeAuditLog auditLog
     ) {
         this.mythicAltarFeature = Objects.requireNonNull(
                 mythicAltarFeature, "mythicAltarFeature must not be null");
         this.detonation = Objects.requireNonNull(detonation, "detonation must not be null");
+        this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
     }
 
     /**
@@ -102,6 +107,7 @@ public class CollectExcavationChargeListener implements Listener {
         crystal.remove();
 
         this.giveExcavationCharge(event.getPlayer(), excavationCharge, crystalLocation);
+        this.auditLog.collected(event.getPlayer(), crystalLocation);
     }
 
     /**

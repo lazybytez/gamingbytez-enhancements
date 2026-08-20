@@ -23,6 +23,7 @@ import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAlta
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastBlockFilter;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastBudget;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastScheduler;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeGravity;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.AltarCraftingListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.CollectExcavationChargeListener;
@@ -142,13 +143,14 @@ public class MythicAltarFeature extends AbstractFeature {
         this.registerEvent(new SafariNetPickupListener(this));
 
         // Excavation Charge
+        ExcavationChargeAuditLog auditLog = new ExcavationChargeAuditLog(this.plugin);
         DetonateExcavationChargeListener detonation =
-                new DetonateExcavationChargeListener(this, this.blastScheduler, this.messenger);
+                new DetonateExcavationChargeListener(this, this.blastScheduler, auditLog, this.messenger);
         this.registerEvent(new CycleExcavationChargeShapeListener(this, this.messenger));
-        this.registerEvent(new PlaceExcavationChargeListener(this));
-        this.registerEvent(new CollectExcavationChargeListener(this, detonation));
+        this.registerEvent(new PlaceExcavationChargeListener(this, auditLog));
+        this.registerEvent(new CollectExcavationChargeListener(this, detonation, auditLog));
         this.registerEvent(detonation);
-        this.registerEvent(new RedstoneIgniteExcavationChargeListener(detonation));
+        this.registerEvent(new RedstoneIgniteExcavationChargeListener(detonation, auditLog));
     }
 
     public CustomItemManagerRegistry getCustomItemManagerRegistry() {

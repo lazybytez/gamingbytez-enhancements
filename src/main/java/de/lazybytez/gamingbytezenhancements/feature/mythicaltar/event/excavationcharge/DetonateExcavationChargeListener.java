@@ -20,6 +20,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavatio
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastScheduler;
+import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeDetonator;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeFuse;
 import de.lazybytez.gamingbytezenhancements.lib.message.Messenger;
@@ -45,6 +46,7 @@ public class DetonateExcavationChargeListener implements Listener {
 
     private final ExcavationChargeDetonator detonator;
     private final ExcavationChargeFuse fuse;
+    private final ExcavationChargeAuditLog auditLog;
     private final Messenger messenger;
 
     /**
@@ -52,21 +54,27 @@ public class DetonateExcavationChargeListener implements Listener {
      *
      * @param mythicAltarFeature The feature owning the plugin instance and its namespace
      * @param blastScheduler     The scheduler owning every block mutation a blast performs
+     * @param auditLog           The audit trail ignitions and detonations are recorded on
      * @param messenger          The messenger every player facing line of this feature is sent through
      */
     public DetonateExcavationChargeListener(
-            MythicAltarFeature mythicAltarFeature, BlastScheduler blastScheduler, Messenger messenger) {
+            MythicAltarFeature mythicAltarFeature,
+            BlastScheduler blastScheduler,
+            ExcavationChargeAuditLog auditLog,
+            Messenger messenger) {
         Objects.requireNonNull(mythicAltarFeature, "mythicAltarFeature must not be null");
 
         EnhancementsPlugin plugin = mythicAltarFeature.getPlugin();
 
+        this.auditLog = Objects.requireNonNull(auditLog, "auditLog must not be null");
         this.detonator = new ExcavationChargeDetonator(
                 blastScheduler,
+                this.auditLog,
                 PlaceExcavationChargeListener.placedKey(plugin),
                 PlaceExcavationChargeListener.shapeKey(plugin),
                 PlaceExcavationChargeListener.levelKey(plugin),
                 PlaceExcavationChargeListener.facingKey(plugin));
-        this.fuse = new ExcavationChargeFuse(plugin, this.detonator);
+        this.fuse = new ExcavationChargeFuse(plugin, this.detonator, this.auditLog);
         this.messenger = Objects.requireNonNull(messenger, "messenger must not be null");
     }
 
@@ -91,6 +99,7 @@ public class DetonateExcavationChargeListener implements Listener {
             return;
         }
 
+        this.logIgnition(event, charge);
         this.announceArming(event);
     }
 
@@ -120,6 +129,23 @@ public class DetonateExcavationChargeListener implements Listener {
      */
     public boolean isBurning(EnderCrystal crystal) {
         return this.fuse.isBurning(crystal);
+    }
+
+    /**
+     * Record who or what set the charge off on the audit trail.
+     *
+     * @param event  The entity damage event that started the countdown
+     * @param charge The charge whose countdown started
+     */
+    private void logIgnition(EntityDamageEvent event, EnderCrystal charge) {
+        if (event instanceof EntityDamageByEntityEvent damageByEntity
+                && damageByEntity.getDamager() instanceof Player player) {
+            this.auditLog.ignitedByPlayer(player, charge.getLocation());
+
+            return;
+        }
+
+        this.auditLog.ignitedBy(event.getCause().name() + " damage", charge.getLocation());
     }
 
     /**
