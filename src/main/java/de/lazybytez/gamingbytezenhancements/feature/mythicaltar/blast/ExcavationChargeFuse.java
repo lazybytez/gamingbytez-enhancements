@@ -19,6 +19,9 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.PlacedExcavationCharge;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastGeometry;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastVector;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.ChainSession;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

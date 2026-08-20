@@ -18,7 +18,7 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.MythicAltarFeature;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.ExcavationChargeAuditLog;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.ExcavationChargeManager;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.PlacedExcavationCharge;

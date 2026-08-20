@@ -17,14 +17,14 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge;
 
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastGeometry;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastGeometry;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastVector;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.CuboidBlastGeometry;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.CylinderBlastGeometry;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.SphereBlastGeometry;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.TunnelBlastGeometry;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastVector;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.CuboidBlastGeometry;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.CylinderBlastGeometry;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.SphereBlastGeometry;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.TunnelBlastGeometry;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.persistence.PersistentDataContainer;

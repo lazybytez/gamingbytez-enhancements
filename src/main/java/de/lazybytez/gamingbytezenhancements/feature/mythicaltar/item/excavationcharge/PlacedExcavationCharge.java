@@ -17,10 +17,10 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge;
 
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastGeometry;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastGeometry;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastLevel;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastShape;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastVector;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastVector;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EnderCrystal;

@@ -30,6 +30,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastVector;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.CuboidBlastGeometry;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.Bukkit;

@@ -19,7 +19,7 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar;
 
 import de.lazybytez.gamingbytezenhancements.EnhancementsPlugin;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.altar.MythicAltar;
-import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast.BlastScheduler;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastScheduler;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.CollectExcavationChargeListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.CycleExcavationChargeShapeListener;
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.event.excavationcharge.DetonateExcavationChargeListener;

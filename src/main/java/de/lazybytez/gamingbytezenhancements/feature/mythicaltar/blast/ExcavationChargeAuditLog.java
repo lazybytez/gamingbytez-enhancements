@@ -17,6 +17,7 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastShape;
 import java.util.List;
 import java.util.Objects;
 import org.bukkit.Location;

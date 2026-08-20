@@ -33,6 +33,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.excavationcharge.PlacedExcavationCharge;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.ActiveBlast;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastScheduler;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.BlastVector;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.ChainCandidate;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.blast.ChainSession;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import java.util.List;
