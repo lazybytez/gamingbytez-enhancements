@@ -296,7 +296,7 @@ public final class ExcavationChargeDetonator {
     ) {
         Location victimLocation = victim.getLocation();
 
-        if (!geometry.contains(ExcavationChargeDetonator.offsetBetween(detonationPoint, victimLocation))) {
+        if (!geometry.contains(BlastVector.fromBlock(victimLocation).minus(BlastVector.fromBlock(detonationPoint)))) {
             return;
         }
 
@@ -394,20 +394,6 @@ public final class ExcavationChargeDetonator {
     }
 
     /**
-     * Returns the block offset of a location relative to the blast centre.
-     *
-     * @param detonationPoint The location the charge detonates in
-     * @param location        The location to measure
-     * @return The offset relative to the blast centre
-     */
-    private static BlastVector offsetBetween(Location detonationPoint, Location location) {
-        return new BlastVector(
-                location.getBlockX() - detonationPoint.getBlockX(),
-                location.getBlockY() - detonationPoint.getBlockY(),
-                location.getBlockZ() - detonationPoint.getBlockZ());
-    }
-
-    /**
      * Turns an identity and a world location into a chain candidate.
      *
      * @param id       The identity of the placed charge
@@ -415,7 +401,6 @@ public final class ExcavationChargeDetonator {
      * @return The candidate the chain resolver measures
      */
     static ChainCandidate toCandidate(UUID id, Location location) {
-        return new ChainCandidate(
-                id, new BlastVector(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
+        return new ChainCandidate(id, BlastVector.fromBlock(location));
     }
 }

@@ -17,6 +17,8 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 
+import org.bukkit.Location;
+
 /**
  * A whole-block offset in the blast coordinate space, measured from the block a charge
  * detonates in.
@@ -35,6 +37,26 @@ public record BlastVector(int x, int y, int z) {
      * The offset of the block a charge detonates in.
      */
     public static final BlastVector ORIGIN = new BlastVector(0, 0, 0);
+
+    /**
+     * Returns the block offset of the given location.
+     *
+     * @param location the location to read
+     * @return the offset of the location's block coordinates
+     */
+    public static BlastVector fromBlock(Location location) {
+        return new BlastVector(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+    }
+
+    /**
+     * Returns the offset from the given vector to this one.
+     *
+     * @param other the vector this offset is measured from
+     * @return the vector pointing from {@code other} to this one
+     */
+    public BlastVector minus(BlastVector other) {
+        return new BlastVector(this.x - other.x(), this.y - other.y(), this.z - other.z());
+    }
 
     /**
      * Returns the squared distance between this offset and the given one.

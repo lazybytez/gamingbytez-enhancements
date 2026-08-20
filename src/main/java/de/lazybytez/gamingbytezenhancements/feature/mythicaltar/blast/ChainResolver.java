@@ -107,10 +107,6 @@ public final class ChainResolver {
      * @return whether the candidate stands inside the carved volume
      */
     private static boolean isInsideBlast(BlastVector origin, BlastGeometry geometry, BlastVector target) {
-        return geometry.contains(new BlastVector(
-                target.x() - origin.x(),
-                target.y() - origin.y(),
-                target.z() - origin.z()
-        ));
+        return geometry.contains(target.minus(origin));
     }
 }
