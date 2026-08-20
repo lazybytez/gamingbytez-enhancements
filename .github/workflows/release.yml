@@ -28,9 +28,11 @@ jobs:
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           MINECRAFT_VERSION=$(mvn help:evaluate -Dexpression=minecraft.version -q -DforceStdout)
+          JAVA_VERSION=$(mvn help:evaluate -Dexpression=maven.compiler.release -q -DforceStdout)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "MINECRAFT_VERSION=$MINECRAFT_VERSION" >> $GITHUB_OUTPUT
-          echo "Extracted version: $VERSION for Minecraft $MINECRAFT_VERSION"
+          echo "JAVA_VERSION=$JAVA_VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION for Minecraft $MINECRAFT_VERSION on Java $JAVA_VERSION"
 
       - name: Build with Maven
         run: mvn --batch-mode clean package
@@ -40,7 +42,7 @@ jobs:
         with:
           name: v${{ steps.extract_version.outputs.VERSION }} for Minecraft ${{ steps.extract_version.outputs.MINECRAFT_VERSION }}
           body: |
-            Requires a PaperMC server running Minecraft ${{ steps.extract_version.outputs.MINECRAFT_VERSION }} on Java 25.
+            Requires a PaperMC server running Minecraft ${{ steps.extract_version.outputs.MINECRAFT_VERSION }} on Java ${{ steps.extract_version.outputs.JAVA_VERSION }}.
 
             The plugin warns in the console and keeps running on any other Minecraft version.
           files: target/gamingbytez-enhancements-${{ steps.extract_version.outputs.VERSION }}.jar
