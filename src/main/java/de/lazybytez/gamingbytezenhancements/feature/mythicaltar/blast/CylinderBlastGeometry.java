@@ -24,8 +24,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * An upright cylinder of radius {@link BlastLevel#getSize()} halved and of height
- * {@link BlastLevel#getSize()}, hanging below the detonating block.
+ * An upright cylinder of half the given size in radius and of the given size in height, hanging
+ * below the detonating block.
  * <p>
  * The charge sits in the top layer and the shaft is sunk from there, so the shape digs ground
  * rather than the air above it.
@@ -41,14 +41,11 @@ public final class CylinderBlastGeometry implements BlastGeometry {
     private final double squaredRadius;
 
     /**
-     * Creates the cylinder geometry for the given blast level.
+     * Creates the cylinder geometry for the given diameter and height.
      *
-     * @param level the blast level supplying the diameter and the height
+     * @param size the diameter and the height in blocks
      */
-    public CylinderBlastGeometry(BlastLevel level) {
-        Objects.requireNonNull(level, "level must not be null");
-
-        int size = level.getSize();
+    public CylinderBlastGeometry(int size) {
         double radius = size / 2.0;
 
         this.horizontalOffset = (int) Math.floor(radius);

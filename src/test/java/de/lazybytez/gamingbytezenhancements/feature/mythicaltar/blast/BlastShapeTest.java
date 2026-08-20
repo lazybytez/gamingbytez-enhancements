@@ -20,8 +20,15 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BlastShapeTest {
+
+    private static final BlastVector EAST = new BlastVector(1, 0, 0);
+    private static final BlastDimensions DIMENSIONS = new BlastDimensions(8, 3);
+
     @Test
     void next_cyclesThroughAllShapesInDeclarationOrder() {
         assertEquals(BlastShape.SPHERE, BlastShape.CUBOID.next());
@@ -58,5 +65,34 @@ class BlastShapeTest {
         assertEquals("Sphere", BlastShape.SPHERE.getDisplayName());
         assertEquals("Cylinder", BlastShape.CYLINDER.getDisplayName());
         assertEquals("Tunnel", BlastShape.TUNNEL.getDisplayName());
+    }
+
+    @Test
+    void geometry_buildsTheGeometryBelongingToEachShape() {
+        assertInstanceOf(CuboidBlastGeometry.class,
+                BlastShape.CUBOID.geometry(BlastShapeTest.DIMENSIONS, BlastShapeTest.EAST));
+        assertInstanceOf(SphereBlastGeometry.class,
+                BlastShape.SPHERE.geometry(BlastShapeTest.DIMENSIONS, BlastShapeTest.EAST));
+        assertInstanceOf(CylinderBlastGeometry.class,
+                BlastShape.CYLINDER.geometry(BlastShapeTest.DIMENSIONS, BlastShapeTest.EAST));
+        assertInstanceOf(TunnelBlastGeometry.class,
+                BlastShape.TUNNEL.geometry(BlastShapeTest.DIMENSIONS, BlastShapeTest.EAST));
+    }
+
+    @Test
+    void geometry_sizesTheBuiltVolumeFromTheGivenDimensions() {
+        assertEquals(512, BlastShape.CUBOID.geometry(BlastShapeTest.DIMENSIONS, BlastShapeTest.EAST)
+                .offsets().count());
+        assertEquals(72, BlastShape.TUNNEL.geometry(BlastShapeTest.DIMENSIONS, BlastShapeTest.EAST)
+                .offsets().count());
+    }
+
+    @Test
+    void geometry_boresTheTunnelAlongTheGivenDirection() {
+        BlastGeometry geometry = BlastShape.TUNNEL.geometry(
+                BlastShapeTest.DIMENSIONS, new BlastVector(0, 0, -1));
+
+        assertTrue(geometry.contains(new BlastVector(0, 0, -7)));
+        assertFalse(geometry.contains(new BlastVector(7, 0, 0)));
     }
 }

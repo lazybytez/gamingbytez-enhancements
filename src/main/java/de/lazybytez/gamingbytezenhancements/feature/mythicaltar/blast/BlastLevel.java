@@ -20,15 +20,16 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 /**
  * The tuning table for a charge's blast level.
  * <p>
- * {@code size} is the full width of the affected volume in blocks and {@code centreDamage} is the
- * value passed to {@code LivingEntity#damage} at the centre of the blast.
+ * {@code size} is the full width of the affected volume in blocks, {@code crossSection} is the side
+ * length a bored corridor carves and {@code centreDamage} is the value passed to
+ * {@code LivingEntity#damage} at the centre of the blast.
  */
 public enum BlastLevel {
-    LEVEL_1(1, 8, 10.0, 0x3CE85A, 0.9),
-    LEVEL_2(2, 16, 18.0, 0xE8DC3C, 1.0),
-    LEVEL_3(3, 24, 26.0, 0xE8913C, 1.1),
-    LEVEL_4(4, 32, 34.0, 0xE83C3C, 1.25),
-    LEVEL_5(5, 64, 42.0, 0x8E0B0B, 1.5);
+    LEVEL_1(1, 8, 3, 10.0, 0x3CE85A, 0.9),
+    LEVEL_2(2, 16, 4, 18.0, 0xE8DC3C, 1.0),
+    LEVEL_3(3, 24, 6, 26.0, 0xE8913C, 1.1),
+    LEVEL_4(4, 32, 8, 34.0, 0xE83C3C, 1.25),
+    LEVEL_5(5, 64, 8, 42.0, 0x8E0B0B, 1.5);
 
     /**
      * The lowest valid blast level.
@@ -42,13 +43,22 @@ public enum BlastLevel {
 
     private final int level;
     private final int size;
+    private final int crossSection;
     private final double centreDamage;
     private final int armingColour;
     private final double waveSpeed;
 
-    BlastLevel(int level, int size, double centreDamage, int armingColour, double waveSpeed) {
+    BlastLevel(
+            int level,
+            int size,
+            int crossSection,
+            double centreDamage,
+            int armingColour,
+            double waveSpeed
+    ) {
         this.level = level;
         this.size = size;
+        this.crossSection = crossSection;
         this.centreDamage = centreDamage;
         this.armingColour = armingColour;
         this.waveSpeed = waveSpeed;
@@ -115,6 +125,20 @@ public enum BlastLevel {
      */
     public int getSize() {
         return this.size;
+    }
+
+    /**
+     * Returns the measurements a geometry carves this level to.
+     * <p>
+     * This is the single place a level turns into blocks, so a geometry never has to read the
+     * table itself. The top two levels share the eight block cross section deliberately: past
+     * eight blocks a corridor stops reading as a tunnel, so level five spends its whole growth on
+     * length.
+     *
+     * @return the dimensions of this level
+     */
+    public BlastDimensions getDimensions() {
+        return new BlastDimensions(this.size, this.crossSection);
     }
 
     /**

@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 class ChainResolverTest {
 
-    private static final BlastGeometry GEOMETRY = new CuboidBlastGeometry(BlastLevel.LEVEL_1);
+    private static final BlastGeometry GEOMETRY = new CuboidBlastGeometry(BlastLevel.LEVEL_1.getSize());
 
     @Test
     void sessionForInitiatorReportsFourRemainingCapacity() {

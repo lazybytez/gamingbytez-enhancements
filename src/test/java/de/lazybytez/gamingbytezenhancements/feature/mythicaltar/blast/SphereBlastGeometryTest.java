@@ -28,7 +28,7 @@ class SphereBlastGeometryTest {
 
     @Test
     void shouldYieldAnOffsetCountMatchingTheBallVolume() {
-        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_4);
+        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         long count = geometry.offsets().count();
 
@@ -37,29 +37,29 @@ class SphereBlastGeometryTest {
 
     @Test
     void shouldYieldFewerOffsetsThanTheEnclosingCuboid() {
-        SphereBlastGeometry sphere = new SphereBlastGeometry(BlastLevel.LEVEL_1);
-        CuboidBlastGeometry cuboid = new CuboidBlastGeometry(BlastLevel.LEVEL_1);
+        SphereBlastGeometry sphere = new SphereBlastGeometry(BlastLevel.LEVEL_1.getSize());
+        CuboidBlastGeometry cuboid = new CuboidBlastGeometry(BlastLevel.LEVEL_1.getSize());
 
         assertTrue(sphere.offsets().count() < cuboid.offsets().count());
     }
 
     @Test
     void shouldYieldDistinctOffsets() {
-        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_2);
+        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_2.getSize());
 
         assertEquals(geometry.offsets().count(), geometry.offsets().distinct().count());
     }
 
     @Test
     void shouldYieldOnlyOffsetsItContains() {
-        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_2);
+        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_2.getSize());
 
         assertTrue(geometry.offsets().allMatch(geometry::contains));
     }
 
     @Test
     void shouldYieldOffsetsOrderedByNonDecreasingDistance() {
-        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_2);
+        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_2.getSize());
 
         List<BlastVector> offsets = geometry.offsets().toList();
 
@@ -73,14 +73,14 @@ class SphereBlastGeometryTest {
 
     @Test
     void shouldStartAtTheCentre() {
-        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_3);
+        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_3.getSize());
 
         assertEquals(BlastVector.ORIGIN, geometry.offsets().findFirst().orElseThrow());
     }
 
     @Test
     void shouldContainBlocksWhoseCentreSitsOnTheRadius() {
-        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_4);
+        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         assertTrue(geometry.contains(new BlastVector(16, -16, 0)));
         assertTrue(geometry.contains(new BlastVector(0, -32, 0)));
@@ -88,7 +88,7 @@ class SphereBlastGeometryTest {
 
     @Test
     void shouldHangEntirelyBelowTheCharge() {
-        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_4);
+        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         assertTrue(geometry.contains(new BlastVector(0, 0, 0)));
         assertFalse(geometry.contains(new BlastVector(0, 1, 0)));
@@ -97,7 +97,7 @@ class SphereBlastGeometryTest {
 
     @Test
     void shouldRejectBlocksWhoseCentreSitsOutsideTheRadius() {
-        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_4);
+        SphereBlastGeometry geometry = new SphereBlastGeometry(BlastLevel.LEVEL_4.getSize());
 
         assertFalse(geometry.contains(new BlastVector(17, 0, 0)));
         assertFalse(geometry.contains(new BlastVector(12, 12, 0)));

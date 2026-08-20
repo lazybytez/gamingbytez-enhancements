@@ -169,7 +169,7 @@ class ExcavationChargeFuseTest {
     @Test
     void outlineKeepsTheCornerOfTheVolume() {
         List<BlastVector> outline = ExcavationChargeFuse.outlineOffsets(
-                new CuboidBlastGeometry(BlastLevel.LEVEL_1), ExcavationChargeFuseTest.GENEROUS_SAMPLE_CAP);
+                new CuboidBlastGeometry(BlastLevel.LEVEL_1.getSize()), ExcavationChargeFuseTest.GENEROUS_SAMPLE_CAP);
 
         assertTrue(outline.contains(new BlastVector(-4, -4, -4)));
     }
@@ -177,14 +177,14 @@ class ExcavationChargeFuseTest {
     @Test
     void outlineDropsOffsetsSurroundedByTheVolume() {
         List<BlastVector> outline = ExcavationChargeFuse.outlineOffsets(
-                new CuboidBlastGeometry(BlastLevel.LEVEL_1), ExcavationChargeFuseTest.GENEROUS_SAMPLE_CAP);
+                new CuboidBlastGeometry(BlastLevel.LEVEL_1.getSize()), ExcavationChargeFuseTest.GENEROUS_SAMPLE_CAP);
 
         assertFalse(outline.contains(new BlastVector(0, -1, 0)));
     }
 
     @Test
     void outlineOnlyContainsOffsetsInsideTheVolume() {
-        CuboidBlastGeometry geometry = new CuboidBlastGeometry(BlastLevel.LEVEL_1);
+        CuboidBlastGeometry geometry = new CuboidBlastGeometry(BlastLevel.LEVEL_1.getSize());
 
         List<BlastVector> outline =
                 ExcavationChargeFuse.outlineOffsets(geometry, ExcavationChargeFuseTest.GENEROUS_SAMPLE_CAP);
@@ -195,7 +195,7 @@ class ExcavationChargeFuseTest {
     @Test
     void outlineIsThinnedDownToTheSampleCap() {
         List<BlastVector> outline =
-                ExcavationChargeFuse.outlineOffsets(new CuboidBlastGeometry(BlastLevel.LEVEL_4), 50);
+                ExcavationChargeFuse.outlineOffsets(new CuboidBlastGeometry(BlastLevel.LEVEL_4.getSize()), 50);
 
         assertFalse(outline.isEmpty());
         assertTrue(outline.size() <= 50);
@@ -204,7 +204,7 @@ class ExcavationChargeFuseTest {
     @Test
     void outlineIsEmptyWhenNoSampleIsAllowed() {
         List<BlastVector> outline =
-                ExcavationChargeFuse.outlineOffsets(new CuboidBlastGeometry(BlastLevel.LEVEL_1), 0);
+                ExcavationChargeFuse.outlineOffsets(new CuboidBlastGeometry(BlastLevel.LEVEL_1.getSize()), 0);
 
         assertTrue(outline.isEmpty());
     }
