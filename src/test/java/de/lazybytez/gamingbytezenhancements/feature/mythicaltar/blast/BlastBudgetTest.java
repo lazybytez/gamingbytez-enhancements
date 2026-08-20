@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BlastBudgetTest {
 
-    private static final int BLOCKS_PER_TICK = 4000;
+    private static final int BLOCKS_PER_TICK = 8000;
 
     @Test
     void allocate_withDemandFarAboveBudget_neverExceedsThePerTickBudget() {

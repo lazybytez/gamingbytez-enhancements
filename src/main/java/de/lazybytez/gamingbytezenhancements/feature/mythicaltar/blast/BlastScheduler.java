@@ -55,7 +55,7 @@ public final class BlastScheduler {
      * detonating charge after charge grows the queue without bound. A full five member cascade of
      * the largest shape sits just under this figure.
      */
-    private static final int MAX_QUEUED_BLOCKS = 200_000;
+    private static final int MAX_QUEUED_BLOCKS = 1_400_000;
 
     private final EnhancementsPlugin plugin;
     private final BlastBlockFilter blockFilter;

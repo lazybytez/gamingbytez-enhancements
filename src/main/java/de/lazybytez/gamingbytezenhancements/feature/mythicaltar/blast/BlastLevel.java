@@ -20,15 +20,15 @@ package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.blast;
 /**
  * The tuning table for a charge's blast level.
  * <p>
- * {@code size} is the full width of the affected volume in blocks, {@code centreDamage} is the
- * value passed to {@code LivingEntity#damage} at the centre of the blast, and {@code chainReach}
- * is the radius within which a detonating charge wakes its neighbours.
+ * {@code size} is the full width of the affected volume in blocks and {@code centreDamage} is the
+ * value passed to {@code LivingEntity#damage} at the centre of the blast.
  */
 public enum BlastLevel {
-    LEVEL_1(1, 8, 10.0, 6, 0x3CE85A, 0.9),
-    LEVEL_2(2, 16, 18.0, 8, 0xE8DC3C, 1.0),
-    LEVEL_3(3, 24, 26.0, 10, 0xE8913C, 1.1),
-    LEVEL_4(4, 32, 34.0, 12, 0xE83C3C, 1.25);
+    LEVEL_1(1, 8, 10.0, 0x3CE85A, 0.9),
+    LEVEL_2(2, 16, 18.0, 0xE8DC3C, 1.0),
+    LEVEL_3(3, 24, 26.0, 0xE8913C, 1.1),
+    LEVEL_4(4, 32, 34.0, 0xE83C3C, 1.25),
+    LEVEL_5(5, 64, 42.0, 0x8E0B0B, 1.5);
 
     /**
      * The lowest valid blast level.
@@ -38,20 +38,18 @@ public enum BlastLevel {
     /**
      * The highest valid blast level.
      */
-    public static final int MAX_LEVEL = 4;
+    public static final int MAX_LEVEL = 5;
 
     private final int level;
     private final int size;
     private final double centreDamage;
-    private final int chainReach;
     private final int armingColour;
     private final double waveSpeed;
 
-    BlastLevel(int level, int size, double centreDamage, int chainReach, int armingColour, double waveSpeed) {
+    BlastLevel(int level, int size, double centreDamage, int armingColour, double waveSpeed) {
         this.level = level;
         this.size = size;
         this.centreDamage = centreDamage;
-        this.chainReach = chainReach;
         this.armingColour = armingColour;
         this.waveSpeed = waveSpeed;
     }
@@ -128,12 +126,4 @@ public enum BlastLevel {
         return this.centreDamage;
     }
 
-    /**
-     * Returns the radius within which a detonating charge wakes its neighbours.
-     *
-     * @return the chain reach
-     */
-    public int getChainReach() {
-        return this.chainReach;
-    }
 }

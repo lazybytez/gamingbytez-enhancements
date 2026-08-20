@@ -175,7 +175,7 @@ public final class ExcavationChargeDetonator {
                 level.getWaveSpeed()
         ));
 
-        List<EnderCrystal> woken = this.resolveChain(charge, level, detonationPoint, session);
+        List<EnderCrystal> woken = this.resolveChain(charge, level, geometry, detonationPoint, session);
         charge.remove();
 
         return woken;
@@ -377,15 +377,22 @@ public final class ExcavationChargeDetonator {
      * Resolves which neighbouring charges the blast wakes and books them into the cascade.
      *
      * @param charge          The charge going off
-     * @param level           The blast level supplying the chain reach
+     * @param level           The blast level bounding the neighbour scan
+     * @param geometry        The volume the blast carves, deciding which neighbours wake
      * @param detonationPoint The location the charge detonates in
      * @param session         The shared state of the running cascade
      * @return The charges to wake, at most as many as the session has capacity left
      */
     private List<EnderCrystal> resolveChain(
-            EnderCrystal charge, BlastLevel level, Location detonationPoint, ChainSession session) {
-        int chainReach = level.getChainReach();
-        Map<UUID, EnderCrystal> inRange = this.chargesInRange(detonationPoint, chainReach);
+            EnderCrystal charge,
+            BlastLevel level,
+            BlastGeometry geometry,
+            Location detonationPoint,
+            ChainSession session) {
+        // The scan radius only bounds the entity search; the exact wake decision is the
+        // geometry's containment check. The largest offset any shape reaches is its size along
+        // one axis plus half of it on the others, so twice the size covers every shape.
+        Map<UUID, EnderCrystal> inRange = this.chargesInRange(detonationPoint, level.getSize() * 2);
 
         List<ChainCandidate> placed = new ArrayList<>(inRange.size());
         for (Map.Entry<UUID, EnderCrystal> entry : inRange.entrySet()) {
@@ -394,7 +401,7 @@ public final class ExcavationChargeDetonator {
 
         List<ChainCandidate> woken = ChainResolver.resolve(
                 ExcavationChargeDetonator.toCandidate(charge.getUniqueId(), detonationPoint),
-                chainReach,
+                geometry,
                 placed,
                 session);
 
@@ -407,17 +414,17 @@ public final class ExcavationChargeDetonator {
     }
 
     /**
-     * Collects the placed Excavation Charges standing within the chain reach of the detonation.
+     * Collects the placed Excavation Charges standing within the scan radius of the detonation.
      *
      * @param detonationPoint The location the charge detonates in
-     * @param chainReach      The straight-line reach of the detonating charge's blast level
+     * @param scanRadius      The straight-line radius bounding the entity search
      * @return The charges in range, keyed by their identity
      */
-    private Map<UUID, EnderCrystal> chargesInRange(Location detonationPoint, int chainReach) {
+    private Map<UUID, EnderCrystal> chargesInRange(Location detonationPoint, int scanRadius) {
         Map<UUID, EnderCrystal> inRange = new LinkedHashMap<>();
 
         for (EnderCrystal candidate : detonationPoint.getWorld()
-                .getNearbyEntitiesByType(EnderCrystal.class, detonationPoint, chainReach)) {
+                .getNearbyEntitiesByType(EnderCrystal.class, detonationPoint, scanRadius)) {
             if (!this.isPlacedCharge(candidate)) {
                 continue;
             }
