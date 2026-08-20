@@ -121,10 +121,15 @@ would open the world into the void.
 | Right click a block, held in hand, not sneaking | Places the charge as an end crystal above the clicked block, facing the cardinal direction the player was looking (used by the Tunnel shape) |
 | Left click, or any damage, on a placed charge | Arms a fuse. A charge a player sets off this way gets a 5 second fuse (100 ticks), during which the outline of the volume it is about to carve is drawn in particles that run green at level 1 through amber and red to deep red at level 5; vanilla explosion damage to the crystal is always cancelled so it never triggers a second, uncarved vanilla blast |
 | Right click a placed charge | Collects it back into the player's inventory, preserving its shape and level; drops it on the ground instead if the inventory is full |
-| Redstone signal next to a placed charge | A rising signal on any redstone component within two blocks arms the normal fuse, so a charge can be wired to a lever, a button or a clock. A signal that stays on does not re-arm |
+| Redstone signal next to a placed charge | Arms the normal fuse when a redstone component within two blocks **switches on**, so a charge can be wired to a lever, a button or a clock. A signal that is already on does nothing |
 
 A charge already counting down ignores further hits, so it cannot be re-armed or have a second
 fuse stacked on top of the first.
+
+**A charge reacts to a signal switching on, not to a signal being on.** Placing a charge where power
+is already present does nothing, and a signal that stays on does not arm it again. That is what
+stops a charge from detonating the instant it is placed in an already wired area. To set one off,
+flip a lever, press a button, or let a clock tick.
 
 The countdown draws the volume as a dense fill of its surface with the boundary edges marked in
 larger particles, all in the level's colour, so the exact reach of the blast is readable before it
