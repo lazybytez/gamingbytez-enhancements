@@ -18,11 +18,11 @@
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle;
 
 import de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.AbstractCustomItemManager;
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.item.CustomItemDefinition;
 import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
@@ -38,11 +38,11 @@ public class ExperienceGemManager extends AbstractCustomItemManager {
     }
 
     @Override
-    protected ItemMeta configureItemMeta(ItemMeta itemMeta) {
-        itemMeta.customName(text("Experience Gem", NamedTextColor.GOLD, TextDecoration.BOLD));
-        itemMeta.lore(List.of(text("A gem holding the life energy of centuries.", MessagePalette.BODY)));
-        itemMeta.setEnchantmentGlintOverride(true);
-
-        return itemMeta;
+    protected CustomItemDefinition createItemDefinition() {
+        return CustomItemDefinition.builder()
+                .name(text("Experience Gem", NamedTextColor.GOLD, TextDecoration.BOLD))
+                .lore(List.of(text("A gem holding the life energy of centuries.", MessagePalette.BODY)))
+                .enchantmentGlintOverride(true)
+                .build();
     }
 }

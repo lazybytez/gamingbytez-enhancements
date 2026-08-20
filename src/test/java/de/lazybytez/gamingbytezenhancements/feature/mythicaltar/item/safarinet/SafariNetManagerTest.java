@@ -15,17 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.magicxpbottle;
+package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item.safarinet;
 
 import de.lazybytez.gamingbytezenhancements.lib.gameplay.item.ItemDataComponentStubs;
-import de.lazybytez.gamingbytezenhancements.lib.message.MessagePalette;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,31 +36,36 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
- * Pins the display name identity colour and the lore body colour of {@link EssenceOfSpawnerManager}.
+ * Covers the display refresh of {@link SafariNetManager}.
  * <p>
- * Representative of the identical pattern in {@code ExperienceGemManager}: a bold identity-coloured
- * display name that stays untouched, plus a single grey lore line that moves onto
- * {@link MessagePalette#BODY}. The guard is a regression pin against a future accidental restyle of
- * a player-visible item, not a behaviour change: {@code MessagePalette.BODY} resolves to the same
- * colour the item already used.
+ * Emptying a net rewrites the name and the lore of a net a player already holds, so the guard that
+ * matters is that the glint and the single item stack limit are left alone: a refresh that dropped
+ * them would hand back a net that stacks and no longer shines.
  */
 @ExtendWith(MockitoExtension.class)
-class EssenceOfSpawnerManagerTest {
+class SafariNetManagerTest {
 
     @Mock
     private Plugin plugin;
 
     @Mock
-    private ItemStack itemStack;
+    private ItemStack safariNet;
+
+    @Mock
+    private PersistentDataContainer mutableContainer;
 
     private MockedStatic<ItemLore> loreFactory;
 
@@ -85,21 +88,29 @@ class EssenceOfSpawnerManagerTest {
     }
 
     @Test
-    void createItemDefinition_keepsDisplayNameIdentityColour_andPutsLoreOnPalette() {
-        EssenceOfSpawnerManager manager = new EssenceOfSpawnerManager(this.plugin);
+    void clearEntity_restoresTheEmptyPresentationWithoutTouchingGlintOrStackSize() {
+        when(this.plugin.namespace()).thenReturn("gamingbytez-enhancements");
+        SafariNetManager manager = new SafariNetManager(this.plugin);
+        when(this.safariNet.editPersistentDataContainer(any())).thenAnswer(invocation -> {
+            Consumer<PersistentDataContainer> consumer = invocation.getArgument(0);
+            consumer.accept(this.mutableContainer);
+
+            return true;
+        });
         ItemDataComponentStubs.stubLoreFactory(this.loreFactory, this.loreComponent);
 
-        manager.createItemDefinition().applyTo(this.itemStack);
+        manager.clearEntity(this.safariNet);
 
         ArgumentCaptor<Component> nameCaptor = ArgumentCaptor.forClass(Component.class);
-        verify(this.itemStack).setData(eq(DataComponentTypes.CUSTOM_NAME), nameCaptor.capture());
-        assertEquals(NamedTextColor.GOLD, nameCaptor.getValue().color());
-        assertTrue(nameCaptor.getValue().hasDecoration(TextDecoration.BOLD));
+        verify(this.safariNet).setData(eq(DataComponentTypes.CUSTOM_NAME), nameCaptor.capture());
+        assertEquals("Safari Net", ((TextComponent) nameCaptor.getValue()).content());
+        verify(this.safariNet).setData(DataComponentTypes.LORE, this.loreComponent);
+        verify(this.safariNet, never()).setData(eq(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE), any(Boolean.class));
+        verify(this.safariNet, never()).setData(eq(DataComponentTypes.MAX_STACK_SIZE), any(Integer.class));
 
         List<Component> lore = ItemDataComponentStubs.captureLoreLines(this.loreFactory);
-        TextComponent loreLine = (TextComponent) lore.get(0);
-        assertEquals(MessagePalette.BODY, loreLine.color());
-        assertEquals("A powder emitting a strong lively aura.", loreLine.content());
-        verify(this.itemStack).setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+        assertTrue(lore.stream()
+                .anyMatch(line -> line instanceof TextComponent text
+                        && text.content().equals("A mystical net that can capture creatures.")));
     }
 }

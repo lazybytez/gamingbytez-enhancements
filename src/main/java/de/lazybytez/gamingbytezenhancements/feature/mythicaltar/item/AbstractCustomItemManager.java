@@ -17,10 +17,10 @@
  */
 package de.lazybytez.gamingbytezenhancements.feature.mythicaltar.item;
 
+import de.lazybytez.gamingbytezenhancements.lib.gameplay.item.CustomItemDefinition;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
@@ -52,7 +52,7 @@ public abstract class AbstractCustomItemManager {
     public ItemStack createCustomItem() {
         ItemStack item = ItemStack.of(this.material);
 
-        item.setItemMeta(this.configureItemMeta(item.getItemMeta()));
+        this.createItemDefinition().applyTo(item);
 
         item.editPersistentDataContainer(pdc -> {
             pdc.set(this.getPdcKey(), PersistentDataType.BOOLEAN, true);
@@ -62,9 +62,14 @@ public abstract class AbstractCustomItemManager {
     }
 
     /**
-     * Customize item name, lore, enchanting glint, ...
+     * Describe the presentation a fresh instance of the custom item wears.
+     * <p>
+     * The description is returned rather than written, so the same properties can be re-applied to
+     * an item a player already holds without disturbing the components it is not about.
+     *
+     * @return the definition covering name, lore, glint and stack size
      */
-    abstract protected ItemMeta configureItemMeta(ItemMeta itemMeta);
+    abstract protected CustomItemDefinition createItemDefinition();
 
     /**
      * Check whether the given item is a custom item.
