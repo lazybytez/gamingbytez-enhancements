@@ -47,11 +47,34 @@ public class CreeperDamageListener implements Listener {
         AttributeInstance armorPointAttribute = p.getAttribute(Attribute.ARMOR);
         AttributeInstance armorToughnessAttribute = p.getAttribute(Attribute.ARMOR_TOUGHNESS);
 
-        e.setDamage(this.armorBasedCreeperDamageCalculator.calculateDamage(
+        double baseDamage = e.getDamage();
+        double intendedDamage = this.armorBasedCreeperDamageCalculator.calculateDamage(
                 p.getEquipment().getArmorContents(),
                 armorPointAttribute == null ? 0.0 : armorPointAttribute.getValue(),
                 armorToughnessAttribute == null ? 0.0 : armorToughnessAttribute.getValue(),
-                e.getDamage()
-        ));
+                baseDamage
+        );
+
+        e.setDamage(this.baseFor(intendedDamage, baseDamage, e.getFinalDamage()));
+    }
+
+    /**
+     * Converts an intended final damage into the base damage that produces it.
+     * <p>
+     * The event carries damage before reduction, and the server scales the armour, protection and
+     * effect modifiers with whatever base it is given. The calculator already reads armour, so the
+     * base is raised by the reduction it will receive rather than counting armour twice.
+     *
+     * @param intendedDamage The damage the player should take.
+     * @param baseDamage     The damage before reduction.
+     * @param finalDamage    The damage after reduction.
+     * @return The base damage to set on the event.
+     */
+    double baseFor(double intendedDamage, double baseDamage, double finalDamage) {
+        if (baseDamage <= 0.0 || finalDamage <= 0.0) {
+            return intendedDamage;
+        }
+
+        return intendedDamage * (baseDamage / finalDamage);
     }
 }
