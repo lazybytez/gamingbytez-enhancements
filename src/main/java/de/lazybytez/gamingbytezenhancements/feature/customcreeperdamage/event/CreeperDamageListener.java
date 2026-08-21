@@ -47,11 +47,40 @@ public class CreeperDamageListener implements Listener {
         AttributeInstance armorPointAttribute = p.getAttribute(Attribute.ARMOR);
         AttributeInstance armorToughnessAttribute = p.getAttribute(Attribute.ARMOR_TOUGHNESS);
 
-        e.setDamage(this.armorBasedCreeperDamageCalculator.calculateDamage(
+        double baseDamage = e.getDamage();
+        double intendedDamage = this.armorBasedCreeperDamageCalculator.calculateDamage(
                 p.getEquipment().getArmorContents(),
                 armorPointAttribute == null ? 0.0 : armorPointAttribute.getValue(),
                 armorToughnessAttribute == null ? 0.0 : armorToughnessAttribute.getValue(),
-                e.getDamage()
-        ));
+                baseDamage
+        );
+
+        e.setDamage(CreeperDamageListener.baseDealing(intendedDamage, baseDamage, e.getFinalDamage()));
+    }
+
+    /**
+     * Works out the base damage that leaves the player taking the damage this feature intends.
+     * <p>
+     * The damage set here is the blast before armour, and the server still takes armour, protection
+     * and effects off it afterwards. This feature already reads armour to decide how hard a creeper
+     * hits, so letting the server subtract it a second time counted it twice and flattened the whole
+     * scale: the hardest hit this feature can produce arrived as an ordinary one, and the occasional
+     * one shot it exists for could never land.
+     * <p>
+     * The reduction the server is about to apply is measured from the damage as it stands, and the
+     * base is raised by the same proportion, so the number that reaches the player is the number
+     * this feature chose. A player wearing nothing has no reduction to undo and is left alone.
+     *
+     * @param intendedDamage The damage the player should end up taking.
+     * @param baseDamage     The blast damage before any reduction.
+     * @param finalDamage    The damage the player would take if this feature changed nothing.
+     * @return The base damage to set on the event.
+     */
+    static double baseDealing(double intendedDamage, double baseDamage, double finalDamage) {
+        if (baseDamage <= 0.0 || finalDamage <= 0.0) {
+            return intendedDamage;
+        }
+
+        return intendedDamage * (baseDamage / finalDamage);
     }
 }
