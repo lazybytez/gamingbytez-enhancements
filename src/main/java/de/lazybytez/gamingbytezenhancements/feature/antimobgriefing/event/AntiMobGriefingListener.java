@@ -58,7 +58,7 @@ public class AntiMobGriefingListener implements Listener {
             return;
         }
 
-        if (!GriefProtectionRegistry.GRIEFING_DISABLED_ENTITY_TYPES.contains(e.getRemover().getType())) {
+        if (!AntiMobGriefingListener.isGriefingRemover(e.getRemover())) {
             return;
         }
 
@@ -67,6 +67,49 @@ public class AntiMobGriefingListener implements Listener {
         }
 
         e.setCancelled(true);
+    }
+
+    /**
+     * Tells whether a mob is behind the removal of a hanging entity.
+     * <p>
+     * A mob that shoots is not the entity that arrives at the painting, its arrow is, and an arrow
+     * carries no hint of who fired it in its type. The shooter is resolved so a skeleton cannot do
+     * through an arrow what it may not do directly, while a player keeps breaking frames and
+     * paintings as they always could.
+     *
+     * @param remover The entity that removed the hanging entity, may be null.
+     * @return true when a mob that must not grief is behind the removal.
+     */
+    private static boolean isGriefingRemover(Entity remover) {
+        if (remover == null) {
+            return false;
+        }
+
+        if (GriefProtectionRegistry.GRIEFING_DISABLED_ENTITY_TYPES.contains(remover.getType())) {
+            return true;
+        }
+
+        if (!GriefProtectionRegistry.GRIEFING_DISABLED_PROJECTILES_WITH_SHOOTERS_CHECK.contains(remover.getType())) {
+            return false;
+        }
+
+        if (!(remover instanceof Projectile projectile)) {
+            return false;
+        }
+
+        ProjectileSource shooter = projectile.getShooter();
+
+        if (shooter == null) {
+            return false;
+        }
+
+        for (Class<? extends Entity> disabledShooters : GriefProtectionRegistry.GRIEFING_DISABLED_PROJECTILE_SHOOTERS) {
+            if (disabledShooters.isInstance(shooter)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @EventHandler
