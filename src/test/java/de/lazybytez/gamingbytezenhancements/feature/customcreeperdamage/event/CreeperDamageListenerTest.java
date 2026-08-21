@@ -25,50 +25,50 @@ import org.junit.jupiter.api.Test;
 /**
  * Covers the damage arithmetic of {@link CreeperDamageListener}.
  * <p>
- * The damage set on the event is the blast before armour, while the number this feature decides on
- * is what the player should end up taking, so the base has to carry it through the reduction the
- * server applies afterwards. Getting that wrong counts armour twice, which is invisible in a diff
- * and shows up only as creepers that feel ordinary.
+ * The reference figures come from a live server: a blast of 17.85 reached a netherite clad player
+ * as 6.39.
  */
 class CreeperDamageListenerTest {
 
+    private final CreeperDamageListener listener = new CreeperDamageListener(null);
+
     @Test
-    void baseDealing_raisesTheBaseSoTheIntendedDamageSurvivesArmour() {
+    void baseFor_raisesTheBaseSoTheIntendedDamageSurvivesArmour() {
         // Numbers observed on a server: a blast of 17.85 reached a netherite clad player as 6.39.
-        double base = CreeperDamageListener.baseDealing(19.77, 17.85, 6.39);
+        double base = this.listener.baseFor(19.77, 17.85, 6.39);
 
         assertEquals(19.77 * (17.85 / 6.39), base, 0.0001);
         assertTrue(base > 19.77, "an armoured player needs a raised base, not the intended number");
     }
 
     @Test
-    void baseDealing_appliedReductionLandsOnTheIntendedDamage() {
+    void baseFor_appliedReductionLandsOnTheIntendedDamage() {
         double reductionKept = 6.39 / 17.85;
 
-        double base = CreeperDamageListener.baseDealing(19.77, 17.85, 6.39);
+        double base = this.listener.baseFor(19.77, 17.85, 6.39);
 
         assertEquals(19.77, base * reductionKept, 0.0001);
     }
 
     @Test
-    void baseDealing_withoutAnyReduction_leavesTheIntendedDamageAlone() {
-        assertEquals(7.5, CreeperDamageListener.baseDealing(7.5, 12.0, 12.0), 0.0001);
+    void baseFor_withoutAnyReduction_leavesTheIntendedDamageAlone() {
+        assertEquals(7.5, this.listener.baseFor(7.5, 12.0, 12.0), 0.0001);
     }
 
     @Test
-    void baseDealing_whenTheHitWasFullyAbsorbed_keepsTheIntendedDamage() {
-        assertEquals(7.5, CreeperDamageListener.baseDealing(7.5, 12.0, 0.0), 0.0001);
+    void baseFor_whenTheHitWasFullyAbsorbed_keepsTheIntendedDamage() {
+        assertEquals(7.5, this.listener.baseFor(7.5, 12.0, 0.0), 0.0001);
     }
 
     @Test
-    void baseDealing_withoutAnyIncomingDamage_keepsTheIntendedDamage() {
-        assertEquals(7.5, CreeperDamageListener.baseDealing(7.5, 0.0, 0.0), 0.0001);
+    void baseFor_withoutAnyIncomingDamage_keepsTheIntendedDamage() {
+        assertEquals(7.5, this.listener.baseFor(7.5, 0.0, 0.0), 0.0001);
     }
 
     @Test
-    void baseDealing_whenTheServerRaisesTheDamage_lowersTheBase() {
+    void baseFor_whenTheServerRaisesTheDamage_lowersTheBase() {
         // Freezing and similar effects add damage rather than removing it.
-        double base = CreeperDamageListener.baseDealing(10.0, 8.0, 16.0);
+        double base = this.listener.baseFor(10.0, 8.0, 16.0);
 
         assertEquals(5.0, base, 0.0001);
         assertTrue(base < 10.0, "damage the server raises needs a lowered base");

@@ -35,9 +35,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Covers the hanging entity protection of {@link AntiMobGriefingListener}.
  * <p>
- * A mob that shoots never touches the painting itself, so the entity the event reports is an arrow,
- * and an arrow's type says nothing about who fired it. These tests pin that the shooter decides,
- * because reading the arrow alone protected nothing while looking correct.
+ * The remover of a shot hanging entity is the arrow, so these cover which shooter is behind it.
  */
 class AntiMobGriefingListenerTest {
 
