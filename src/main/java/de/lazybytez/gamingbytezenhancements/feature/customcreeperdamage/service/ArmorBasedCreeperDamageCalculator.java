@@ -22,32 +22,75 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Random;
 
+/**
+ * Turns a creeper blast into the damage an armoured player takes.
+ * <p>
+ * Damage rises with the protection a player wears, so heavier armour makes a creeper more
+ * dangerous rather than less. A random roll on every hit keeps the outcome variable.
+ */
 public class ArmorBasedCreeperDamageCalculator {
+    private static final double PROTECTION_SCALE = 50.0;
+    private static final double ENCHANTMENT_WEIGHT = 0.25;
+    private static final double UNARMORED_FACTOR = 0.1;
+    private static final double MIN_LUCK = 0.5;
+    private static final double MAX_LUCK = 1.25;
+
     private final Random random = new Random();
 
+    /**
+     * Calculates the damage a player takes from a creeper blast.
+     *
+     * @param equipment      The player's equipped armor pieces.
+     * @param armorPoints    The player's armor attribute value.
+     * @param armorToughness The player's armor toughness attribute value.
+     * @param baseDamage     The damage the blast deals before any reduction.
+     * @return The damage the player should take.
+     */
     public double calculateDamage(
             ItemStack[] equipment,
             double armorPoints,
             double armorToughness,
             double baseDamage
     ) {
-        double armorFactor = (armorPoints + armorToughness + this.calculateEnchantmentFactor(equipment)) / 5;
-        if (armorFactor == 0) {
-            armorFactor = 1;
+        return this.damageFor(armorPoints, armorToughness, this.calculateEnchantmentFactor(equipment), baseDamage);
+    }
+
+    /**
+     * Calculates the damage a blast deals against the given protection.
+     * <p>
+     * An enchantment level counts a quarter of what an armor point counts, so enchanting a set
+     * that is already heavy raises the danger without doubling it.
+     *
+     * @param armorPoints       The player's armor attribute value.
+     * @param armorToughness    The player's armor toughness attribute value.
+     * @param enchantmentLevels The summed Protection and Blast Protection levels.
+     * @param baseDamage        The damage the blast deals before any reduction.
+     * @return The damage the player should take.
+     */
+    double damageFor(
+            double armorPoints,
+            double armorToughness,
+            double enchantmentLevels,
+            double baseDamage
+    ) {
+        double protection = armorPoints
+                + armorToughness
+                + ArmorBasedCreeperDamageCalculator.ENCHANTMENT_WEIGHT * enchantmentLevels;
+
+        if (protection <= 0.0) {
+            return baseDamage * ArmorBasedCreeperDamageCalculator.UNARMORED_FACTOR * this.rollLuck();
         }
 
-        double adjustedArmorFactor = (armorFactor > 0 ? armorFactor : 1) / 10;
+        return baseDamage
+                * (protection / ArmorBasedCreeperDamageCalculator.PROTECTION_SCALE)
+                * this.rollLuck();
+    }
 
-        double luck = this.random.nextDouble(0.5, 2);
-        double armorLuckFactor = luck * adjustedArmorFactor;
-
-        double adjustedDamage = baseDamage * armorLuckFactor;
-
-        if (adjustedDamage < 0) {
-            adjustedDamage = baseDamage;
-        }
-
-        return adjustedDamage;
+    private double rollLuck() {
+        return this.random.nextDouble(
+                ArmorBasedCreeperDamageCalculator.MIN_LUCK,
+                ArmorBasedCreeperDamageCalculator.MAX_LUCK
+        );
     }
 
     private double calculateEnchantmentFactor(ItemStack[] equipment) {
