@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 class ArmorBasedCreeperDamageCalculatorTest {
     private static final int SAMPLES = 200_000;
     private static final double RATE_TOLERANCE = 0.02;
+    private static final double DAMAGE_TOLERANCE = 0.15;
 
     private static final double PLAYER_HEALTH = 20.0;
     private static final double CLOSE_BLAST = 28.0;
@@ -40,12 +41,13 @@ class ArmorBasedCreeperDamageCalculatorTest {
     private static final double NETHERITE_TOUGHNESS = 12.0;
     private static final double DIAMOND_ARMOR = 20.0;
     private static final double DIAMOND_TOUGHNESS = 8.0;
+    private static final double IRON_ARMOR = 15.0;
     private static final double PROTECTION_IV_FULL_SET = 16.0;
 
     private final ArmorBasedCreeperDamageCalculator calculator = new ArmorBasedCreeperDamageCalculator();
 
     @Test
-    void damageFor_fullEnchantedNetherite_killsOutrightAboutAThirdOfTheTime() {
+    void damageFor_fullEnchantedNetherite_killsOutrightAboutOneHitInFive() {
         double rate = this.oneShotRate(
                 ArmorBasedCreeperDamageCalculatorTest.CLOSE_BLAST,
                 ArmorBasedCreeperDamageCalculatorTest.NETHERITE_ARMOR,
@@ -53,7 +55,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
                 ArmorBasedCreeperDamageCalculatorTest.PROTECTION_IV_FULL_SET
         );
 
-        assertEquals(0.344, rate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
+        assertEquals(0.196, rate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
     }
 
     @Test
@@ -71,7 +73,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
                 ArmorBasedCreeperDamageCalculatorTest.PROTECTION_IV_FULL_SET
         );
 
-        assertEquals(0.179, plainRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
+        assertEquals(0.074, plainRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
         assertTrue(plainRate < enchantedRate, "enchanted armour must stay the more dangerous set");
     }
 
@@ -90,7 +92,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
                 ArmorBasedCreeperDamageCalculatorTest.PROTECTION_IV_FULL_SET
         );
 
-        assertEquals(0.389, pointBlankRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
+        assertEquals(0.230, pointBlankRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
         assertTrue(
                 pointBlankRate - closeRate < 0.1,
                 "a blast against the player must not be far deadlier than one a few steps away"
@@ -106,11 +108,11 @@ class ArmorBasedCreeperDamageCalculatorTest {
                 ArmorBasedCreeperDamageCalculatorTest.PROTECTION_IV_FULL_SET
         );
 
-        assertEquals(0.389, cappedRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
+        assertEquals(0.230, cappedRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
     }
 
     @Test
-    void damageFor_fullEnchantedNetherite_staysWithinTheLuckWindow() {
+    void damageFor_fullEnchantedNetherite_sometimesBarelyScratches() {
         double lowest = Double.MAX_VALUE;
         double highest = 0.0;
 
@@ -126,19 +128,33 @@ class ArmorBasedCreeperDamageCalculatorTest {
             highest = Math.max(highest, damage);
         }
 
-        assertTrue(lowest >= 10.44, "the weakest roll must not fall below half the armour factor");
-        assertTrue(highest <= 26.1, "the strongest roll must not exceed the capped ceiling");
+        assertTrue(lowest < 4.0, "the weakest roll must leave the player nearly untouched");
+        assertTrue(highest <= 24.86, "the strongest roll must not exceed the capped ceiling");
     }
 
     @Test
-    void damageFor_anUnarmoredPlayer_takesATenthOfTheBlast() {
-        double damage = this.damageFrom(ArmorBasedCreeperDamageCalculatorTest.CLOSE_BLAST, 0.0, 0.0, 0.0);
+    void damageFor_anUnarmoredPlayer_takesTheFlooredProtection() {
+        double mean = this.meanDamage(ArmorBasedCreeperDamageCalculatorTest.CLOSE_BLAST, 0.0, 0.0, 0.0);
 
-        assertTrue(damage >= 1.4 && damage <= 3.5, "an unarmoured player takes a tenth of the blast");
+        assertEquals(8.43, mean, ArmorBasedCreeperDamageCalculatorTest.DAMAGE_TOLERANCE);
+    }
+
+    @Test
+    void damageFor_lightArmor_isFlooredToTheSameProtectionAsNoArmor() {
+        double iron = this.meanDamage(
+                ArmorBasedCreeperDamageCalculatorTest.CLOSE_BLAST,
+                ArmorBasedCreeperDamageCalculatorTest.IRON_ARMOR,
+                0.0,
+                0.0
+        );
+        double bare = this.meanDamage(ArmorBasedCreeperDamageCalculatorTest.CLOSE_BLAST, 0.0, 0.0, 0.0);
+
+        assertEquals(bare, iron, ArmorBasedCreeperDamageCalculatorTest.DAMAGE_TOLERANCE);
     }
 
     @Test
     void damageFor_moreArmor_dealsMoreDamage() {
+        double bare = this.meanDamage(ArmorBasedCreeperDamageCalculatorTest.CLOSE_BLAST, 0.0, 0.0, 0.0);
         double diamond = this.meanDamage(
                 ArmorBasedCreeperDamageCalculatorTest.CLOSE_BLAST,
                 ArmorBasedCreeperDamageCalculatorTest.DIAMOND_ARMOR,
@@ -152,6 +168,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
                 0.0
         );
 
+        assertTrue(bare < diamond, "diamond must stay more dangerous than no armour at all");
         assertTrue(diamond < netherite, "netherite must stay more dangerous than diamond");
     }
 

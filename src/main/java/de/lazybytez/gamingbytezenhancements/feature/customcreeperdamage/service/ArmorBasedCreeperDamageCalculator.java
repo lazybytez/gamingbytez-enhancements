@@ -29,11 +29,11 @@ import java.util.Random;
  * dangerous rather than less. A random roll on every hit keeps the outcome variable.
  */
 public class ArmorBasedCreeperDamageCalculator {
-    private static final double PROTECTION_SCALE = 50.0;
+    private static final double PROTECTION_SCALE = 42.0;
     private static final double ENCHANTMENT_WEIGHT = 0.25;
-    private static final double UNARMORED_FACTOR = 0.1;
-    private static final double MIN_LUCK = 0.5;
-    private static final double MAX_LUCK = 1.25;
+    private static final double MIN_PROTECTION = 22.0;
+    private static final double MIN_LUCK = 0.15;
+    private static final double MAX_LUCK = 1.0;
     private static final double MAX_BLAST_STRENGTH = 29.0;
 
     private final Random random = new Random();
@@ -62,7 +62,8 @@ public class ArmorBasedCreeperDamageCalculator {
      * An enchantment level counts a quarter of what an armor point counts, so enchanting a set
      * that is already heavy raises the danger without doubling it. Blast strength is capped, so a
      * creeper that goes off against a player is about as likely to kill as one a few steps away
-     * rather than certain to.
+     * rather than certain to. Protection is floored, so a player wearing little or nothing still
+     * takes a serious hit.
      *
      * @param armorPoints       The player's armor attribute value.
      * @param armorToughness    The player's armor toughness attribute value.
@@ -77,13 +78,12 @@ public class ArmorBasedCreeperDamageCalculator {
             double baseDamage
     ) {
         double blast = Math.min(baseDamage, ArmorBasedCreeperDamageCalculator.MAX_BLAST_STRENGTH);
-        double protection = armorPoints
-                + armorToughness
-                + ArmorBasedCreeperDamageCalculator.ENCHANTMENT_WEIGHT * enchantmentLevels;
-
-        if (protection <= 0.0) {
-            return blast * ArmorBasedCreeperDamageCalculator.UNARMORED_FACTOR * this.rollLuck();
-        }
+        double protection = Math.max(
+                armorPoints
+                        + armorToughness
+                        + ArmorBasedCreeperDamageCalculator.ENCHANTMENT_WEIGHT * enchantmentLevels,
+                ArmorBasedCreeperDamageCalculator.MIN_PROTECTION
+        );
 
         return blast
                 * (protection / ArmorBasedCreeperDamageCalculator.PROTECTION_SCALE)
