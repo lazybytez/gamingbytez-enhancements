@@ -7,10 +7,11 @@ player still has to respect one. A random roll on every hit keeps the outcome va
 ## Damage Formula
 
 ```
+blast        = min(baseDamage, 29)
 protection   = armorPoints + armorToughness + 0.25 * enchantmentLevels
 armorFactor  = protection / 50
 luck         = random value between 0.5 and 1.25
-damage       = baseDamage * armorFactor * luck
+damage       = blast * armorFactor * luck
 ```
 
 A player wearing no armor at all takes a flat tenth of the blast instead, scaled by the same luck
@@ -31,6 +32,16 @@ the server needs so that vanilla armor reduction does not apply a second time on
 Enchantment levels are weighted down because a full set of Protection IV would otherwise add half
 again as much as the armor itself, which made enchanted netherite the most lethal thing to wear.
 
+### Blast Cap
+
+Vanilla explosion damage climbs steeply as the distance closes, which made a creeper detonating
+against a player a guaranteed kill for every armor set. Blast strength is therefore capped at 29
+before the armor factor is applied, so the last couple of blocks of an approach stop mattering and
+a point blank hit carries roughly the same risk as one from a few steps away.
+
+The cap applies to charged creepers as well, so a charged creeper is no more lethal to a player
+than an ordinary one.
+
 ### Luck Multiplier
 
 Every hit rolls a multiplier between `0.5` and `1.25`. The ceiling is what decides how often a
@@ -39,16 +50,17 @@ window.
 
 ## What This Means In Practice
 
-For a creeper detonating about two blocks away, which lands a blast of roughly 28 before reduction:
+For a player at full health, against a creeper a few steps away (a blast of roughly 28) and one
+detonating against the player (43, capped to 29):
 
-| Armor | Damage range | Chance of a one shot |
-|---|---|---|
-| Full netherite, Protection IV | 10.1 to 25.2 | ~34% |
-| Full netherite, unenchanted | 9.0 to 22.4 | ~18% |
-| Full diamond, unenchanted | 7.8 to 19.6 | never |
+| Armor | Damage, a few steps | One shot | Damage, point blank | One shot |
+|---|---|---|---|---|
+| Full netherite, Protection IV | 10.1 to 25.2 | ~34% | 10.4 to 26.1 | ~39% |
+| Full netherite, unenchanted | 9.0 to 22.4 | ~18% | 9.3 to 23.2 | ~23% |
+| Full diamond, unenchanted | 7.8 to 19.6 | never | 8.1 to 20.3 | ~2% |
 
-A creeper that goes off directly against a player lands a much larger blast and stays lethal for
-every set. Distance is what makes a hit survivable.
+Distance still decides how much damage a blast deals, up to the cap. What it no longer decides is
+whether the hit is survivable at all.
 
 ## Configuration
 

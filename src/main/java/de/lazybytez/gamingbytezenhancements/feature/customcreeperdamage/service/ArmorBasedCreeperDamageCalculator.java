@@ -34,6 +34,7 @@ public class ArmorBasedCreeperDamageCalculator {
     private static final double UNARMORED_FACTOR = 0.1;
     private static final double MIN_LUCK = 0.5;
     private static final double MAX_LUCK = 1.25;
+    private static final double MAX_BLAST_STRENGTH = 29.0;
 
     private final Random random = new Random();
 
@@ -59,7 +60,9 @@ public class ArmorBasedCreeperDamageCalculator {
      * Calculates the damage a blast deals against the given protection.
      * <p>
      * An enchantment level counts a quarter of what an armor point counts, so enchanting a set
-     * that is already heavy raises the danger without doubling it.
+     * that is already heavy raises the danger without doubling it. Blast strength is capped, so a
+     * creeper that goes off against a player is about as likely to kill as one a few steps away
+     * rather than certain to.
      *
      * @param armorPoints       The player's armor attribute value.
      * @param armorToughness    The player's armor toughness attribute value.
@@ -73,15 +76,16 @@ public class ArmorBasedCreeperDamageCalculator {
             double enchantmentLevels,
             double baseDamage
     ) {
+        double blast = Math.min(baseDamage, ArmorBasedCreeperDamageCalculator.MAX_BLAST_STRENGTH);
         double protection = armorPoints
                 + armorToughness
                 + ArmorBasedCreeperDamageCalculator.ENCHANTMENT_WEIGHT * enchantmentLevels;
 
         if (protection <= 0.0) {
-            return baseDamage * ArmorBasedCreeperDamageCalculator.UNARMORED_FACTOR * this.rollLuck();
+            return blast * ArmorBasedCreeperDamageCalculator.UNARMORED_FACTOR * this.rollLuck();
         }
 
-        return baseDamage
+        return blast
                 * (protection / ArmorBasedCreeperDamageCalculator.PROTECTION_SCALE)
                 * this.rollLuck();
     }
