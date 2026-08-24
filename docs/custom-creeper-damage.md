@@ -7,15 +7,17 @@ player still has to respect one. A random roll on every hit keeps the outcome va
 ## Damage Formula
 
 ```
-blast        = min(baseDamage, 29)
-protection   = max(armorPoints + armorToughness + 0.25 * enchantmentLevels, 22)
-armorFactor  = protection / 42
+blast        = clamp(baseDamage, 20, 24)
+protection   = max(armorPoints + armorToughness + 0.125 * enchantmentLevels, 13)
+armorFactor  = protection / 26
 luck         = random value between 0.15 and 1.0
-damage       = blast * armorFactor * luck
+resistance   = max(0, 1 - 0.4 * resistanceLevel)
+damage       = blast * armorFactor * luck * resistance
 ```
 
-The result is the damage the player actually takes. The listener converts it into the base damage
-the server needs so that vanilla armor reduction does not apply a second time on top.
+The result is the health the player loses, not a number the server reduces again. The listener
+searches for the base damage whose reduction leaves exactly that much health gone, asking the
+server what it would deal rather than assuming a fixed ratio between the two.
 
 ### Armor Inputs
 
@@ -23,27 +25,36 @@ the server needs so that vanilla armor reduction does not apply a second time on
 |---|---|
 | Armor points | The armor attribute value, counted in full |
 | Armor toughness | The armor toughness attribute value, counted in full |
-| Protection enchantment | Each level counts a quarter of an armor point |
-| Blast Protection enchantment | Each level counts a quarter of an armor point |
+| Protection enchantment | Each level counts an eighth of an armor point |
+| Blast Protection enchantment | Each level counts an eighth of an armor point |
 
-Enchantment levels are weighted down because a full set of Protection IV would otherwise add half
-again as much as the armor itself, which made enchanted netherite the most lethal thing to wear.
+Enchantment levels are weighted down hard. Counted in full, a set of Protection IV added half again
+as much as the armor itself and made enchanted netherite far and away the deadliest thing to wear.
 
 ### Protection Floor
 
-Protection never counts as less than 22, so a player in light armor or none at all still takes a
-serious hit rather than walking away from a creeper. Everything up to and including a full iron set
-sits at the floor and takes the same damage; diamond and netherite rise above it.
+Protection never counts as less than 13, so a player in light armor or none at all still loses about
+three hearts to a blast rather than walking away from it. Leather, gold and chainmail all sit at the
+floor; iron and everything above it rise past it.
 
-### Blast Cap
+### Blast Band
 
 Vanilla explosion damage climbs steeply as the distance closes, which made a creeper detonating
-against a player a guaranteed kill for every armor set. Blast strength is therefore capped at 29
-before the armor factor is applied, so the last couple of blocks of an approach stop mattering and
-a point blank hit carries roughly the same risk as one from a few steps away.
+against a player a guaranteed kill and one a few blocks away harmless. Blast strength is clamped
+into a band of 20 to 24 before the armor factor applies, so distance still decides how hard a hit
+lands but no longer decides whether it is survivable at all.
 
-The cap applies to charged creepers as well, so a charged creeper is no more lethal to a player
+The band applies to charged creepers as well, so a charged creeper is no more lethal to a player
 than an ordinary one.
+
+### Resistance and Absorption
+
+Resistance is the one input that lowers the result rather than raising it, at 40% per level. A
+single level is enough to put even the heaviest blast below lethal, and Resistance III stops it
+entirely.
+
+Absorption is taken off the intended damage before the search runs, so golden apple hearts soak the
+blast the way they soak anything else instead of being solved away.
 
 ### Luck Multiplier
 
@@ -52,19 +63,19 @@ barely scratch a player, and the ceiling is what decides how often one kills out
 
 ## What This Means In Practice
 
-For a player at full health, against a creeper a few steps away (a blast of roughly 28) and one
-detonating against the player (43, capped to 29):
+For a player at full health with no Resistance or absorption, against a blast in the middle of the
+band:
 
-| Armor | Damage, a few steps | One shot | Damage, point blank | One shot |
-|---|---|---|---|---|
-| Full netherite, Protection IV | 3.6 to 24.0 | ~20% | 3.7 to 24.9 | ~23% |
-| Full netherite, unenchanted | 3.2 to 21.3 | ~7% | 3.3 to 22.1 | ~11% |
-| Full diamond, unenchanted | 2.8 to 18.7 | never | 2.9 to 19.3 | never |
-| Iron or lighter, including none | 2.2 to 14.7 | never | 2.3 to 15.2 | never |
+| Armor | Damage | One shot |
+|---|---|---|
+| None, leather, gold or chainmail | 1.7 to 11.0 | never |
+| Full iron | 1.9 to 12.7 | never |
+| Full diamond | 3.6 to 23.7 | ~18% |
+| Full netherite | 4.1 to 27.1 | ~31% |
+| Full netherite, Protection IV | 4.3 to 28.8 | ~36% |
 
-Average damage runs from about 8 at the protection floor to about 14 in enchanted netherite.
-Distance still decides how much damage a blast deals, up to the cap. What it no longer decides is
-whether the hit is survivable at all.
+One shots begin at diamond. Everything below it takes a real bite out of a health bar without ever
+being able to finish the job.
 
 ## Configuration
 

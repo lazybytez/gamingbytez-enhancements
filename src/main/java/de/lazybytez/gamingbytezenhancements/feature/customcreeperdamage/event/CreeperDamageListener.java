@@ -20,12 +20,19 @@ package de.lazybytez.gamingbytezenhancements.feature.customcreeperdamage.event;
 import de.lazybytez.gamingbytezenhancements.feature.customcreeperdamage.service.ArmorBasedCreeperDamageCalculator;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class CreeperDamageListener implements Listener {
+    private static final int EXPANSION_STEPS = 12;
+    private static final int REFINEMENT_STEPS = 20;
+
     private final ArmorBasedCreeperDamageCalculator armorBasedCreeperDamageCalculator;
 
     public CreeperDamageListener(ArmorBasedCreeperDamageCalculator armorBasedCreeperDamageCalculator) {
@@ -34,11 +41,11 @@ public class CreeperDamageListener implements Listener {
 
     @EventHandler
     public void onCreeperDamagePlayer(EntityDamageByEntityEvent e) {
-        if (!e.getDamager().getType().equals(org.bukkit.entity.EntityType.CREEPER)) {
+        if (!e.getDamager().getType().equals(EntityType.CREEPER)) {
             return;
         }
 
-        if (!e.getEntity().getType().equals(org.bukkit.entity.EntityType.PLAYER)) {
+        if (!e.getEntity().getType().equals(EntityType.PLAYER)) {
             return;
         }
 
@@ -47,34 +54,72 @@ public class CreeperDamageListener implements Listener {
         AttributeInstance armorPointAttribute = p.getAttribute(Attribute.ARMOR);
         AttributeInstance armorToughnessAttribute = p.getAttribute(Attribute.ARMOR_TOUGHNESS);
 
-        double baseDamage = e.getDamage();
         double intendedDamage = this.armorBasedCreeperDamageCalculator.calculateDamage(
                 p.getEquipment().getArmorContents(),
                 armorPointAttribute == null ? 0.0 : armorPointAttribute.getValue(),
                 armorToughnessAttribute == null ? 0.0 : armorToughnessAttribute.getValue(),
-                baseDamage
+                this.resistanceLevel(p),
+                e.getDamage()
         );
 
-        e.setDamage(this.baseFor(intendedDamage, baseDamage, e.getFinalDamage()));
+        this.applyAsFinalDamage(e, Math.max(0.0, intendedDamage - p.getAbsorptionAmount()));
     }
 
     /**
-     * Converts an intended final damage into the base damage that produces it.
+     * Sets the base damage whose reduction leaves the player losing the intended health.
      * <p>
-     * The event carries damage before reduction, and the server scales the armour, protection and
-     * effect modifiers with whatever base it is given. The calculator already reads armour, so the
-     * base is raised by the reduction it will receive rather than counting armour twice.
+     * The event carries damage before reduction and the server recomputes every modifier against
+     * whatever base it is given, so no fixed ratio converts one into the other: armor sheds a
+     * smaller share of a large hit than of a small one. The base is searched for instead, by
+     * widening a bracket until it spans the intended damage and then halving it, which asks the
+     * server what it would deal rather than modelling what it would deal.
+     * <p>
+     * The search targets health lost, so absorption is taken off the intended damage by the caller
+     * rather than being solved away.
      *
-     * @param intendedDamage The damage the player should take.
-     * @param baseDamage     The damage before reduction.
-     * @param finalDamage    The damage after reduction.
-     * @return The base damage to set on the event.
+     * @param event          The damage event to write the base damage to.
+     * @param intendedDamage The health the player should lose.
      */
-    double baseFor(double intendedDamage, double baseDamage, double finalDamage) {
-        if (baseDamage <= 0.0 || finalDamage <= 0.0) {
-            return intendedDamage;
+    void applyAsFinalDamage(EntityDamageEvent event, double intendedDamage) {
+        double low = 0.0;
+        double high = intendedDamage;
+
+        for (int step = 0;
+             step < CreeperDamageListener.EXPANSION_STEPS
+                     && this.finalDamageFor(event, high) < intendedDamage;
+             step++) {
+            low = high;
+            high *= 2.0;
         }
 
-        return intendedDamage * (baseDamage / finalDamage);
+        for (int step = 0; step < CreeperDamageListener.REFINEMENT_STEPS; step++) {
+            double middle = (low + high) / 2.0;
+
+            if (this.finalDamageFor(event, middle) < intendedDamage) {
+                low = middle;
+
+                continue;
+            }
+
+            high = middle;
+        }
+
+        event.setDamage(high);
+    }
+
+    private double finalDamageFor(EntityDamageEvent event, double baseDamage) {
+        event.setDamage(baseDamage);
+
+        return event.getFinalDamage();
+    }
+
+    private int resistanceLevel(Player player) {
+        PotionEffect resistance = player.getPotionEffect(PotionEffectType.RESISTANCE);
+
+        if (resistance == null) {
+            return 0;
+        }
+
+        return resistance.getAmplifier() + 1;
     }
 }

@@ -19,58 +19,117 @@ package de.lazybytez.gamingbytezenhancements.feature.customcreeperdamage.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.util.function.DoubleUnaryOperator;
+
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.junit.jupiter.api.Test;
 
 /**
- * Covers the damage arithmetic of {@link CreeperDamageListener}.
+ * Covers the base damage search of {@link CreeperDamageListener}.
  * <p>
- * The reference figures come from a live server: a blast of 17.85 reached a netherite clad player
- * as 6.39.
+ * The search has to land the intended health loss through a reduction it cannot see, so each test
+ * stands a reduction in front of it and reads back what the player would actually lose.
  */
 class CreeperDamageListenerTest {
+    private static final double LANDING_TOLERANCE = 0.05;
 
     private final CreeperDamageListener listener = new CreeperDamageListener(null);
 
     @Test
-    void baseFor_raisesTheBaseSoTheIntendedDamageSurvivesArmour() {
-        // Numbers observed on a server: a blast of 17.85 reached a netherite clad player as 6.39.
-        double base = this.listener.baseFor(19.77, 17.85, 6.39);
+    void applyAsFinalDamage_throughVanillaArmor_landsOnTheIntendedDamage() {
+        double[] base = new double[1];
+        EntityDamageEvent event = this.eventReducedBy(CreeperDamageListenerTest::netheriteWithProtection, base);
 
-        assertEquals(19.77 * (17.85 / 6.39), base, 0.0001);
-        assertTrue(base > 19.77, "an armoured player needs a raised base, not the intended number");
+        this.listener.applyAsFinalDamage(event, 13.8);
+
+        assertEquals(13.8, CreeperDamageListenerTest.netheriteWithProtection(base[0]),
+                CreeperDamageListenerTest.LANDING_TOLERANCE);
     }
 
     @Test
-    void baseFor_appliedReductionLandsOnTheIntendedDamage() {
-        double reductionKept = 6.39 / 17.85;
+    void applyAsFinalDamage_throughVanillaArmor_raisesTheBaseWellAboveTheIntendedDamage() {
+        double[] base = new double[1];
+        EntityDamageEvent event = this.eventReducedBy(CreeperDamageListenerTest::netheriteWithProtection, base);
 
-        double base = this.listener.baseFor(19.77, 17.85, 6.39);
+        this.listener.applyAsFinalDamage(event, 13.8);
 
-        assertEquals(19.77, base * reductionKept, 0.0001);
+        assertTrue(base[0] > 13.8, "armour has to be paid for with a larger base");
     }
 
     @Test
-    void baseFor_withoutAnyReduction_leavesTheIntendedDamageAlone() {
-        assertEquals(7.5, this.listener.baseFor(7.5, 12.0, 12.0), 0.0001);
+    void applyAsFinalDamage_whenReductionScalesWithDamage_doesNotOvershoot() {
+        double[] base = new double[1];
+        EntityDamageEvent event = this.eventReducedBy(CreeperDamageListenerTest::netheriteWithProtection, base);
+
+        this.listener.applyAsFinalDamage(event, 13.8);
+
+        double linearGuess = 13.8 * (28.0 / CreeperDamageListenerTest.netheriteWithProtection(28.0));
+
+        assertTrue(
+                base[0] < linearGuess,
+                "a ratio measured on a small hit overstates the base a large one needs"
+        );
     }
 
     @Test
-    void baseFor_whenTheHitWasFullyAbsorbed_keepsTheIntendedDamage() {
-        assertEquals(7.5, this.listener.baseFor(7.5, 12.0, 0.0), 0.0001);
+    void applyAsFinalDamage_withoutAnyReduction_setsTheIntendedDamage() {
+        double[] base = new double[1];
+        EntityDamageEvent event = this.eventReducedBy(damage -> damage, base);
+
+        this.listener.applyAsFinalDamage(event, 7.5);
+
+        assertEquals(7.5, base[0], CreeperDamageListenerTest.LANDING_TOLERANCE);
     }
 
     @Test
-    void baseFor_withoutAnyIncomingDamage_keepsTheIntendedDamage() {
-        assertEquals(7.5, this.listener.baseFor(7.5, 0.0, 0.0), 0.0001);
+    void applyAsFinalDamage_throughAFlatReduction_landsOnTheIntendedDamage() {
+        double[] base = new double[1];
+        EntityDamageEvent event = this.eventReducedBy(damage -> damage * 0.25, base);
+
+        this.listener.applyAsFinalDamage(event, 9.0);
+
+        assertEquals(36.0, base[0], CreeperDamageListenerTest.LANDING_TOLERANCE);
     }
 
     @Test
-    void baseFor_whenTheServerRaisesTheDamage_lowersTheBase() {
-        // Freezing and similar effects add damage rather than removing it.
-        double base = this.listener.baseFor(10.0, 8.0, 16.0);
+    void applyAsFinalDamage_withNothingLeftToDeal_setsNoDamage() {
+        double[] base = new double[1];
+        EntityDamageEvent event = this.eventReducedBy(damage -> damage, base);
 
-        assertEquals(5.0, base, 0.0001);
-        assertTrue(base < 10.0, "damage the server raises needs a lowered base");
+        this.listener.applyAsFinalDamage(event, 0.0);
+
+        assertEquals(0.0, base[0], CreeperDamageListenerTest.LANDING_TOLERANCE);
+    }
+
+    /**
+     * Vanilla armor reduction for a netherite set carrying Protection IV on every piece. Armor
+     * sheds a smaller share of a large hit than of a small one, which is what the search exists to
+     * cope with.
+     *
+     * @param baseDamage The damage before reduction.
+     * @return The health the player would lose.
+     */
+    private static double netheriteWithProtection(double baseDamage) {
+        double armorKept = Math.min(20.0, Math.max(20.0 / 5.0, 20.0 - baseDamage / 5.0));
+
+        return baseDamage * (1.0 - armorKept / 25.0) * 0.36;
+    }
+
+    private EntityDamageEvent eventReducedBy(DoubleUnaryOperator reduction, double[] base) {
+        EntityDamageEvent event = mock(EntityDamageEvent.class);
+
+        doAnswer(invocation -> {
+            base[0] = invocation.getArgument(0);
+
+            return null;
+        }).when(event).setDamage(anyDouble());
+        when(event.getFinalDamage()).thenAnswer(invocation -> reduction.applyAsDouble(base[0]));
+
+        return event;
     }
 }
