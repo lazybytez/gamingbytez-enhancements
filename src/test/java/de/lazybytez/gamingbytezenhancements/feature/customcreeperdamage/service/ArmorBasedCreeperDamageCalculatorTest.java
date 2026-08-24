@@ -35,7 +35,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
     private static final double DAMAGE_TOLERANCE = 0.15;
 
     private static final double PLAYER_HEALTH = 20.0;
-    private static final double REFERENCE_BLAST = 22.0;
+    private static final double REFERENCE_BLAST = 24.0;
     private static final double DISTANT_BLAST = 5.0;
     private static final double POINT_BLANK_BLAST = 43.0;
 
@@ -56,7 +56,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
                 0.0
         );
 
-        assertEquals(0.183, rate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
+        assertEquals(0.200, rate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
     }
 
     @Test
@@ -72,7 +72,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
                 0.0
         );
 
-        assertEquals(0.308, netheriteRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
+        assertEquals(0.233, netheriteRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
         assertTrue(diamondRate < netheriteRate, "netherite must stay the more dangerous set");
     }
 
@@ -89,7 +89,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
                 0.0
         );
 
-        assertEquals(0.359, enchantedRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
+        assertEquals(0.249, enchantedRate, ArmorBasedCreeperDamageCalculatorTest.RATE_TOLERANCE);
         assertTrue(
                 enchantedRate - plainRate < 0.1,
                 "a full set of Protection IV must not transform the odds"
@@ -109,7 +109,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
     void damageFor_anUnarmoredPlayer_losesAboutThreeHearts() {
         double mean = this.meanDamage(0.0, 0.0, 0.0);
 
-        assertEquals(6.33, mean, ArmorBasedCreeperDamageCalculatorTest.DAMAGE_TOLERANCE);
+        assertEquals(6.43, mean, ArmorBasedCreeperDamageCalculatorTest.DAMAGE_TOLERANCE);
     }
 
     @Test
@@ -181,7 +181,7 @@ class ArmorBasedCreeperDamageCalculatorTest {
                 0.0,
                 0.0
         );
-        double capped = this.meanDamageFrom(24.0, 0.0, 0.0, 0.0);
+        double capped = this.meanDamageFrom(ArmorBasedCreeperDamageCalculatorTest.REFERENCE_BLAST, 0.0, 0.0, 0.0);
 
         assertEquals(capped, pointBlank, ArmorBasedCreeperDamageCalculatorTest.DAMAGE_TOLERANCE);
     }

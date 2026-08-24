@@ -8,8 +8,9 @@ player still has to respect one. A random roll on every hit keeps the outcome va
 
 ```
 blast        = clamp(baseDamage, 20, 24)
-protection   = max(armorPoints + armorToughness + 0.125 * enchantmentLevels, 13)
-armorFactor  = protection / 26
+worn         = max(armorPoints + armorToughness + 0.125 * enchantmentLevels, 13)
+protection   = worn <= 28 ? worn : 28 + (worn - 28) * 0.25
+armorFactor  = protection / 27.9
 luck         = random value between 0.15 and 1.0
 resistance   = max(0, 1 - 0.4 * resistanceLevel)
 damage       = blast * armorFactor * luck * resistance
@@ -31,11 +32,15 @@ server what it would deal rather than assuming a fixed ratio between the two.
 Enchantment levels are weighted down hard. Counted in full, a set of Protection IV added half again
 as much as the armor itself and made enchanted netherite far and away the deadliest thing to wear.
 
-### Protection Floor
+### Protection Floor and Soft Cap
 
 Protection never counts as less than 13, so a player in light armor or none at all still loses about
 three hearts to a blast rather than walking away from it. Leather, gold and chainmail all sit at the
 floor; iron and everything above it rise past it.
+
+Above the 28 points a diamond set carries, the curve flattens to a quarter of its slope. Without it
+the gap between diamond and an enchanted netherite set was wide enough that one of them had to sit
+well outside the intended range of odds, and flattening the top is what holds all three inside it.
 
 ### Blast Band
 
@@ -63,19 +68,20 @@ barely scratch a player, and the ceiling is what decides how often one kills out
 
 ## What This Means In Practice
 
-For a player at full health with no Resistance or absorption, against a blast in the middle of the
-band:
+For a player at full health with no Resistance or absorption, against a creeper detonating close
+enough to reach the top of the band, which is most of them:
 
 | Armor | Damage | One shot |
 |---|---|---|
-| None, leather, gold or chainmail | 1.7 to 11.0 | never |
-| Full iron | 1.9 to 12.7 | never |
-| Full diamond | 3.6 to 23.7 | ~18% |
-| Full netherite | 4.1 to 27.1 | ~31% |
-| Full netherite, Protection IV | 4.3 to 28.8 | ~36% |
+| None, leather, gold or chainmail | 1.7 to 11.2 | never |
+| Full iron | 1.9 to 12.9 | never |
+| Full diamond | 3.6 to 24.1 | ~20% |
+| Full netherite | 3.7 to 25.0 | ~23% |
+| Full netherite, Protection IV | 3.8 to 25.4 | ~25% |
 
-One shots begin at diamond. Everything below it takes a real bite out of a health bar without ever
-being able to finish the job.
+One shots begin at diamond and never pass a quarter of hits. Everything below diamond takes a real
+bite out of a health bar without ever being able to finish the job. A creeper that goes off at the
+bottom of the band is far gentler, killing a diamond clad player well under one time in a hundred.
 
 ## Configuration
 

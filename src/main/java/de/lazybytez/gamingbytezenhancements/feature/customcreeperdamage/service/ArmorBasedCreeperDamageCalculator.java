@@ -31,8 +31,10 @@ import java.util.Random;
 public class ArmorBasedCreeperDamageCalculator {
     private static final double MIN_BLAST_STRENGTH = 20.0;
     private static final double MAX_BLAST_STRENGTH = 24.0;
-    private static final double PROTECTION_SCALE = 26.0;
+    private static final double PROTECTION_SCALE = 27.9;
     private static final double MIN_PROTECTION = 13.0;
+    private static final double PROTECTION_SOFT_CAP = 28.0;
+    private static final double ABOVE_SOFT_CAP_WEIGHT = 0.25;
     private static final double ENCHANTMENT_WEIGHT = 0.125;
     private static final double MIN_LUCK = 0.15;
     private static final double MAX_LUCK = 1.0;
@@ -94,21 +96,46 @@ public class ArmorBasedCreeperDamageCalculator {
                 ArmorBasedCreeperDamageCalculator.MIN_BLAST_STRENGTH,
                 ArmorBasedCreeperDamageCalculator.MAX_BLAST_STRENGTH
         );
-        double protection = Math.max(
-                armorPoints
-                        + armorToughness
-                        + ArmorBasedCreeperDamageCalculator.ENCHANTMENT_WEIGHT * enchantmentLevels,
-                ArmorBasedCreeperDamageCalculator.MIN_PROTECTION
-        );
         double resistance = Math.max(
                 0.0,
                 1.0 - ArmorBasedCreeperDamageCalculator.RESISTANCE_REDUCTION_PER_LEVEL * resistanceLevel
         );
 
         return blast
-                * (protection / ArmorBasedCreeperDamageCalculator.PROTECTION_SCALE)
+                * (this.protectionFor(armorPoints, armorToughness, enchantmentLevels)
+                        / ArmorBasedCreeperDamageCalculator.PROTECTION_SCALE)
                 * this.rollLuck()
                 * resistance;
+    }
+
+    /**
+     * Reduces a player's armor and enchantments to the protection the damage curve reads.
+     * <p>
+     * A floor keeps a player in light armor or none from walking away from a blast. Above a diamond
+     * set the curve flattens to a quarter of its slope, which is what holds diamond, netherite and
+     * an enchanted netherite set close enough together that none of them kills far more often than
+     * the others.
+     *
+     * @param armorPoints       The player's armor attribute value.
+     * @param armorToughness    The player's armor toughness attribute value.
+     * @param enchantmentLevels The summed Protection and Blast Protection levels.
+     * @return The protection the damage curve reads.
+     */
+    private double protectionFor(double armorPoints, double armorToughness, double enchantmentLevels) {
+        double worn = Math.max(
+                armorPoints
+                        + armorToughness
+                        + ArmorBasedCreeperDamageCalculator.ENCHANTMENT_WEIGHT * enchantmentLevels,
+                ArmorBasedCreeperDamageCalculator.MIN_PROTECTION
+        );
+
+        if (worn <= ArmorBasedCreeperDamageCalculator.PROTECTION_SOFT_CAP) {
+            return worn;
+        }
+
+        return ArmorBasedCreeperDamageCalculator.PROTECTION_SOFT_CAP
+                + (worn - ArmorBasedCreeperDamageCalculator.PROTECTION_SOFT_CAP)
+                        * ArmorBasedCreeperDamageCalculator.ABOVE_SOFT_CAP_WEIGHT;
     }
 
     private double rollLuck() {
