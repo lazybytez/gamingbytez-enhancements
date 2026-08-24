@@ -96,16 +96,14 @@ public class ArmorBasedCreeperDamageCalculator {
                 ArmorBasedCreeperDamageCalculator.MIN_BLAST_STRENGTH,
                 ArmorBasedCreeperDamageCalculator.MAX_BLAST_STRENGTH
         );
+        double protection = this.protectionFor(armorPoints, armorToughness, enchantmentLevels);
+        double armorFactor = protection / ArmorBasedCreeperDamageCalculator.PROTECTION_SCALE;
         double resistance = Math.max(
                 0.0,
                 1.0 - ArmorBasedCreeperDamageCalculator.RESISTANCE_REDUCTION_PER_LEVEL * resistanceLevel
         );
 
-        return blast
-                * (this.protectionFor(armorPoints, armorToughness, enchantmentLevels)
-                        / ArmorBasedCreeperDamageCalculator.PROTECTION_SCALE)
-                * this.rollLuck()
-                * resistance;
+        return blast * armorFactor * this.rollLuck() * resistance;
     }
 
     /**
@@ -122,20 +120,19 @@ public class ArmorBasedCreeperDamageCalculator {
      * @return The protection the damage curve reads.
      */
     private double protectionFor(double armorPoints, double armorToughness, double enchantmentLevels) {
-        double worn = Math.max(
-                armorPoints
-                        + armorToughness
-                        + ArmorBasedCreeperDamageCalculator.ENCHANTMENT_WEIGHT * enchantmentLevels,
-                ArmorBasedCreeperDamageCalculator.MIN_PROTECTION
-        );
+        double enchanted = armorPoints
+                + armorToughness
+                + ArmorBasedCreeperDamageCalculator.ENCHANTMENT_WEIGHT * enchantmentLevels;
+        double worn = Math.max(enchanted, ArmorBasedCreeperDamageCalculator.MIN_PROTECTION);
 
         if (worn <= ArmorBasedCreeperDamageCalculator.PROTECTION_SOFT_CAP) {
             return worn;
         }
 
+        double aboveCap = worn - ArmorBasedCreeperDamageCalculator.PROTECTION_SOFT_CAP;
+
         return ArmorBasedCreeperDamageCalculator.PROTECTION_SOFT_CAP
-                + (worn - ArmorBasedCreeperDamageCalculator.PROTECTION_SOFT_CAP)
-                        * ArmorBasedCreeperDamageCalculator.ABOVE_SOFT_CAP_WEIGHT;
+                + aboveCap * ArmorBasedCreeperDamageCalculator.ABOVE_SOFT_CAP_WEIGHT;
     }
 
     private double rollLuck() {

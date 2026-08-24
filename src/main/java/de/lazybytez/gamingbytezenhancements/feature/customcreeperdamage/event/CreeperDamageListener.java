@@ -84,10 +84,11 @@ public class CreeperDamageListener implements Listener {
         double low = 0.0;
         double high = intendedDamage;
 
-        for (int step = 0;
-             step < CreeperDamageListener.EXPANSION_STEPS
-                     && this.finalDamageFor(event, high) < intendedDamage;
-             step++) {
+        for (int step = 0; step < CreeperDamageListener.EXPANSION_STEPS; step++) {
+            if (this.finalDamageFor(event, high) >= intendedDamage) {
+                break;
+            }
+
             low = high;
             high *= 2.0;
         }
